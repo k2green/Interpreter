@@ -15,10 +15,8 @@ namespace InterpreterLib {
 		internal void AddDiagnostic(Diagnostic diagnostic) => diagnostics.Add(diagnostic);
 		internal void AddDiagnostics(IEnumerable<Diagnostic> diagnosticEnum) => diagnostics.AddRange(diagnosticEnum);
 
-		public IEnumerable<string> GetStringEnumerable() {
-			return from x in diagnostics
-				   select x.Message;
-		}
+		public IEnumerable<string> Messages => from x in diagnostics
+											   select x.Message;
 
 		public IEnumerator<Diagnostic> GetEnumerator() {
 			return diagnostics.GetEnumerator();

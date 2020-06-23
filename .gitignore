@@ -13,6 +13,8 @@
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
 
+InterpreterLib/Parser/antlr-4.8-complete.jar
+
 # Build results
 [Dd]ebug/
 [Dd]ebugPublic/

@@ -130,7 +130,7 @@ namespace InterpreterLib.Binding {
 		}
 
 		public override BoundExpression VisitAssignmentExpression([NotNull] GLangParser.AssignmentExpressionContext context) {
-			bool isDeclaration = context.var != null;
+			bool isDeclaration = context.var = null;
 
 			// Report invalid assignment expression if any of the child nodes are null
 			if (context.IDENTIFIER() == null || context.ASSIGNMENT_OPERATOR() == null || context.binaryExpression() == null) {
@@ -146,21 +146,9 @@ namespace InterpreterLib.Binding {
 
 			BoundVariable variable = new BoundVariable(context.IDENTIFIER().GetText(), false, operandExpression.ValueType);
 
-			if (isDeclaration) {
-				if (!scope.TryDefine(variable)) {
-					diagnostics.AddDiagnostic(Diagnostic.ReportRedefineVariable(context.Start));
-					return null;
-				}
-			}
 
-			if (!isDeclaration && !scope.TryLookup(variable.Name, out var _)) {
-				diagnostics.AddDiagnostic(Diagnostic.ReportUndefinedVariable(context.Start));
-				return null;
-			}
-
-
-			if (scope.TryLookup(variable.Name, out var lookup) && lookup.ValueType != operandExpression.ValueType) {
-				diagnostics.AddDiagnostic(Diagnostic.ReportTypeMismatch(context.Start, operandExpression.ValueType, lookup.ValueType));
+			if (!scope.TryDefine(variable)) {
+				diagnostics.AddDiagnostic(Diagnostic.ReportRedefineVariable(context.Start));
 				return null;
 			}
 
