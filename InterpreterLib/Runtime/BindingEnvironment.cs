@@ -54,7 +54,7 @@ namespace InterpreterLib.Runtime {
 			parser.RemoveErrorListeners();
 
 			if (previous != null) {
-				diagnostics.AddDiagnostics(previous.Diagnostics);
+				diagnostics.AddDiagnostics(previous.diagnostics);
 				variables = previous.variables;
 			}
 
