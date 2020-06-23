@@ -15,7 +15,7 @@ namespace InterpreterLib.Runtime {
 		private BindingEnvironment previous;
 		private IParseTree SyntaxRoot;
 
-		public IEnumerable<string> Diagnostics => diagnostics;
+		public IEnumerable<string> StringDiagnostics => diagnostics.Messages;
 
 		internal BoundGlobalScope GlobalScope {
 			get {
@@ -23,7 +23,7 @@ namespace InterpreterLib.Runtime {
 					var prevScope = previous == null ? null : previous.GlobalScope;
 					var binderResult = Binder.BindGlobalScope(prevScope, SyntaxRoot);
 					Interlocked.CompareExchange<BoundGlobalScope>(ref globalScope, binderResult.Value, null);
-					diagnostics.AddDiagnostic(binderResult.Diagnostics);
+					diagnostics.AddDiagnostics(binderResult.Diagnostics);
 				}
 
 				return globalScope;
@@ -54,7 +54,7 @@ namespace InterpreterLib.Runtime {
 			parser.RemoveErrorListeners();
 
 			if (previous != null) {
-				diagnostics.AddDiagnostic(previous.Diagnostics);
+				diagnostics.AddDiagnostics(previous.Diagnostics);
 				variables = previous.variables;
 			}
 
@@ -72,7 +72,7 @@ namespace InterpreterLib.Runtime {
 			Evaluator evaluator = new Evaluator(GlobalScope.Root, variables);
 
 			var evalResult = evaluator.Evaluate();
-			diagnostics.AddDiagnostic(evalResult.Diagnostics);
+			diagnostics.AddDiagnostics(evalResult.Diagnostics);
 			return evalResult.Value;
 		}
 	}

@@ -9,11 +9,11 @@ namespace InterpreterLib.Binding {
 	internal sealed class Binder : GLangBaseVisitor<BoundExpression> {
 
 		private BoundScope scope;
-		private Diagnostic diagnostic;
+		private DiagnosticContainer diagnostics;
 
 		private Binder(BoundScope parent) {
 			scope = new BoundScope(parent);
-			diagnostic = new Diagnostic();
+			diagnostics = new DiagnosticContainer();
 		}
 
 		public static DiagnosticResult<BoundGlobalScope> BindGlobalScope(BoundGlobalScope previous, IParseTree tree) {
@@ -21,8 +21,8 @@ namespace InterpreterLib.Binding {
 
 			BoundExpression root = binder.Visit(tree);
 
-			BoundGlobalScope glob = new BoundGlobalScope(previous, binder.diagnostic, binder.scope.GetVariables(), root);
-			return new DiagnosticResult<BoundGlobalScope>(binder.diagnostic, glob);
+			BoundGlobalScope glob = new BoundGlobalScope(previous, binder.diagnostics, binder.scope.GetVariables(), root);
+			return new DiagnosticResult<BoundGlobalScope>(binder.diagnostics, glob);
 		}
 
 		private static BoundScope CreateParentScopes(BoundGlobalScope previous) {
@@ -59,11 +59,11 @@ namespace InterpreterLib.Binding {
 				if (scope.TryLookup(context.IDENTIFIER().GetText(), out var variable)) {
 					return new BoundVariableExpression(variable);
 				} else {
-					diagnostic.ReportUndefinedVariable(context.Start);
+					diagnostics.AddDiagnostic(Diagnostic.ReportUndefinedVariable(context.Start));
 				}
 			}
 
-			diagnostic.ReportInvalidSyntax(context.Start, context.GetText());
+			diagnostics.AddDiagnostic(Diagnostic.ReportInvalidSyntax(context.Start, context.GetText()));
 			return null;
 		}
 
@@ -87,14 +87,14 @@ namespace InterpreterLib.Binding {
 				var op = UnaryOperator.Bind(context.op.Text, operand.ValueType);
 
 				if (op == null) {
-					diagnostic.ReportInvalidUnaryOperator(context.op, operand.ValueType);
+					diagnostics.AddDiagnostic(Diagnostic.ReportInvalidUnaryOperator(context.op, operand.ValueType));
 					return null;
 				}
 
 				return new BoundUnaryExpression(op, operand);
 			}
 
-			diagnostic.ReportInvalidSyntax(context.Start, context.GetText());
+			diagnostics.AddDiagnostic(Diagnostic.ReportInvalidSyntax(context.Start, context.GetText()));
 			return null;
 		}
 
@@ -117,7 +117,7 @@ namespace InterpreterLib.Binding {
 
 				if (op == null) {
 					// Report the operator is invalid for the given types
-					diagnostic.ReportInvalidBinaryOperator(context.op, left.ValueType, right.ValueType);
+					diagnostics.AddDiagnostic(Diagnostic.ReportInvalidBinaryOperator(context.op, left.ValueType, right.ValueType));
 					return null;
 				}
 
@@ -125,7 +125,7 @@ namespace InterpreterLib.Binding {
 				return new BoundBinaryExpression(left, op, right);
 			}
 
-			diagnostic.ReportInvalidSyntax(context.Start, context.GetText());
+			diagnostics.AddDiagnostic(Diagnostic.ReportInvalidSyntax(context.Start, context.GetText()));
 			return null;
 		}
 
@@ -134,7 +134,7 @@ namespace InterpreterLib.Binding {
 
 			// Report invalid assignment expression if any of the child nodes are null
 			if (context.IDENTIFIER() == null || context.ASSIGNMENT_OPERATOR() == null || context.binaryExpression() == null) {
-				diagnostic.ReportInvalidSyntax(context.Start, context.GetText());
+				diagnostics.AddDiagnostic(Diagnostic.ReportInvalidSyntax(context.Start, context.GetText()));
 				return null;
 			}
 
@@ -148,19 +148,19 @@ namespace InterpreterLib.Binding {
 
 			if (isDeclaration) {
 				if (!scope.TryDefine(variable)) {
-					diagnostic.ReportRedefineVariable(context.Start);
+					diagnostics.AddDiagnostic(Diagnostic.ReportRedefineVariable(context.Start));
 					return null;
 				}
 			}
 
-			if(!isDeclaration && !scope.TryLookup(variable.Name, out var _)) {
-				diagnostic.ReportUndefinedVariable(context.Start);
+			if (!isDeclaration && !scope.TryLookup(variable.Name, out var _)) {
+				diagnostics.AddDiagnostic(Diagnostic.ReportUndefinedVariable(context.Start));
 				return null;
 			}
 
 
 			if (scope.TryLookup(variable.Name, out var lookup) && lookup.ValueType != operandExpression.ValueType) {
-				diagnostic.ReportTypeMismatch(context.Start, operandExpression.ValueType, lookup.ValueType);
+				diagnostics.AddDiagnostic(Diagnostic.ReportTypeMismatch(context.Start, operandExpression.ValueType, lookup.ValueType));
 				return null;
 			}
 
@@ -175,7 +175,7 @@ namespace InterpreterLib.Binding {
 			if (context.binaryExpression() != null)
 				return Visit(context.binaryExpression());
 
-			diagnostic.ReportInvalidStatement(context.Start, context.GetText());
+			diagnostics.AddDiagnostic(Diagnostic.ReportInvalidStatement(context.Start, context.GetText()));
 			return null;
 		}
 	}

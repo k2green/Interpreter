@@ -5,10 +5,10 @@ using System.Text;
 namespace InterpreterLib {
 	public struct DiagnosticResult<T> {
 
-		public IEnumerable<string> Diagnostics { get; }
+		public IEnumerable<Diagnostic> Diagnostics { get; }
 		public T Value { get; }
 
-		public DiagnosticResult(IEnumerable<string> diagnostics, T value) {
+		public DiagnosticResult(IEnumerable<Diagnostic> diagnostics, T value) {
 			Diagnostics = diagnostics;
 			Value = value;
 		}

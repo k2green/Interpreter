@@ -29,7 +29,7 @@ namespace Interpreter {
 				if (output != null)
 					Console.WriteLine(output);
 
-				foreach (string message in env.Diagnostics)
+				foreach (string message in env.StringDiagnostics)
 					Console.WriteLine(message);
 			}
 		}

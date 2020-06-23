@@ -1,29 +1,27 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Text;
+using System.Linq;
 
 namespace InterpreterLib {
-	public sealed class DiagnosticContainer : IEnumerable<string> {
+	public sealed class DiagnosticContainer : IEnumerable<Diagnostic> {
 
-		private List<IEnumerable<string>> diagnostics;
+		private List<Diagnostic> diagnostics;
 
 		public DiagnosticContainer() {
-			diagnostics = new List<IEnumerable<string>>();
+			diagnostics = new List<Diagnostic>();
 		}
 
-		internal void AddDiagnostic(Diagnostic diagnostic) {
-			diagnostics.Add(diagnostic);
+		internal void AddDiagnostic(Diagnostic diagnostic) => diagnostics.Add(diagnostic);
+		internal void AddDiagnostics(IEnumerable<Diagnostic> diagnosticEnum) => diagnostics.AddRange(diagnosticEnum);
+
+		public IEnumerable<string> GetStringEnumerable() {
+			return from x in diagnostics
+				   select x.Message;
 		}
 
-		internal void AddDiagnostic(IEnumerable<string> diagnostic) {
-			diagnostics.Add(diagnostic);
-		}
-
-		public IEnumerator<string> GetEnumerator() {
-			foreach (IEnumerable<string> diagnostic in diagnostics)
-				foreach (string message in diagnostic)
-					yield return message;
+		public IEnumerator<Diagnostic> GetEnumerator() {
+			return diagnostics.GetEnumerator();
 		}
 
 		IEnumerator IEnumerable.GetEnumerator() {

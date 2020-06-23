@@ -5,60 +5,54 @@ using System.Collections.Generic;
 using System.Text;
 
 namespace InterpreterLib {
-	internal class Diagnostic : IEnumerable<string> {
+	public class Diagnostic {
 
-		private List<string> messages;
+		public string Message { get; }
+		public int Line { get; }
+		public int Column { get; }
 
-		public Diagnostic() {
-			messages = new List<string>();
+		private Diagnostic(int line, int column, string message) {
+			Message = $"line {line}:{column}\t{message}";
+			Line = line;
+			Column = column;
 		}
 
-		private void ReportError(int line, int column, string message) {
-			messages.Add($"line {line}:{column}\t{message}");
+		public override string ToString() => Message;
+
+		internal static Diagnostic ReportInvalidUnaryOperator(IToken opToken, Type operandType) {
+			return new Diagnostic(opToken.Line, opToken.Column, $"'{opToken.Text}' Operator is invalid for type {operandType}");
 		}
 
-		public void ReportInvalidUnaryOperator(IToken opToken, Type operandType) {
-			ReportError(opToken.Line, opToken.Column, $"'{opToken.Text}' Operator is invalid for type {operandType}");
+		internal static Diagnostic ReportInvalidBinaryOperator(IToken opToken, Type leftType, Type rightType) {
+			return new Diagnostic(opToken.Line, opToken.Column, $"'{opToken.Text}' Operator is invalid for types {leftType} and {rightType}");
 		}
 
-		public void ReportInvalidBinaryOperator(IToken opToken, Type leftType, Type rightType) {
-			ReportError(opToken.Line, opToken.Column, $"'{opToken.Text}' Operator is invalid for types {leftType} and {rightType}");
+		internal static Diagnostic ReportInvalidSyntax(IToken offendingSymbol, string invalidText) {
+			return new Diagnostic(offendingSymbol.Line, offendingSymbol.Column, $"Invalid Syntax: {invalidText}");
 		}
 
-		public void ReportInvalidSyntax(IToken offendingSymbol, string invalidText) {
-			ReportError(offendingSymbol.Line, offendingSymbol.Column, $"Invalid Syntax: {invalidText}");
+		internal static Diagnostic ReportUndefinedVariable(IToken offendingSymbol) {
+			return new Diagnostic(offendingSymbol.Line, offendingSymbol.Column, $"Variable {offendingSymbol.Text} is undefined");
 		}
 
-		public void ReportUndefinedVariable(IToken offendingSymbol) {
-			ReportError(offendingSymbol.Line, offendingSymbol.Column, $"Variable {offendingSymbol.Text} is undefined");
+		internal static Diagnostic ReportRedefineVariable(IToken offendingSymbol) {
+			return new Diagnostic(offendingSymbol.Line, offendingSymbol.Column, $"Variable cannot be reassigned {offendingSymbol.Text}");
 		}
 
-		public void ReportRedefineVariable(IToken offendingSymbol) {
-			ReportError(offendingSymbol.Line, offendingSymbol.Column, $"Variable cannot be reassigned {offendingSymbol.Text}");
+		internal static Diagnostic ReportInvelidLiteral(int line, int column, string text) {
+			return new Diagnostic(line, column, $"Invalid Literal {text}");
 		}
 
-		public void ReportInvelidLiteral(int line, int column, string text) {
-			ReportError(line, column, $"Invalid Literal {text}");
+		internal static Diagnostic ReportInvalidStatement(IToken start, string v) {
+			return new Diagnostic(start.Line, start.Column, $"Invalid Statement {v}");
 		}
 
-		public IEnumerator<string> GetEnumerator() {
-			return messages.GetEnumerator();
+		internal static Diagnostic ReportInvalidDeclaration(IToken start, string v) {
+			return new Diagnostic(start.Line, start.Column, $"Invalid variable declaration {v}");
 		}
 
-		IEnumerator IEnumerable.GetEnumerator() {
-			return GetEnumerator();
-		}
-
-		internal void ReportInvalidStatement(IToken start, string v) {
-			ReportError(start.Line, start.Column, $"Invalid Statement {v}");
-		}
-
-		internal void ReportInvalidDeclaration(IToken start, string v) {
-			ReportError(start.Line, start.Column, $"Invalid variable declaration {v}");
-		}
-
-		internal void ReportTypeMismatch(IToken start, Type valueType1, Type valueType2) {
-			ReportError(start.Line, start.Column, $"Type mismatch between {valueType1} and {valueType2}");
+		internal static Diagnostic ReportTypeMismatch(IToken start, Type valueType1, Type valueType2) {
+			return new Diagnostic(start.Line, start.Column, $"Type mismatch between {valueType1} and {valueType2}");
 		}
 	}
 }

@@ -8,20 +8,20 @@ using Antlr4.Runtime.Tree;
 
 namespace InterpreterLib {
 	public class Evaluator {
-		private Diagnostic diagnostic;
+		private DiagnosticContainer diagnostics;
 		private BoundExpression root;
 
 		private Dictionary<BoundVariable, object> variables;
 
 		internal Evaluator(BoundExpression rootNode, Dictionary<BoundVariable, object> variables) {
 			root = rootNode;
-			diagnostic = new Diagnostic();
+			diagnostics = new DiagnosticContainer();
 			this.variables = variables;
 		}
 
 		public DiagnosticResult<object> Evaluate() {
 			object value = Evaluate(root);
-			return new DiagnosticResult<object>(diagnostic, value);
+			return new DiagnosticResult<object>(diagnostics, value);
 		}
 
 		private object Evaluate(BoundExpression expression) {
