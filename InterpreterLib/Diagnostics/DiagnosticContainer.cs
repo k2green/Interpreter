@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Text;
 
 namespace InterpreterLib {
@@ -14,7 +13,7 @@ namespace InterpreterLib {
 		}
 
 		internal void AddDiagnostic(Diagnostic diagnostic) {
-			diagnostics.Add(diagnostic.ToImmutableArray());
+			diagnostics.Add(diagnostic);
 		}
 
 		internal void AddDiagnostic(IEnumerable<string> diagnostic) {
