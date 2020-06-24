@@ -14,5 +14,7 @@ namespace InterpreterLib.Binding {
 			IsReadOnly = isReadOnly;
 			ValueType = valueType;
 		}
+
+		public override string ToString() => $"{Name} : {ValueType}";
 	}
 }

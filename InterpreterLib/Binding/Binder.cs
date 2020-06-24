@@ -57,15 +57,17 @@ namespace InterpreterLib.Binding {
 			if (context.BOOLEAN() != null)
 				return new BoundLiteral(bool.Parse(context.BOOLEAN().GetText()));
 
+			var token = context.Start;
+
 			if (context.IDENTIFIER() != null) {
 				if (scope.TryLookup(context.IDENTIFIER().GetText(), out var variable)) {
 					return new BoundVariableExpression(variable);
 				} else {
-					diagnostics.AddDiagnostic(Diagnostic.ReportUndefinedVariable(context.Start));
+					diagnostics.AddDiagnostic(Diagnostic.ReportUndefinedVariable(token.Line, token.Column, context.IDENTIFIER().GetText()));
 				}
 			}
 
-			diagnostics.AddDiagnostic(Diagnostic.ReportInvalidSyntax(context.Start, context.GetText()));
+			diagnostics.AddDiagnostic(Diagnostic.ReportInvalidSyntax(token.Line, token.Column, context.GetText()));
 			return null;
 		}
 
@@ -89,14 +91,14 @@ namespace InterpreterLib.Binding {
 				var op = UnaryOperator.Bind(context.op.Text, operand.ValueType);
 
 				if (op == null) {
-					diagnostics.AddDiagnostic(Diagnostic.ReportInvalidUnaryOperator(context.op, operand.ValueType));
+					diagnostics.AddDiagnostic(Diagnostic.ReportInvalidUnaryOperator(context.op.Line, context.op.Column, context.op.Text, operand.ValueType));
 					return null;
 				}
 
 				return new BoundUnaryExpression(op, operand);
 			}
 
-			diagnostics.AddDiagnostic(Diagnostic.ReportInvalidSyntax(context.Start, context.GetText()));
+			diagnostics.AddDiagnostic(Diagnostic.ReportInvalidSyntax(context.Start.Line, context.Start.Column, $"Unary Expression {context.GetText()}"));
 			return null;
 		}
 
@@ -119,7 +121,7 @@ namespace InterpreterLib.Binding {
 
 				if (op == null) {
 					// Report the operator is invalid for the given types
-					diagnostics.AddDiagnostic(Diagnostic.ReportInvalidBinaryOperator(context.op, left.ValueType, right.ValueType));
+					diagnostics.AddDiagnostic(Diagnostic.ReportInvalidBinaryOperator(context.op.Line, context.op.Column, context.op.Text, left.ValueType, right.ValueType));
 					return null;
 				}
 
@@ -127,7 +129,7 @@ namespace InterpreterLib.Binding {
 				return new BoundBinaryExpression(left, op, right);
 			}
 
-			diagnostics.AddDiagnostic(Diagnostic.ReportInvalidSyntax(context.Start, context.GetText()));
+			diagnostics.AddDiagnostic(Diagnostic.ReportInvalidSyntax(context.Start.Line, context.Start.Column, $"Binary Expression {context.GetText()}"));
 			return null;
 		}
 
@@ -135,14 +137,14 @@ namespace InterpreterLib.Binding {
 			bool isReadOnly = false;
 			bool isDeclaration = false;
 
-			if(context.decl != null) {
+			if (context.decl != null) {
 				isReadOnly = context.decl.Text.Equals("val");
 				isDeclaration = isReadOnly || context.decl.Text.Equals("var");
 			}
 
 			// Report invalid assignment expression if any of the child nodes are null
 			if (context.IDENTIFIER() == null || context.ASSIGNMENT_OPERATOR() == null || context.binaryExpression() == null) {
-				diagnostics.AddDiagnostic(Diagnostic.ReportInvalidSyntax(context.Start, context.GetText()));
+				diagnostics.AddDiagnostic(Diagnostic.ReportInvalidSyntax(context.Start.Line, context.Start.Column, $"Assignment Expression {context.GetText()}"));
 				return null;
 			}
 
@@ -153,15 +155,28 @@ namespace InterpreterLib.Binding {
 				return null;
 
 			BoundVariable variable = new BoundVariable(context.IDENTIFIER().GetText(), isReadOnly, operandExpression.ValueType);
+			var token = context.Start;
 
 			if (isDeclaration) {
 				if (!scope.TryDefine(variable)) {
-					diagnostics.AddDiagnostic(Diagnostic.ReportRedefineVariable(context.Start));
+					diagnostics.AddDiagnostic(Diagnostic.ReportRedefineVariable(token.Line, token.Column, scope[variable.Name], variable));
 					return null;
 				}
-			} else {
-				if(!scope.TryLookup(variable.Name, out var _)) {
-					diagnostics.AddDiagnostic(Diagnostic.ReportUndefinedVariable(context.Start));
+			}
+
+			if (!scope.TryLookup(variable.Name, out var lookup)) {
+				diagnostics.AddDiagnostic(Diagnostic.ReportUndefinedVariable(token.Line, token.Column, variable));
+				return null;
+			}
+
+			if (!isDeclaration) {
+				if (lookup.IsReadOnly) {
+					diagnostics.AddDiagnostic(Diagnostic.ReportReadonlyVariable(token.Line, token.Column, lookup));
+					return null;
+				}
+
+				if(lookup.ValueType != variable.ValueType) {
+					diagnostics.AddDiagnostic(Diagnostic.ReportVariableTypeMismatch(token.Line, token.Column, variable.Name, lookup.ValueType, variable.ValueType));
 					return null;
 				}
 			}
@@ -177,7 +192,7 @@ namespace InterpreterLib.Binding {
 			if (context.binaryExpression() != null)
 				return Visit(context.binaryExpression());
 
-			diagnostics.AddDiagnostic(Diagnostic.ReportInvalidStatement(context.Start, context.GetText()));
+			diagnostics.AddDiagnostic(Diagnostic.ReportInvalidStatement(context.Start.Line, context.Start.Column, context.GetText()));
 			return null;
 		}
 	}

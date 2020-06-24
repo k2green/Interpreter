@@ -8,14 +8,14 @@ namespace InterpreterLib.Binding {
 		private Dictionary<string, BoundVariable> variables;
 		private BoundScope parent;
 
-		public BoundScope(BoundScope parent) {
+		internal BoundScope(BoundScope parent) {
 			this.parent = parent;
 			variables = new Dictionary<string, BoundVariable>();
 		}
 
-		public BoundScope() : this(null) { }
+		internal BoundScope() : this(null) { }
 
-		public bool TryDefine(BoundVariable variable) {
+		internal bool TryDefine(BoundVariable variable) {
 			if (variables.ContainsKey(variable.Name))
 				return false;
 
@@ -23,7 +23,7 @@ namespace InterpreterLib.Binding {
 			return true;
 		}
 
-		public bool TryLookup(string name, out BoundVariable variable) {
+		internal bool TryLookup(string name, out BoundVariable variable) {
 			if (variables.TryGetValue(name, out variable))
 				return true;
 
@@ -32,6 +32,9 @@ namespace InterpreterLib.Binding {
 
 			return parent.TryLookup(name, out variable);
 		}
+
+		internal BoundVariable this[string name] => variables[name];
+		internal bool TryDirectLookup(string name, out BoundVariable variable) => variables.TryGetValue(name, out variable);
 
 		public IEnumerable<BoundVariable> GetVariables() {
 			return variables.Values;

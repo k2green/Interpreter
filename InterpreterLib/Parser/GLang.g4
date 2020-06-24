@@ -8,7 +8,9 @@ literal : INTEGER | BOOLEAN | IDENTIFIER;
 
 block : L_BRACE statements=statement* R_BRACE;
 
-statement : assignmentExpression | binaryExpression;
+ifStat : IF L_BRACKET condition=binaryExpression R_BRACKET trueBranch=statement ELSE falseBranch=statement;
+
+statement : ifStat | block | assignmentExpression | binaryExpression;
 
 assignmentExpression : decl=DECL_VARIABLE? IDENTIFIER ASSIGNMENT_OPERATOR expression=binaryExpression;
 
@@ -44,6 +46,8 @@ INTEGER: DIGITS;
 BOOLEAN: TRUE | FALSE;
 
 DECL_VARIABLE : VAL | VAR;
+IF : 'if';
+ELSE : 'else';
 
 ADDITIVE_OP: '+' | '-';
 MULTIPLICATIVE_OP: '*' | '/';
