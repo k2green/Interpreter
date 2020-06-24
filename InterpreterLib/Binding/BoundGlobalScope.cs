@@ -9,9 +9,9 @@ namespace InterpreterLib.Binding {
 		public BoundGlobalScope Previous { get; }
 		public IEnumerable<Diagnostic> Diagnostics { get; }
 		public IEnumerable<BoundVariable> Variables { get; }
-		public BoundExpression Root { get; }
+		public BoundNode Root { get; }
 
-		public BoundGlobalScope(BoundGlobalScope previous, IEnumerable<Diagnostic> diagnostics, IEnumerable<BoundVariable> variables, BoundExpression root) {
+		public BoundGlobalScope(BoundGlobalScope previous, IEnumerable<Diagnostic> diagnostics, IEnumerable<BoundVariable> variables, BoundNode root) {
 			Previous = previous;
 			Diagnostics = diagnostics;
 			Variables = variables;

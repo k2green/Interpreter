@@ -25,5 +25,9 @@ namespace InterpreterLib {
 		IEnumerator IEnumerable.GetEnumerator() {
 			throw new NotImplementedException();
 		}
+
+		internal void ReportInvalidElse(int line, int column, string v) {
+			throw new NotImplementedException();
+		}
 	}
 }

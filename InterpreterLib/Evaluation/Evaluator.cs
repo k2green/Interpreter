@@ -5,15 +5,16 @@ using System.Collections.Generic;
 using System.Text;
 using System.Linq;
 using Antlr4.Runtime.Tree;
+using InterpreterLib.Binding.Types;
 
 namespace InterpreterLib {
 	public class Evaluator {
 		private DiagnosticContainer diagnostics;
-		private BoundExpression root;
+		private BoundNode root;
 
 		private Dictionary<BoundVariable, object> variables;
 
-		internal Evaluator(BoundExpression rootNode, Dictionary<BoundVariable, object> variables) {
+		internal Evaluator(BoundNode rootNode, Dictionary<BoundVariable, object> variables) {
 			root = rootNode;
 			diagnostics = new DiagnosticContainer();
 			this.variables = variables;
@@ -24,7 +25,7 @@ namespace InterpreterLib {
 			return new DiagnosticResult<object>(diagnostics, value);
 		}
 
-		private object Evaluate(BoundExpression expression) {
+		private object Evaluate(BoundNode expression) {
 			switch (expression.Type) {
 				case NodeType.Literal:
 					return EvaluateLiteral((BoundLiteral)expression);
@@ -36,8 +37,38 @@ namespace InterpreterLib {
 					return EvaluateAssignmentExpression((BoundAssignmentExpression)expression);
 				case NodeType.Variable:
 					return EvaluateVariable((BoundVariableExpression)expression);
+				case NodeType.Expression:
+					return EvaluateExpression((BoundExpressionStatement)expression);
+				case NodeType.Block:
+					return EvaluateBlock((BoundBlock)expression);
+				case NodeType.If:
+					return EvaluateIf((BoundIfStatement)expression);
 				default: throw new Exception("Unimplemented node evaluator");
 			}
+		}
+
+		private object EvaluateIf(BoundIfStatement ifStat) {
+			if (ifStat.Condition.ValueType != BoundType.Boolean)
+				throw new Exception("Invalid expr");
+
+			bool testCondition = (bool)Evaluate(ifStat.Condition);
+			if (testCondition)
+				return Evaluate(ifStat.TrueBranch);
+			else if (ifStat.FalseBranch != null)
+				return Evaluate(ifStat.FalseBranch);
+
+			return null;
+		}
+
+		private object EvaluateBlock(BoundBlock expression) {
+			foreach (var stat in expression.Statements)
+				Evaluate(stat);
+
+			return null;
+		}
+
+		private object EvaluateExpression(BoundExpressionStatement expression) {
+			return Evaluate(expression.Expression);
 		}
 
 		private object EvaluateAssignmentExpression(BoundAssignmentExpression assignment) {
@@ -98,10 +129,10 @@ namespace InterpreterLib {
 		}
 
 		private bool EvaluateEqualityOperation(object left, object right, BinaryOperator op) {
-			if (op.LeftType == typeof(int) && op.RightType == typeof(int))
+			if (op.LeftType == BoundType.Integer && op.RightType == BoundType.Integer)
 				return ((int)left) == ((int)right);
 
-			if (op.LeftType == typeof(bool) && op.RightType == typeof(bool))
+			if (op.LeftType == BoundType.Boolean && op.RightType == BoundType.Boolean)
 				return ((bool)left) == ((bool)right);
 
 			return false;

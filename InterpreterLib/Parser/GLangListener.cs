@@ -52,6 +52,16 @@ public interface IGLangListener : IParseTreeListener {
 	/// <param name="context">The parse tree.</param>
 	void ExitBlock([NotNull] GLangParser.BlockContext context);
 	/// <summary>
+	/// Enter a parse tree produced by <see cref="GLangParser.ifStat"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterIfStat([NotNull] GLangParser.IfStatContext context);
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="GLangParser.ifStat"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitIfStat([NotNull] GLangParser.IfStatContext context);
+	/// <summary>
 	/// Enter a parse tree produced by <see cref="GLangParser.statement"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
@@ -61,6 +71,16 @@ public interface IGLangListener : IParseTreeListener {
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	void ExitStatement([NotNull] GLangParser.StatementContext context);
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="GLangParser.expression"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterExpression([NotNull] GLangParser.ExpressionContext context);
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="GLangParser.expression"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitExpression([NotNull] GLangParser.ExpressionContext context);
 	/// <summary>
 	/// Enter a parse tree produced by <see cref="GLangParser.assignmentExpression"/>.
 	/// </summary>

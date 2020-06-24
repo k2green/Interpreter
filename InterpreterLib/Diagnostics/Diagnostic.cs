@@ -1,4 +1,5 @@
 ﻿using InterpreterLib.Binding;
+using InterpreterLib.Binding.Types;
 using System;
 
 namespace InterpreterLib {
@@ -16,11 +17,11 @@ namespace InterpreterLib {
 
 		public override string ToString() => Message;
 
-		internal static Diagnostic ReportInvalidUnaryOperator(int line, int column, string operatorText, Type operandType) {
+		internal static Diagnostic ReportInvalidUnaryOperator(int line, int column, string operatorText, BoundType operandType) {
 			return new Diagnostic(line, column, $"'{operatorText}' Operator is invalid for type {operandType}");
 		}
 
-		internal static Diagnostic ReportInvalidBinaryOperator(int line, int column, string operatorText, Type leftType, Type rightType) {
+		internal static Diagnostic ReportInvalidBinaryOperator(int line, int column, string operatorText, BoundType leftType, BoundType rightType) {
 			return new Diagnostic(line, column, $"'{operatorText}' Operator is invalid for types {leftType} and {rightType}");
 		}
 
@@ -44,7 +45,7 @@ namespace InterpreterLib {
 			return new Diagnostic(line, column, $"Invalid Literal {text}");
 		}
 
-		internal static Diagnostic ReportInvalidStatement(int line, int column, string v) {
+		internal static Diagnostic ReportInvalidExpression(int line, int column, string v) {
 			return new Diagnostic(line, column, $"Invalid Statement {v}");
 		}
 
@@ -52,12 +53,16 @@ namespace InterpreterLib {
 			return new Diagnostic(line, column, $"Invalid variable declaration {v}");
 		}
 
-		internal static Diagnostic ReportVariableTypeMismatch(int line, int column, string name, Type valueType1, Type valueType2) {
+		internal static Diagnostic ReportVariableTypeMismatch(int line, int column, string name, BoundType valueType1, BoundType valueType2) {
 			return new Diagnostic(line, column, $"Cannot reassign {name} from {valueType1} to {valueType2}");
 		}
 
 		internal static Diagnostic ReportReadonlyVariable(int line, int column, BoundVariable lookup) {
 			return new Diagnostic(line, column, $"Variable {lookup} is read only");
+		}
+
+		internal static Diagnostic ReportInvalidStatement(int line, int column, string v) {
+			throw new NotImplementedException();
 		}
 	}
 }

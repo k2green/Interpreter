@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Text;
 
 namespace InterpreterLib.Binding {
-	internal sealed class Binder : GLangBaseVisitor<BoundExpression> {
+	internal sealed class Binder : GLangBaseVisitor<BoundNode> {
 
 		private BoundScope scope;
 		private DiagnosticContainer diagnostics;
@@ -19,7 +19,7 @@ namespace InterpreterLib.Binding {
 		public static DiagnosticResult<BoundGlobalScope> BindGlobalScope(BoundGlobalScope previous, IParseTree tree) {
 			Binder binder = new Binder(CreateParentScopes(previous));
 
-			BoundExpression root = binder.Visit(tree);
+			BoundNode root = binder.Visit(tree);
 
 			BoundGlobalScope glob = new BoundGlobalScope(previous, binder.diagnostics, binder.scope.GetVariables(), root);
 			return new DiagnosticResult<BoundGlobalScope>(binder.diagnostics, glob);
@@ -50,7 +50,7 @@ namespace InterpreterLib.Binding {
 			return parent;
 		}
 
-		public override BoundExpression VisitLiteral([NotNull] GLangParser.LiteralContext context) {
+		public override BoundNode VisitLiteral([NotNull] GLangParser.LiteralContext context) {
 			if (context.INTEGER() != null)
 				return new BoundLiteral(int.Parse(context.INTEGER().GetText()));
 
@@ -71,7 +71,7 @@ namespace InterpreterLib.Binding {
 			return null;
 		}
 
-		public override BoundExpression VisitUnaryExpression([NotNull] GLangParser.UnaryExpressionContext context) {
+		public override BoundNode VisitUnaryExpression([NotNull] GLangParser.UnaryExpressionContext context) {
 			// Return the binding of the base case
 			if (context.atom != null)
 				return Visit(context.atom);
@@ -85,24 +85,24 @@ namespace InterpreterLib.Binding {
 				// Bind the 
 				var operand = Visit(context.unaryExpression());
 
-				if (operand == null)
+				if (operand == null || !(operand is BoundExpression))
 					return null;
 
-				var op = UnaryOperator.Bind(context.op.Text, operand.ValueType);
+				var op = UnaryOperator.Bind(context.op.Text, ((BoundExpression)operand).ValueType);
 
 				if (op == null) {
-					diagnostics.AddDiagnostic(Diagnostic.ReportInvalidUnaryOperator(context.op.Line, context.op.Column, context.op.Text, operand.ValueType));
+					diagnostics.AddDiagnostic(Diagnostic.ReportInvalidUnaryOperator(context.op.Line, context.op.Column, context.op.Text, ((BoundExpression)operand).ValueType));
 					return null;
 				}
 
-				return new BoundUnaryExpression(op, operand);
+				return new BoundUnaryExpression(op, (BoundExpression)operand);
 			}
 
 			diagnostics.AddDiagnostic(Diagnostic.ReportInvalidSyntax(context.Start.Line, context.Start.Column, $"Unary Expression {context.GetText()}"));
 			return null;
 		}
 
-		public override BoundExpression VisitBinaryExpression([NotNull] GLangParser.BinaryExpressionContext context) {
+		public override BoundNode VisitBinaryExpression([NotNull] GLangParser.BinaryExpressionContext context) {
 			// Return the binding of the base case
 			if (context.atom != null)
 				return Visit(context.atom);
@@ -113,27 +113,27 @@ namespace InterpreterLib.Binding {
 				var right = Visit(context.right);
 
 				// Return null if the binding of either child fails
-				if (left == null || right == null)
+				if (left == null || right == null || !(left is BoundExpression) || !(right is BoundExpression))
 					return null;
 
 				// Type checking for operators
-				var op = BinaryOperator.Bind(context.op.Text, left.ValueType, right.ValueType);
+				var op = BinaryOperator.Bind(context.op.Text, ((BoundExpression)left).ValueType, ((BoundExpression)right).ValueType);
 
 				if (op == null) {
 					// Report the operator is invalid for the given types
-					diagnostics.AddDiagnostic(Diagnostic.ReportInvalidBinaryOperator(context.op.Line, context.op.Column, context.op.Text, left.ValueType, right.ValueType));
+					diagnostics.AddDiagnostic(Diagnostic.ReportInvalidBinaryOperator(context.op.Line, context.op.Column, context.op.Text, ((BoundExpression)left).ValueType, ((BoundExpression)right).ValueType));
 					return null;
 				}
 
 				// Return a new bound binary expression.
-				return new BoundBinaryExpression(left, op, right);
+				return new BoundBinaryExpression((BoundExpression)left, op, (BoundExpression)right);
 			}
 
 			diagnostics.AddDiagnostic(Diagnostic.ReportInvalidSyntax(context.Start.Line, context.Start.Column, $"Binary Expression {context.GetText()}"));
 			return null;
 		}
 
-		public override BoundExpression VisitAssignmentExpression([NotNull] GLangParser.AssignmentExpressionContext context) {
+		public override BoundNode VisitAssignmentExpression([NotNull] GLangParser.AssignmentExpressionContext context) {
 			bool isReadOnly = false;
 			bool isDeclaration = false;
 
@@ -151,10 +151,10 @@ namespace InterpreterLib.Binding {
 			var operandExpression = Visit(context.binaryExpression());
 
 			// Return null as error should have already been reported
-			if (operandExpression == null)
+			if (operandExpression == null || !(operandExpression is BoundExpression))
 				return null;
 
-			BoundVariable variable = new BoundVariable(context.IDENTIFIER().GetText(), isReadOnly, operandExpression.ValueType);
+			BoundVariable variable = new BoundVariable(context.IDENTIFIER().GetText(), isReadOnly, ((BoundExpression)operandExpression).ValueType);
 			var token = context.Start;
 
 			if (isDeclaration) {
@@ -175,25 +175,68 @@ namespace InterpreterLib.Binding {
 					return null;
 				}
 
-				if(lookup.ValueType != variable.ValueType) {
+				if (!lookup.ValueType.Equals(variable.ValueType)) {
 					diagnostics.AddDiagnostic(Diagnostic.ReportVariableTypeMismatch(token.Line, token.Column, variable.Name, lookup.ValueType, variable.ValueType));
 					return null;
 				}
 			}
 
 			// Bind the assignment operation
-			return new BoundAssignmentExpression(variable, operandExpression);
+			return new BoundAssignmentExpression(variable, (BoundExpression)operandExpression);
 		}
 
-		public override BoundExpression VisitStatement([NotNull] GLangParser.StatementContext context) {
+		public override BoundNode VisitStatement([NotNull] GLangParser.StatementContext context) {
+			if (context.expression() != null)
+				return Visit(context.expression());
+
+			if (context.block() != null)
+				return Visit(context.block());
+
+			if (context.ifStat() != null)
+				return Visit(context.ifStat());
+
+			diagnostics.AddDiagnostic(Diagnostic.ReportInvalidStatement(context.Start.Line, context.Start.Column, context.GetText()));
+			return null;
+		}
+
+		public override BoundNode VisitBlock([NotNull] GLangParser.BlockContext context) {
+			List<BoundNode> statements = new List<BoundNode>();
+			foreach (var stat in context.statement())
+				statements.Add(Visit(stat));
+
+			return new BoundBlock(statements);
+		}
+
+		public override BoundNode VisitExpression([NotNull] GLangParser.ExpressionContext context) {
 			if (context.assignmentExpression() != null)
 				return Visit(context.assignmentExpression());
 
 			if (context.binaryExpression() != null)
 				return Visit(context.binaryExpression());
 
-			diagnostics.AddDiagnostic(Diagnostic.ReportInvalidStatement(context.Start.Line, context.Start.Column, context.GetText()));
+			diagnostics.AddDiagnostic(Diagnostic.ReportInvalidExpression(context.Start.Line, context.Start.Column, context.GetText()));
 			return null;
+		}
+
+		public override BoundNode VisitIfStat([NotNull] GLangParser.IfStatContext context) {
+			if (context.IF() == null && context.L_BRACKET() == null && context.condition == null && context.R_BRACKET() == null && context.trueBranch == null) {
+				diagnostics.ReportInvalidElse(context.Start.Line, context.Start.Column, context.GetText());
+				return null;
+			}
+
+			if (context.ELSE() == null ^ context.falseBranch == null) {
+				diagnostics.ReportInvalidElse(context.Start.Line, context.Start.Column, context.GetText());
+				return null;
+			}
+
+			var condition = (BoundExpression)Visit(context.condition);
+			var trueBrStat = Visit(context.trueBranch);
+			BoundNode falseBrStat = null;
+
+			if (context.ELSE() != null)
+				falseBrStat = Visit(context.falseBranch);
+
+			return new BoundIfStatement(condition, trueBrStat, falseBrStat);
 		}
 	}
 }

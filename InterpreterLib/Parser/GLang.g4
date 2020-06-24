@@ -4,15 +4,17 @@ grammar GLang;
  * Parser Rules
  */
  
-literal : INTEGER | BOOLEAN | IDENTIFIER;
+literal : DOUBLE | INTEGER | BOOLEAN | IDENTIFIER | STRING;
 
-block : L_BRACE statements=statement* R_BRACE;
+block : L_BRACE statement* R_BRACE;
 
 ifStat : IF L_BRACKET condition=binaryExpression R_BRACKET trueBranch=statement ELSE falseBranch=statement;
 
-statement : ifStat | block | assignmentExpression | binaryExpression;
+statement : ifStat | block | expression;
 
-assignmentExpression : decl=DECL_VARIABLE? IDENTIFIER ASSIGNMENT_OPERATOR expression=binaryExpression;
+expression : assignmentExpression | binaryExpression;
+
+assignmentExpression : decl=DECL_VARIABLE? IDENTIFIER ASSIGNMENT_OPERATOR expr=binaryExpression;
 
 unaryExpression : L_BRACKET binaryExpression R_BRACKET
 				| op=(ADDITIVE_OP | BANG) unaryExpression
@@ -42,8 +44,10 @@ fragment MOD_OPERATOR : 'mod';
 
 WHITESPACE : [ \t\r\n]+ -> channel(HIDDEN);
 
-INTEGER: DIGITS;
 BOOLEAN: TRUE | FALSE;
+DOUBLE: DIGITS? '.' DIGITS;
+INTEGER: DIGITS;
+STRING: '"' .* '"';
 
 DECL_VARIABLE : VAL | VAR;
 IF : 'if';

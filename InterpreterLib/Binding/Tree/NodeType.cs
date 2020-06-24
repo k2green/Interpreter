@@ -5,6 +5,9 @@ using System.Text;
 namespace InterpreterLib.Binding.Tree {
 	public enum NodeType {
 		Literal, UnaryExpression, BinaryExpression, AssignmentExpression,
-		Variable
+		Variable,
+		Expression,
+		Block,
+		If
 	}
 }

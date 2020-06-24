@@ -1,4 +1,5 @@
-﻿using System;
+﻿using InterpreterLib.Binding.Types;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -7,9 +8,9 @@ namespace InterpreterLib.Binding {
 
 		public string Name { get; }
 		public bool IsReadOnly { get; }
-		public Type ValueType { get; }
+		public BoundType ValueType { get; }
 
-		public BoundVariable(string name, bool isReadOnly, Type valueType) {
+		public BoundVariable(string name, bool isReadOnly, BoundType valueType) {
 			Name = name;
 			IsReadOnly = isReadOnly;
 			ValueType = valueType;

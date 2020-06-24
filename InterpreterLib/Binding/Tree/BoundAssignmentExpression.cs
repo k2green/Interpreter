@@ -1,11 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using InterpreterLib.Binding.Types;
 
 namespace InterpreterLib.Binding.Tree {
 	internal sealed class BoundAssignmentExpression : BoundExpression {
 
-		public override Type ValueType => Expression.ValueType;
+		public override BoundType ValueType => Expression.ValueType;
 		public override NodeType Type => NodeType.AssignmentExpression;
 
 		public BoundVariable Identifier { get; }
