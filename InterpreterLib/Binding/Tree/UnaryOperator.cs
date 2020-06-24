@@ -23,6 +23,8 @@ namespace InterpreterLib.Binding.Tree {
 		private static UnaryOperator[] operators = {
 			new UnaryOperator("+", UnaryOperatorType.Identity, BoundType.Integer),
 			new UnaryOperator("-", UnaryOperatorType.Negation, BoundType.Integer),
+			new UnaryOperator("+", UnaryOperatorType.Identity, BoundType.Double),
+			new UnaryOperator("-", UnaryOperatorType.Negation, BoundType.Double),
 			new UnaryOperator("!", UnaryOperatorType.LogicalNot, BoundType.Integer),
 		};
 

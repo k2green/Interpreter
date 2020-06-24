@@ -51,11 +51,19 @@ namespace InterpreterLib.Binding {
 		}
 
 		public override BoundNode VisitLiteral([NotNull] GLangParser.LiteralContext context) {
+			if (context.DOUBLE() != null)
+				return new BoundLiteral(double.Parse(context.DOUBLE().GetText()));
+
 			if (context.INTEGER() != null)
 				return new BoundLiteral(int.Parse(context.INTEGER().GetText()));
 
 			if (context.BOOLEAN() != null)
 				return new BoundLiteral(bool.Parse(context.BOOLEAN().GetText()));
+
+			if (context.STRING() != null) {
+				string text = context.STRING().GetText();
+				return new BoundLiteral(text.Substring(1, text.Length - 2));
+			}
 
 			var token = context.Start;
 

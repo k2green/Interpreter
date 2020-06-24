@@ -47,7 +47,7 @@ WHITESPACE : [ \t\r\n]+ -> channel(HIDDEN);
 BOOLEAN: TRUE | FALSE;
 DOUBLE: DIGITS? '.' DIGITS;
 INTEGER: DIGITS;
-STRING: '"' .* '"';
+STRING: '"' .*? '"';
 
 DECL_VARIABLE : VAL | VAR;
 IF : 'if';

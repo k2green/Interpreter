@@ -22,7 +22,7 @@ namespace InterpreterLib.Binding.Tree {
 			OutputType = outputType;
 		}
 
-		private static BinaryOperator[] operators = {
+		private static List<BinaryOperator> operators = new List<BinaryOperator>(new BinaryOperator[] {
 			new BinaryOperator("+", BinaryOperatorType.Addition, BoundType.Integer, BoundType.Integer),
 			new BinaryOperator("-", BinaryOperatorType.Subtraction, BoundType.Integer, BoundType.Integer),
 			new BinaryOperator("*", BinaryOperatorType.Multiplication, BoundType.Integer, BoundType.Integer),
@@ -32,10 +32,13 @@ namespace InterpreterLib.Binding.Tree {
 
 			new BinaryOperator("==", BinaryOperatorType.Equality, BoundType.Integer, BoundType.Boolean),
 			new BinaryOperator("==", BinaryOperatorType.Equality, BoundType.Boolean, BoundType.Boolean),
+			new BinaryOperator("==", BinaryOperatorType.Equality, BoundType.Byte, BoundType.Boolean),
+			new BinaryOperator("==", BinaryOperatorType.Equality, BoundType.Double, BoundType.Boolean),
+			new BinaryOperator("==", BinaryOperatorType.Equality, BoundType.String, BoundType.Boolean),
 
 			new BinaryOperator("&&", BinaryOperatorType.LogicalAnd, BoundType.Boolean, BoundType.Boolean),
 			new BinaryOperator("||", BinaryOperatorType.LogicalOr, BoundType.Boolean, BoundType.Boolean)
-		};
+		});
 
 		public static BinaryOperator Bind(string opText, BoundType leftType, BoundType rightType) {
 			foreach (BinaryOperator op in operators) {

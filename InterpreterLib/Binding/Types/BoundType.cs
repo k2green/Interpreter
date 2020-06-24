@@ -4,6 +4,6 @@ using System.Text;
 
 namespace InterpreterLib.Binding.Types {
 	public enum BoundType {
-		Integer, Byte, Long, Double, Boolean, String
+		Integer, Byte, Double, Boolean, String
 	}
 }
