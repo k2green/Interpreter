@@ -37,7 +37,7 @@ public partial class GLangParser : Parser {
 	protected static DFA[] decisionToDFA;
 	protected static PredictionContextCache sharedContextCache = new PredictionContextCache();
 	public const int
-		WHITESPACE=1, INTEGER=2, BOOLEAN=3, VAR=4, MOD_OPERATOR=5, ADDITIVE_OP=6, 
+		WHITESPACE=1, INTEGER=2, BOOLEAN=3, DECL_VARIABLE=4, MOD_OPERATOR=5, ADDITIVE_OP=6, 
 		MULTIPLICATIVE_OP=7, CARAT=8, EQUALITY_OPERATOR=9, ASSIGNMENT_OPERATOR=10, 
 		LOGICAL_OPERATOR=11, BANG=12, IDENTIFIER=13, L_BRACKET=14, R_BRACKET=15, 
 		L_BRACE=16, R_BRACE=17, UNKNOWN_CHAR=18;
@@ -50,12 +50,12 @@ public partial class GLangParser : Parser {
 	};
 
 	private static readonly string[] _LiteralNames = {
-		null, null, null, null, "'var'", "'mod'", null, null, "'^'", "'=='", "'='", 
+		null, null, null, null, null, "'mod'", null, null, "'^'", "'=='", "'='", 
 		null, "'!'", null, "'('", "')'", "'{'", "'}'"
 	};
 	private static readonly string[] _SymbolicNames = {
-		null, "WHITESPACE", "INTEGER", "BOOLEAN", "VAR", "MOD_OPERATOR", "ADDITIVE_OP", 
-		"MULTIPLICATIVE_OP", "CARAT", "EQUALITY_OPERATOR", "ASSIGNMENT_OPERATOR", 
+		null, "WHITESPACE", "INTEGER", "BOOLEAN", "DECL_VARIABLE", "MOD_OPERATOR", 
+		"ADDITIVE_OP", "MULTIPLICATIVE_OP", "CARAT", "EQUALITY_OPERATOR", "ASSIGNMENT_OPERATOR", 
 		"LOGICAL_OPERATOR", "BANG", "IDENTIFIER", "L_BRACKET", "R_BRACKET", "L_BRACE", 
 		"R_BRACE", "UNKNOWN_CHAR"
 	};
@@ -187,7 +187,7 @@ public partial class GLangParser : Parser {
 			State = 18;
 			ErrorHandler.Sync(this);
 			_la = TokenStream.LA(1);
-			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << INTEGER) | (1L << BOOLEAN) | (1L << VAR) | (1L << ADDITIVE_OP) | (1L << BANG) | (1L << IDENTIFIER) | (1L << L_BRACKET))) != 0)) {
+			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << INTEGER) | (1L << BOOLEAN) | (1L << DECL_VARIABLE) | (1L << ADDITIVE_OP) | (1L << BANG) | (1L << IDENTIFIER) | (1L << L_BRACKET))) != 0)) {
 				{
 				{
 				State = 15; _localctx.statements = statement();
@@ -272,14 +272,14 @@ public partial class GLangParser : Parser {
 	}
 
 	public partial class AssignmentExpressionContext : ParserRuleContext {
-		public IToken var;
+		public IToken decl;
 		public BinaryExpressionContext expression;
 		public ITerminalNode IDENTIFIER() { return GetToken(GLangParser.IDENTIFIER, 0); }
 		public ITerminalNode ASSIGNMENT_OPERATOR() { return GetToken(GLangParser.ASSIGNMENT_OPERATOR, 0); }
 		public BinaryExpressionContext binaryExpression() {
 			return GetRuleContext<BinaryExpressionContext>(0);
 		}
-		public ITerminalNode VAR() { return GetToken(GLangParser.VAR, 0); }
+		public ITerminalNode DECL_VARIABLE() { return GetToken(GLangParser.DECL_VARIABLE, 0); }
 		public AssignmentExpressionContext(ParserRuleContext parent, int invokingState)
 			: base(parent, invokingState)
 		{
@@ -311,9 +311,9 @@ public partial class GLangParser : Parser {
 			State = 28;
 			ErrorHandler.Sync(this);
 			_la = TokenStream.LA(1);
-			if (_la==VAR) {
+			if (_la==DECL_VARIABLE) {
 				{
-				State = 27; _localctx.var = Match(VAR);
+				State = 27; _localctx.decl = Match(DECL_VARIABLE);
 				}
 			}
 

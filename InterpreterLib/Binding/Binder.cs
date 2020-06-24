@@ -132,7 +132,13 @@ namespace InterpreterLib.Binding {
 		}
 
 		public override BoundExpression VisitAssignmentExpression([NotNull] GLangParser.AssignmentExpressionContext context) {
-			bool isDeclaration = context.var != null && context.var.Text.Equals("var");
+			bool isReadOnly = false;
+			bool isDeclaration = false;
+
+			if(context.decl != null) {
+				isReadOnly = context.decl.Text.Equals("val");
+				isDeclaration = isReadOnly || context.decl.Text.Equals("var");
+			}
 
 			// Report invalid assignment expression if any of the child nodes are null
 			if (context.IDENTIFIER() == null || context.ASSIGNMENT_OPERATOR() == null || context.binaryExpression() == null) {
@@ -146,7 +152,7 @@ namespace InterpreterLib.Binding {
 			if (operandExpression == null)
 				return null;
 
-			BoundVariable variable = new BoundVariable(context.IDENTIFIER().GetText(), false, operandExpression.ValueType);
+			BoundVariable variable = new BoundVariable(context.IDENTIFIER().GetText(), isReadOnly, operandExpression.ValueType);
 
 			if (isDeclaration) {
 				if (!scope.TryDefine(variable)) {

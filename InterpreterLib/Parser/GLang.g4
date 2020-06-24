@@ -8,10 +8,9 @@ literal : INTEGER | BOOLEAN | IDENTIFIER;
 
 block : L_BRACE statements=statement* R_BRACE;
 
-
 statement : assignmentExpression | binaryExpression;
 
-assignmentExpression : var=VAR? IDENTIFIER ASSIGNMENT_OPERATOR expression=binaryExpression;
+assignmentExpression : decl=DECL_VARIABLE? IDENTIFIER ASSIGNMENT_OPERATOR expression=binaryExpression;
 
 unaryExpression : L_BRACKET binaryExpression R_BRACKET
 				| op=(ADDITIVE_OP | BANG) unaryExpression
@@ -34,12 +33,15 @@ fragment TRUE : ('T' | 't') 'rue';
 fragment FALSE : ('F' | 'f') 'alse';
 fragment CHARACTER : 'a'..'z'|'A'..'Z';
 
+fragment VAR: 'var';
+fragment VAL: 'val';
+
 WHITESPACE : [ \t\r\n]+ -> channel(HIDDEN);
 
 INTEGER: DIGITS;
 BOOLEAN: TRUE | FALSE;
 
-VAR: 'var';
+DECL_VARIABLE : VAL | VAR;
 
 MOD_OPERATOR : 'mod';
 ADDITIVE_OP: '+' | '-';

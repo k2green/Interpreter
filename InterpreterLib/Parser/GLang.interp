@@ -3,7 +3,7 @@ null
 null
 null
 null
-'var'
+null
 'mod'
 null
 null
@@ -24,7 +24,7 @@ null
 WHITESPACE
 INTEGER
 BOOLEAN
-VAR
+DECL_VARIABLE
 MOD_OPERATOR
 ADDITIVE_OP
 MULTIPLICATIVE_OP
