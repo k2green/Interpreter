@@ -14,6 +14,7 @@
 *.userprefs
 
 InterpreterLib/Parser/antlr-4.8-complete.jar
+InterpreterLib/Parser/CompileGrammar.bat
 Interpreter/
 Interpreter.sln
 

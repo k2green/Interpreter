@@ -19,9 +19,7 @@ unaryExpression : L_BRACKET binaryExpression R_BRACKET
 binaryExpression: left=binaryExpression op=CARAT right=binaryExpression
 				| left=binaryExpression op=MULTIPLICATIVE_OP right=binaryExpression
 				| left=binaryExpression op=ADDITIVE_OP right=binaryExpression
-				| left=binaryExpression op=MOD_OPERATOR right=binaryExpression
-				| left=binaryExpression op=LOGICAL_OPERATOR right=binaryExpression
-				| left=binaryExpression op=EQUALITY_OPERATOR right=binaryExpression
+				| left=binaryExpression op=LOW_PRIORITY_OP right=binaryExpression
 				| atom=unaryExpression;
 				
 /*
@@ -36,6 +34,10 @@ fragment CHARACTER : 'a'..'z'|'A'..'Z';
 fragment VAR: 'var';
 fragment VAL: 'val';
 
+fragment EQUALITY_OPERATOR: '==';
+fragment LOGICAL_OPERATOR: '&&' | '||';
+fragment MOD_OPERATOR : 'mod';
+
 WHITESPACE : [ \t\r\n]+ -> channel(HIDDEN);
 
 INTEGER: DIGITS;
@@ -43,13 +45,11 @@ BOOLEAN: TRUE | FALSE;
 
 DECL_VARIABLE : VAL | VAR;
 
-MOD_OPERATOR : 'mod';
 ADDITIVE_OP: '+' | '-';
 MULTIPLICATIVE_OP: '*' | '/';
+LOW_PRIORITY_OP: MOD_OPERATOR | EQUALITY_OPERATOR | LOGICAL_OPERATOR;
 CARAT: '^';
-EQUALITY_OPERATOR: '==';
 ASSIGNMENT_OPERATOR: '=';
-LOGICAL_OPERATOR: '&&' | '||';
 BANG: '!';
 
 IDENTIFIER: CHARACTER (CHARACTER | '_')*;
