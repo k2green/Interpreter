@@ -4,7 +4,7 @@ grammar GLang;
  * Parser Rules
  */
  
-literal : DOUBLE | INTEGER | BOOLEAN | IDENTIFIER | STRING;
+literal : INTEGER | BOOLEAN | IDENTIFIER;
 
 block : L_BRACE statement* R_BRACE;
 
@@ -45,9 +45,7 @@ fragment MOD_OPERATOR : 'mod';
 WHITESPACE : [ \t\r\n]+ -> channel(HIDDEN);
 
 BOOLEAN: TRUE | FALSE;
-DOUBLE: DIGITS? '.' DIGITS;
 INTEGER: DIGITS;
-STRING: '"' .*? '"';
 
 DECL_VARIABLE : VAL | VAR;
 IF : 'if';

@@ -20,16 +20,18 @@ namespace InterpreterLib.Binding.Tree {
 			OutputType = outputType;
 		}
 
-		private static UnaryOperator[] operators = {
-			new UnaryOperator("+", UnaryOperatorType.Identity, BoundType.Integer),
-			new UnaryOperator("-", UnaryOperatorType.Negation, BoundType.Integer),
-			new UnaryOperator("+", UnaryOperatorType.Identity, BoundType.Double),
-			new UnaryOperator("-", UnaryOperatorType.Negation, BoundType.Double),
-			new UnaryOperator("!", UnaryOperatorType.LogicalNot, BoundType.Integer),
-		};
+		private static IEnumerable<UnaryOperator> operators;
+		private static IEnumerable<UnaryOperator> Operators {
+			get {
+				if (operators == null)
+					operators = new UnaryOperatorContainer().Operators;
+
+				return operators;
+			}
+		}
 
 		public static UnaryOperator Bind(string opText, BoundType inputType) {
-			foreach(UnaryOperator op in operators) {
+			foreach (UnaryOperator op in Operators) {
 				if (op.TokenText.Equals(opText) && op.OperandType.Equals(inputType))
 					return op;
 			}

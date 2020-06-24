@@ -91,27 +91,7 @@ namespace InterpreterLib {
 			object left = Evaluate(expression.LeftExpression);
 			object right = Evaluate(expression.RightExpression);
 
-			switch (expression.Op.OperatorType) {
-				case BinaryOperatorType.Addition:
-					return (int)left + (int)right;
-				case BinaryOperatorType.Subtraction:
-					return (int)left - (int)right;
-				case BinaryOperatorType.Multiplication:
-					return (int)left * (int)right;
-				case BinaryOperatorType.Division:
-					return (int)left / (int)right;
-				case BinaryOperatorType.Power:
-					return (int)Math.Pow((int)left, (int)right);
-				case BinaryOperatorType.Modulus:
-					return (int)left % (int)right;
-				case BinaryOperatorType.Equality:
-					return EvaluateEqualityOperation(left, right, expression.Op);
-				case BinaryOperatorType.LogicalAnd:
-					return (bool)left && (bool)right;
-				case BinaryOperatorType.LogicalOr:
-					return (bool)left || (bool)right;
-				default: throw new Exception("Unimplemented binary operation");
-			}
+			return GetOperatorEvaluator(expression.Op)(left, right);
 		}
 
 		private object EvaluateUnaryExpression(BoundUnaryExpression expression) {
@@ -136,6 +116,33 @@ namespace InterpreterLib {
 				return ((bool)left) == ((bool)right);
 
 			return false;
+		}
+
+		private Func<object, object, object> GetOperatorEvaluator(BinaryOperator op) {
+			switch (op.OperatorType) {
+				case BinaryOperatorType.Addition:
+					return (left, right) => (int)left + (int)right;
+				case BinaryOperatorType.Subtraction:
+					return (left, right) => (int)left - (int)right;
+				case BinaryOperatorType.Multiplication:
+					return (left, right) => (int)left * (int)right;
+				case BinaryOperatorType.Division:
+					return (left, right) => (int)left / (int)right;
+				case BinaryOperatorType.Power:
+					return (left, right) => (int)Math.Pow((int)left, (int)right);
+				case BinaryOperatorType.Modulus:
+					return (left, right) => (int)left % (int)right;
+				case BinaryOperatorType.Equality:
+					return (left, right) => EvaluateEqualityOperation(left, right, op);
+				case BinaryOperatorType.LogicalAnd:
+					return (left, right) => (bool)left && (bool)right;
+				case BinaryOperatorType.LogicalOr:
+					return (left, right) => (bool)left || (bool)right;
+				case BinaryOperatorType.LogicalXOr:
+					return (left, right) => (bool)left ^ (bool)right;
+				default:
+					throw new Exception("Invalid operator");
+			}
 		}
 
 		private object EvaluateLiteral(BoundLiteral literal) {

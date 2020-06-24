@@ -26,10 +26,6 @@ namespace InterpreterLib.Binding.Tree {
 			ValueType = BoundType.Byte;
 		}
 
-		public BoundLiteral(long value) : this((object)value) {
-			ValueType = BoundType.Long;
-		}
-
 		public BoundLiteral(bool value) : this((object)value) {
 			ValueType = BoundType.Boolean;
 		}
