@@ -4,7 +4,7 @@ using System.Text;
 using InterpreterLib.Binding.Types;
 
 namespace InterpreterLib.Binding.Tree {
-	internal sealed class BoundExpressionStatement : BoundStatement {
+	internal sealed class BoundExpressionStatement : BoundNode {
 
 		public override NodeType Type => NodeType.Expression;
 		public BoundExpression Expression { get; }

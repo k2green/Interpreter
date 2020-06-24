@@ -62,7 +62,11 @@ namespace InterpreterLib {
 		}
 
 		internal static Diagnostic ReportInvalidStatement(int line, int column, string v) {
-			throw new NotImplementedException();
+			return new Diagnostic(line, column, $"Statemment {v} is invalid");
+		}
+
+		internal static Diagnostic ReportInvalidWhile(int line, int column, string v) {
+			return new Diagnostic(line, column, $"While loop {v} is invalid");
 		}
 	}
 }

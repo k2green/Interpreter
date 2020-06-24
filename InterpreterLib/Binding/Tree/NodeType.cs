@@ -8,6 +8,7 @@ namespace InterpreterLib.Binding.Tree {
 		Variable,
 		Expression,
 		Block,
-		If
+		If,
+		While
 	}
 }

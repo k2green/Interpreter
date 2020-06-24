@@ -43,8 +43,22 @@ namespace InterpreterLib {
 					return EvaluateBlock((BoundBlock)expression);
 				case NodeType.If:
 					return EvaluateIf((BoundIfStatement)expression);
+				case NodeType.While:
+					return EvaluateWhile((BoundWhileStatement)expression);
 				default: throw new Exception("Unimplemented node evaluator");
 			}
+		}
+
+		private object EvaluateWhile(BoundWhileStatement expression) {
+			object outval = null;
+			if (expression.Condition.ValueType != BoundType.Boolean)
+				throw new Exception("Invalid expr");
+
+			while ((bool)Evaluate(expression.Condition)) {
+				outval = Evaluate(expression.Body);
+			}
+
+			return outval;
 		}
 
 		private object EvaluateIf(BoundIfStatement ifStat) {
@@ -61,10 +75,12 @@ namespace InterpreterLib {
 		}
 
 		private object EvaluateBlock(BoundBlock expression) {
-			foreach (var stat in expression.Statements)
-				Evaluate(stat);
+			object val = null;
 
-			return null;
+			foreach (var stat in expression.Statements)
+				val = Evaluate(stat);
+
+			return val;
 		}
 
 		private object EvaluateExpression(BoundExpressionStatement expression) {

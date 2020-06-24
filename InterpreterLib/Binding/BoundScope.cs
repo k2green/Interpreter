@@ -6,10 +6,10 @@ namespace InterpreterLib.Binding {
 	internal sealed class BoundScope {
 
 		private Dictionary<string, BoundVariable> variables;
-		private BoundScope parent;
+		public BoundScope Parent;
 
 		internal BoundScope(BoundScope parent) {
-			this.parent = parent;
+			Parent = parent;
 			variables = new Dictionary<string, BoundVariable>();
 		}
 
@@ -27,10 +27,10 @@ namespace InterpreterLib.Binding {
 			if (variables.TryGetValue(name, out variable))
 				return true;
 
-			if (parent == null)
+			if (Parent == null)
 				return false;
 
-			return parent.TryLookup(name, out variable);
+			return Parent.TryLookup(name, out variable);
 		}
 
 		internal BoundVariable this[string name] => variables[name];

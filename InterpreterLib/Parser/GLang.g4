@@ -8,9 +8,10 @@ literal : INTEGER | BOOLEAN | IDENTIFIER;
 
 block : L_BRACE statement* R_BRACE;
 
-ifStat : IF L_BRACKET condition=binaryExpression R_BRACKET trueBranch=statement ELSE falseBranch=statement;
+ifStat : IF L_BRACKET condition=binaryExpression R_BRACKET trueBranch=statement (ELSE falseBranch=statement)?;
+whileStat: WHILE L_BRACKET condition=binaryExpression R_BRACKET body=statement;
 
-statement : ifStat | block | expression;
+statement : whileStat | ifStat | block | expression;
 
 expression : assignmentExpression | binaryExpression;
 
@@ -50,6 +51,7 @@ INTEGER: DIGITS;
 DECL_VARIABLE : VAL | VAR;
 IF : 'if';
 ELSE : 'else';
+WHILE : 'while';
 
 ADDITIVE_OP: '+' | '-';
 MULTIPLICATIVE_OP: '*' | '/';

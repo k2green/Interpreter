@@ -51,19 +51,12 @@ namespace InterpreterLib.Binding {
 		}
 
 		public override BoundNode VisitLiteral([NotNull] GLangParser.LiteralContext context) {
-			if (context.DOUBLE() != null)
-				return new BoundLiteral(double.Parse(context.DOUBLE().GetText()));
 
 			if (context.INTEGER() != null)
 				return new BoundLiteral(int.Parse(context.INTEGER().GetText()));
 
 			if (context.BOOLEAN() != null)
 				return new BoundLiteral(bool.Parse(context.BOOLEAN().GetText()));
-
-			if (context.STRING() != null) {
-				string text = context.STRING().GetText();
-				return new BoundLiteral(text.Substring(1, text.Length - 2));
-			}
 
 			var token = context.Start;
 
@@ -238,13 +231,36 @@ namespace InterpreterLib.Binding {
 			}
 
 			var condition = (BoundExpression)Visit(context.condition);
+
+			scope = new BoundScope(scope);
 			var trueBrStat = Visit(context.trueBranch);
+			scope = scope.Parent;
+
+
 			BoundNode falseBrStat = null;
 
-			if (context.ELSE() != null)
+			if (context.ELSE() != null) {
+				scope = new BoundScope(scope);
 				falseBrStat = Visit(context.falseBranch);
+				scope = scope.Parent;
+			}
 
 			return new BoundIfStatement(condition, trueBrStat, falseBrStat);
+		}
+
+		public override BoundNode VisitWhileStat([NotNull] GLangParser.WhileStatContext context) {
+			if(context.WHILE() != null && context.L_BRACKET() != null && context.condition != null && context.R_BRACKET() != null && context.body != null) {
+				var expression = (BoundExpression)Visit(context.condition);
+
+				scope = new BoundScope(scope);
+				var body = Visit(context.body);
+				scope = scope.Parent;
+
+				return new BoundWhileStatement(expression, body);
+			}
+
+			diagnostics.AddDiagnostic(Diagnostic.ReportInvalidWhile(context.Start.Line, context.Start.Column, context.GetText()));
+			return null;
 		}
 	}
 }

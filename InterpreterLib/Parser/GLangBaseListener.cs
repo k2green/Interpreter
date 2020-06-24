@@ -72,6 +72,18 @@ public partial class GLangBaseListener : IGLangListener {
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitIfStat([NotNull] GLangParser.IfStatContext context) { }
 	/// <summary>
+	/// Enter a parse tree produced by <see cref="GLangParser.whileStat"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterWhileStat([NotNull] GLangParser.WhileStatContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="GLangParser.whileStat"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitWhileStat([NotNull] GLangParser.WhileStatContext context) { }
+	/// <summary>
 	/// Enter a parse tree produced by <see cref="GLangParser.statement"/>.
 	/// <para>The default implementation does nothing.</para>
 	/// </summary>
