@@ -35,17 +35,19 @@ namespace InterpreterLib.Binding {
 				previous = previous.Previous;
 			}
 
-			BoundScope scope = null;
+			BoundScope parent = null;
 
 			while (stack.Count > 0) {
-				scope = new BoundScope(scope);
-				var current = stack.Pop();
+				var scope = new BoundScope(parent);
+				previous = stack.Pop();
 
-				foreach (BoundVariable variable in current.Variables)
+				foreach (BoundVariable variable in previous.Variables)
 					scope.TryDefine(variable);
+
+				parent = scope;
 			}
 
-			return scope;
+			return parent;
 		}
 
 		public override BoundExpression VisitLiteral([NotNull] GLangParser.LiteralContext context) {
@@ -130,7 +132,7 @@ namespace InterpreterLib.Binding {
 		}
 
 		public override BoundExpression VisitAssignmentExpression([NotNull] GLangParser.AssignmentExpressionContext context) {
-			bool isDeclaration = context.var = null;
+			bool isDeclaration = context.var != null && context.var.Text.Equals("var");
 
 			// Report invalid assignment expression if any of the child nodes are null
 			if (context.IDENTIFIER() == null || context.ASSIGNMENT_OPERATOR() == null || context.binaryExpression() == null) {
@@ -146,10 +148,16 @@ namespace InterpreterLib.Binding {
 
 			BoundVariable variable = new BoundVariable(context.IDENTIFIER().GetText(), false, operandExpression.ValueType);
 
-
-			if (!scope.TryDefine(variable)) {
-				diagnostics.AddDiagnostic(Diagnostic.ReportRedefineVariable(context.Start));
-				return null;
+			if (isDeclaration) {
+				if (!scope.TryDefine(variable)) {
+					diagnostics.AddDiagnostic(Diagnostic.ReportRedefineVariable(context.Start));
+					return null;
+				}
+			} else {
+				if(!scope.TryLookup(variable.Name, out var _)) {
+					diagnostics.AddDiagnostic(Diagnostic.ReportUndefinedVariable(context.Start));
+					return null;
+				}
 			}
 
 			// Bind the assignment operation

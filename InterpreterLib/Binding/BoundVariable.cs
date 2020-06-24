@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 
 namespace InterpreterLib.Binding {
-	internal sealed class BoundVariable {
+	public struct BoundVariable {
 
 		public string Name { get; }
 		public bool IsReadOnly { get; }

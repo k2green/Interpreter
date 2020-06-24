@@ -9,13 +9,11 @@ using System.Threading;
 
 namespace InterpreterLib.Runtime {
 	public sealed class BindingEnvironment {
-		private Dictionary<BoundVariable, object> variables;
 		private DiagnosticContainer diagnostics;
 		private BoundGlobalScope globalScope;
+		private readonly bool chainDiagnostics;
 		private BindingEnvironment previous;
 		private IParseTree SyntaxRoot;
-
-		public IEnumerable<string> StringDiagnostics => diagnostics.Messages;
 
 		internal BoundGlobalScope GlobalScope {
 			get {
@@ -30,18 +28,15 @@ namespace InterpreterLib.Runtime {
 			}
 		}
 
-		public BindingEnvironment(string input) : this(input, null) {
-			variables = new Dictionary<BoundVariable, object>();
+		public BindingEnvironment(string input, bool chainDiagnostics) : this(input, chainDiagnostics, null) {
 		}
 
 		public BindingEnvironment ContinueWith(string input) {
-			if (GlobalScope.Root != null)
-				return new BindingEnvironment(input, this);
-
-			return new BindingEnvironment(input, previous);
+			return new BindingEnvironment(input, chainDiagnostics, this);
 		}
 
-		private BindingEnvironment(string input, BindingEnvironment previous) {
+		private BindingEnvironment(string input, bool chainDiagnostics, BindingEnvironment previous) {
+			this.chainDiagnostics = chainDiagnostics;
 			this.previous = previous;
 			diagnostics = new DiagnosticContainer();
 			AntlrInputStream stream = new AntlrInputStream(input);
@@ -54,26 +49,23 @@ namespace InterpreterLib.Runtime {
 			parser.RemoveErrorListeners();
 
 			if (previous != null) {
-				diagnostics.AddDiagnostics(previous.diagnostics);
-				variables = previous.variables;
+				if (chainDiagnostics) {
+					diagnostics.AddDiagnostics(previous.diagnostics);
+				}
 			}
 
 			SyntaxRoot = parser.statement();
 		}
 
-		public object Evaluate() {
+		public DiagnosticResult<object> Evaluate(Dictionary<BoundVariable, object> variables) {
 			if (GlobalScope.Root == null)
-				return null;
-
-			foreach (BoundVariable variable in GlobalScope.Variables)
-				if(variable != null)
-				variables.Add(variable, null);
+				return new DiagnosticResult<object>(diagnostics, null);
 
 			Evaluator evaluator = new Evaluator(GlobalScope.Root, variables);
 
 			var evalResult = evaluator.Evaluate();
 			diagnostics.AddDiagnostics(evalResult.Diagnostics);
-			return evalResult.Value;
+			return new DiagnosticResult<object>(diagnostics, evalResult.Value);
 		}
 	}
 }

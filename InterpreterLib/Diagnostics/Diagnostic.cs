@@ -11,7 +11,7 @@ namespace InterpreterLib {
 		public int Line { get; }
 		public int Column { get; }
 
-		private Diagnostic(int line, int column, string message) {
+		internal Diagnostic(int line, int column, string message) {
 			Message = $"line {line}:{column}\t{message}";
 			Line = line;
 			Column = column;

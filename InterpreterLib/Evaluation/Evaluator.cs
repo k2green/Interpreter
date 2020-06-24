@@ -42,7 +42,13 @@ namespace InterpreterLib {
 
 		private object EvaluateAssignmentExpression(BoundAssignmentExpression assignment) {
 			object expression = Evaluate(assignment.Expression);
-			variables[assignment.Identifier] = expression ?? throw new Exception("Unable to evaluate assignment");
+
+			if (expression == null) {
+				diagnostics.AddDiagnostic(new Diagnostic(0, 0, "Failed to evaluate expression"));
+				return null;
+			}
+
+			variables[assignment.Identifier] = expression;
 			return expression;
 		}
 
