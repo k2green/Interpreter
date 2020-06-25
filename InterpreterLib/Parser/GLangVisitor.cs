@@ -63,17 +63,17 @@ public interface IGLangVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitStatement([NotNull] GLangParser.StatementContext context);
 	/// <summary>
-	/// Visit a parse tree produced by <see cref="GLangParser.expression"/>.
+	/// Visit a parse tree produced by <see cref="GLangParser.variableDeclaration"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
-	Result VisitExpression([NotNull] GLangParser.ExpressionContext context);
+	Result VisitVariableDeclaration([NotNull] GLangParser.VariableDeclarationContext context);
 	/// <summary>
-	/// Visit a parse tree produced by <see cref="GLangParser.assignmentExpression"/>.
+	/// Visit a parse tree produced by <see cref="GLangParser.assignmentStatement"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
-	Result VisitAssignmentExpression([NotNull] GLangParser.AssignmentExpressionContext context);
+	Result VisitAssignmentStatement([NotNull] GLangParser.AssignmentStatementContext context);
 	/// <summary>
 	/// Visit a parse tree produced by <see cref="GLangParser.unaryExpression"/>.
 	/// </summary>

@@ -96,29 +96,29 @@ public partial class GLangBaseListener : IGLangListener {
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitStatement([NotNull] GLangParser.StatementContext context) { }
 	/// <summary>
-	/// Enter a parse tree produced by <see cref="GLangParser.expression"/>.
+	/// Enter a parse tree produced by <see cref="GLangParser.variableDeclaration"/>.
 	/// <para>The default implementation does nothing.</para>
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
-	public virtual void EnterExpression([NotNull] GLangParser.ExpressionContext context) { }
+	public virtual void EnterVariableDeclaration([NotNull] GLangParser.VariableDeclarationContext context) { }
 	/// <summary>
-	/// Exit a parse tree produced by <see cref="GLangParser.expression"/>.
+	/// Exit a parse tree produced by <see cref="GLangParser.variableDeclaration"/>.
 	/// <para>The default implementation does nothing.</para>
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
-	public virtual void ExitExpression([NotNull] GLangParser.ExpressionContext context) { }
+	public virtual void ExitVariableDeclaration([NotNull] GLangParser.VariableDeclarationContext context) { }
 	/// <summary>
-	/// Enter a parse tree produced by <see cref="GLangParser.assignmentExpression"/>.
+	/// Enter a parse tree produced by <see cref="GLangParser.assignmentStatement"/>.
 	/// <para>The default implementation does nothing.</para>
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
-	public virtual void EnterAssignmentExpression([NotNull] GLangParser.AssignmentExpressionContext context) { }
+	public virtual void EnterAssignmentStatement([NotNull] GLangParser.AssignmentStatementContext context) { }
 	/// <summary>
-	/// Exit a parse tree produced by <see cref="GLangParser.assignmentExpression"/>.
+	/// Exit a parse tree produced by <see cref="GLangParser.assignmentStatement"/>.
 	/// <para>The default implementation does nothing.</para>
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
-	public virtual void ExitAssignmentExpression([NotNull] GLangParser.AssignmentExpressionContext context) { }
+	public virtual void ExitAssignmentStatement([NotNull] GLangParser.AssignmentStatementContext context) { }
 	/// <summary>
 	/// Enter a parse tree produced by <see cref="GLangParser.unaryExpression"/>.
 	/// <para>The default implementation does nothing.</para>
