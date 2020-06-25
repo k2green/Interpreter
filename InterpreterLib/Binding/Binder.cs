@@ -1,6 +1,7 @@
 ﻿using Antlr4.Runtime.Misc;
 using Antlr4.Runtime.Tree;
 using InterpreterLib.Binding.Tree;
+using InterpreterLib.Binding.Types;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -134,67 +135,117 @@ namespace InterpreterLib.Binding {
 			return null;
 		}
 
-		public override BoundNode VisitAssignmentExpression([NotNull] GLangParser.AssignmentExpressionContext context) {
-			bool isReadOnly = false;
-			bool isDeclaration = false;
+		public override BoundNode VisitAssignmentStatement([NotNull] GLangParser.AssignmentStatementContext context) {
+			return VisitAssignmentStatement(context, false, false);
+		}
 
-			if (context.decl != null) {
-				isReadOnly = context.decl.Text.Equals("val");
-				isDeclaration = isReadOnly || context.decl.Text.Equals("var");
-			}
+		private BoundNode VisitAssignmentStatement([NotNull] GLangParser.AssignmentStatementContext context, bool isDeclaration, bool isReadOnly) {
+			bool varDeclExists = context.variableDeclaration() != null;
+			bool identifierExists = context.IDENTIFIER() != null;
+			bool operatorExists = context.ASSIGNMENT_OPERATOR() != null;
+			bool exprExists = context.expr != null;
 
-			// Report invalid assignment expression if any of the child nodes are null
-			if (context.IDENTIFIER() == null || context.ASSIGNMENT_OPERATOR() == null || context.binaryExpression() == null) {
-				diagnostics.AddDiagnostic(Diagnostic.ReportInvalidSyntax(context.Start.Line, context.Start.Column, $"Assignment Expression {context.GetText()}"));
+			if (varDeclExists == identifierExists || !operatorExists || !exprExists) {
+				diagnostics.AddDiagnostic(Diagnostic.ReportInvalidAssignment(context.Start.Line, context.Start.Column, context.GetText()));
 				return null;
 			}
 
-			var operandExpression = Visit(context.binaryExpression());
+			BoundNode exprNode = Visit(context.expr);
 
-			// Return null as error should have already been reported
-			if (operandExpression == null || !(operandExpression is BoundExpression))
+			if (exprNode == null || !(exprNode is BoundExpression))
 				return null;
 
-			BoundVariable variable = new BoundVariable(context.IDENTIFIER().GetText(), isReadOnly, ((BoundExpression)operandExpression).ValueType);
-			var token = context.Start;
+			var boundExpression = (BoundExpression)exprNode;
+			BoundVariable variable;
 
-			if (isDeclaration) {
-				if (!scope.TryDefine(variable)) {
-					diagnostics.AddDiagnostic(Diagnostic.ReportRedefineVariable(token.Line, token.Column, scope[variable.Name], variable));
+			if (varDeclExists) {
+				var declStat = VisitVariableDeclaration(context.variableDeclaration(), boundExpression.ValueType, false);
+
+				if (declStat == null)
+					return null;
+
+				variable = declStat.VariableExpression.Variable;
+			} else {
+				if (!scope.TryLookup(context.IDENTIFIER().GetText(), out variable)) {
+					diagnostics.AddDiagnostic(Diagnostic.ReportUndefinedVariable(context.Start.Line, context.Start.Column, context.IDENTIFIER().GetText()));
 					return null;
 				}
 			}
 
-			if (!scope.TryLookup(variable.Name, out var lookup)) {
-				diagnostics.AddDiagnostic(Diagnostic.ReportUndefinedVariable(token.Line, token.Column, variable));
+			return new BoundAssignmentExpression(variable, boundExpression);
+		}
+
+		public override BoundNode VisitVariableDeclaration([NotNull] GLangParser.VariableDeclarationContext context) {
+			return VisitVariableDeclaration(context, BoundType.Integer, true);
+		}
+
+		private BoundDeclarationStatement VisitVariableDeclaration([NotNull] GLangParser.VariableDeclarationContext context, BoundType type, bool requireType) {
+			bool declareationExists = context.DECL_VARIABLE() != null;
+			bool identifierExists = context.IDENTIFIER() != null;
+			bool delimeterExists = context.TYPE_DELIMETER() != null;
+			bool typeNameExists = context.TYPE_NAME() != null;
+			bool isReadOnly;
+
+			if (!declareationExists || !identifierExists || delimeterExists ^ typeNameExists || (requireType && !delimeterExists && !typeNameExists)) {
+				diagnostics.AddDiagnostic(Diagnostic.ReportInvalidDeclaration(context.Start.Line, context.Start.Column, context.GetText()));
 				return null;
 			}
 
-			if (!isDeclaration) {
-				if (lookup.IsReadOnly) {
-					diagnostics.AddDiagnostic(Diagnostic.ReportReadonlyVariable(token.Line, token.Column, lookup));
-					return null;
-				}
+			switch (context.DECL_VARIABLE().GetText()) {
+				case "var":
+					isReadOnly = false;
+					break;
+				case "val":
+					isReadOnly = true;
+					break;
 
-				if (!lookup.ValueType.Equals(variable.ValueType)) {
-					diagnostics.AddDiagnostic(Diagnostic.ReportVariableTypeMismatch(token.Line, token.Column, variable.Name, lookup.ValueType, variable.ValueType));
+				default:
+					diagnostics.AddDiagnostic(Diagnostic.ReportInvalidDeclaration(context.Start.Line, context.Start.Column, context.DECL_VARIABLE().GetText()));
 					return null;
+			}
+
+			if (delimeterExists && typeNameExists) {
+				switch (context.TYPE_NAME().GetText()) {
+					case "int":
+						type = BoundType.Integer;
+						break;
+					case "bool":
+						type = BoundType.Boolean;
+						break;
+					default:
+						diagnostics.AddDiagnostic(Diagnostic.ReportInvalidTypeName(context.Start.Line, context.Start.Column, context.TYPE_NAME().GetText()));
+						return null;
 				}
 			}
 
-			// Bind the assignment operation
-			return new BoundAssignmentExpression(variable, (BoundExpression)operandExpression);
+			var variable = new BoundVariable(context.IDENTIFIER().GetText(), isReadOnly, type);
+
+			if (!scope.TryDefine(variable)) {
+				diagnostics.AddDiagnostic(Diagnostic.ReportRedefineVariable(context.Start.Line, context.Start.Column, scope[context.IDENTIFIER().GetText()], variable));
+				return null;
+			}
+
+			return new BoundDeclarationStatement(new BoundVariableExpression(variable));
 		}
 
 		public override BoundNode VisitStatement([NotNull] GLangParser.StatementContext context) {
-			if (context.expression() != null)
-				return Visit(context.expression());
+			if (context.whileStat() != null)
+				return Visit(context.whileStat());
+
+			if (context.ifStat() != null)
+				return Visit(context.ifStat());
 
 			if (context.block() != null)
 				return Visit(context.block());
 
-			if (context.ifStat() != null)
-				return Visit(context.ifStat());
+			if (context.assignmentStatement() != null)
+				return Visit(context.assignmentStatement());
+
+			if (context.variableDeclaration() != null)
+				return Visit(context.variableDeclaration());
+
+			if (context.binaryExpression() != null)
+				return Visit(context.binaryExpression());
 
 			diagnostics.AddDiagnostic(Diagnostic.ReportInvalidStatement(context.Start.Line, context.Start.Column, context.GetText()));
 			return null;
@@ -206,17 +257,6 @@ namespace InterpreterLib.Binding {
 				statements.Add(Visit(stat));
 
 			return new BoundBlock(statements);
-		}
-
-		public override BoundNode VisitExpression([NotNull] GLangParser.ExpressionContext context) {
-			if (context.assignmentExpression() != null)
-				return Visit(context.assignmentExpression());
-
-			if (context.binaryExpression() != null)
-				return Visit(context.binaryExpression());
-
-			diagnostics.AddDiagnostic(Diagnostic.ReportInvalidExpression(context.Start.Line, context.Start.Column, context.GetText()));
-			return null;
 		}
 
 		public override BoundNode VisitIfStat([NotNull] GLangParser.IfStatContext context) {
@@ -249,7 +289,7 @@ namespace InterpreterLib.Binding {
 		}
 
 		public override BoundNode VisitWhileStat([NotNull] GLangParser.WhileStatContext context) {
-			if(context.WHILE() != null && context.L_BRACKET() != null && context.condition != null && context.R_BRACKET() != null && context.body != null) {
+			if (context.WHILE() != null && context.L_BRACKET() != null && context.condition != null && context.R_BRACKET() != null && context.body != null) {
 				var expression = (BoundExpression)Visit(context.condition);
 
 				scope = new BoundScope(scope);

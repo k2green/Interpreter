@@ -11,10 +11,11 @@ block : L_BRACE statement* R_BRACE;
 ifStat : IF L_BRACKET condition=binaryExpression R_BRACKET trueBranch=statement (ELSE falseBranch=statement)?;
 whileStat: WHILE L_BRACKET condition=binaryExpression R_BRACKET body=statement;
 
-statement : whileStat | ifStat | block | variableDeclaration | assignmentStatement | binaryExpression;
+statement : whileStat | ifStat | block| assignmentStatement | variableDeclaration  | binaryExpression;
 
-variableDeclaration : DECL_VARIABLE assignmentStatement | DECL_VARIABLE IDENTIFIER TYPE_DELIMETER TYPE_NAME;
-assignmentStatement : IDENTIFIER ASSIGNMENT_OPERATOR expr=binaryExpression;
+variableDeclaration : DECL_VARIABLE IDENTIFIER (TYPE_DELIMETER TYPE_NAME)?;
+assignmentStatement : variableDeclaration ASSIGNMENT_OPERATOR expr=binaryExpression
+					| IDENTIFIER ASSIGNMENT_OPERATOR expr=binaryExpression;
 
 unaryExpression : L_BRACKET binaryExpression R_BRACKET
 				| op=(ADDITIVE_OP | BANG) unaryExpression

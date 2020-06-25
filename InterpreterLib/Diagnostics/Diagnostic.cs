@@ -68,5 +68,13 @@ namespace InterpreterLib {
 		internal static Diagnostic ReportInvalidWhile(int line, int column, string v) {
 			return new Diagnostic(line, column, $"While loop {v} is invalid");
 		}
+
+		internal static Diagnostic ReportInvalidTypeName(int line, int column, string v) {
+			throw new NotImplementedException();
+		}
+
+		internal static Diagnostic ReportInvalidAssignment(int line, int column, string v) {
+			throw new NotImplementedException();
+		}
 	}
 }
