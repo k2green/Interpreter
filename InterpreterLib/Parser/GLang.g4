@@ -11,11 +11,10 @@ block : L_BRACE statement* R_BRACE;
 ifStat : IF L_BRACKET condition=binaryExpression R_BRACKET trueBranch=statement (ELSE falseBranch=statement)?;
 whileStat: WHILE L_BRACKET condition=binaryExpression R_BRACKET body=statement;
 
-statement : whileStat | ifStat | block | expression;
+statement : whileStat | ifStat | block | variableDeclaration | assignmentStatement | binaryExpression;
 
-expression : assignmentExpression | binaryExpression;
-
-assignmentExpression : decl=DECL_VARIABLE? IDENTIFIER ASSIGNMENT_OPERATOR expr=binaryExpression;
+variableDeclaration : DECL_VARIABLE assignmentStatement | DECL_VARIABLE IDENTIFIER TYPE_DELIMETER TYPE_NAME;
+assignmentStatement : IDENTIFIER ASSIGNMENT_OPERATOR expr=binaryExpression;
 
 unaryExpression : L_BRACKET binaryExpression R_BRACKET
 				| op=(ADDITIVE_OP | BANG) unaryExpression
@@ -39,11 +38,17 @@ fragment CHARACTER : 'a'..'z'|'A'..'Z';
 fragment VAR: 'var';
 fragment VAL: 'val';
 
+fragment INT: 'int';
+fragment BOOL: 'bool';
+
 fragment EQUALITY_OPERATOR: '==';
 fragment LOGICAL_OPERATOR: '&&' | '||';
 fragment MOD_OPERATOR : 'mod';
 
 WHITESPACE : [ \t\r\n]+ -> channel(HIDDEN);
+
+TYPE_DELIMETER : ':';
+TYPE_NAME : INT | BOOL;
 
 BOOLEAN: TRUE | FALSE;
 INTEGER: DIGITS;
