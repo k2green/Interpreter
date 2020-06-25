@@ -60,6 +60,18 @@ public partial class GLangBaseListener : IGLangListener {
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitBlock([NotNull] GLangParser.BlockContext context) { }
 	/// <summary>
+	/// Enter a parse tree produced by <see cref="GLangParser.forStat"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterForStat([NotNull] GLangParser.ForStatContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="GLangParser.forStat"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitForStat([NotNull] GLangParser.ForStatContext context) { }
+	/// <summary>
 	/// Enter a parse tree produced by <see cref="GLangParser.ifStat"/>.
 	/// <para>The default implementation does nothing.</para>
 	/// </summary>

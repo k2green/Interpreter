@@ -8,16 +8,18 @@ literal : INTEGER | BOOLEAN | IDENTIFIER;
 
 block : L_BRACE statement* R_BRACE;
 
-ifStat : IF L_BRACKET condition=binaryExpression R_BRACKET trueBranch=statement (ELSE falseBranch=statement)?;
-whileStat: WHILE L_BRACKET condition=binaryExpression R_BRACKET body=statement;
+forStat: FOR L_PARENTHESIS assignmentStatement COMMA condition=binaryExpression COMMA step=binaryExpression R_PARENTHESIS body=statement;
 
-statement : whileStat | ifStat | block| assignmentStatement | variableDeclaration  | binaryExpression;
+ifStat : IF L_PARENTHESIS condition=binaryExpression R_PARENTHESIS trueBranch=statement (ELSE falseBranch=statement)?;
+whileStat: WHILE L_PARENTHESIS condition=binaryExpression R_PARENTHESIS body=statement;
+
+statement :  forStat | whileStat | ifStat | block| assignmentStatement | variableDeclaration  | binaryExpression;
 
 variableDeclaration : DECL_VARIABLE IDENTIFIER (TYPE_DELIMETER TYPE_NAME)?;
 assignmentStatement : variableDeclaration ASSIGNMENT_OPERATOR expr=binaryExpression
 					| IDENTIFIER ASSIGNMENT_OPERATOR expr=binaryExpression;
 
-unaryExpression : L_BRACKET binaryExpression R_BRACKET
+unaryExpression : L_PARENTHESIS binaryExpression R_PARENTHESIS
 				| op=(ADDITIVE_OP | BANG) unaryExpression
 				| atom=literal;
 
@@ -48,6 +50,8 @@ fragment MOD_OPERATOR : 'mod';
 
 WHITESPACE : [ \t\r\n]+ -> channel(HIDDEN);
 
+COMMA : ',';
+
 TYPE_DELIMETER : ':';
 TYPE_NAME : INT | BOOL;
 
@@ -58,6 +62,7 @@ DECL_VARIABLE : VAL | VAR;
 IF : 'if';
 ELSE : 'else';
 WHILE : 'while';
+FOR : 'for';
 
 ADDITIVE_OP: '+' | '-';
 MULTIPLICATIVE_OP: '*' | '/';
@@ -68,8 +73,8 @@ BANG: '!';
 
 IDENTIFIER: CHARACTER (CHARACTER | '_')*;
 
-L_BRACKET : '(';
-R_BRACKET : ')';
+L_PARENTHESIS : '(';
+R_PARENTHESIS : ')';
 L_BRACE : '{';
 R_BRACE : '}';
 
