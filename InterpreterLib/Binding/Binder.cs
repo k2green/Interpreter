@@ -84,14 +84,17 @@ namespace InterpreterLib.Binding {
 
 			// If we have the case where a unary operator preceds a unary expression
 			if (context.op != null && context.unaryExpression() != null) {
-				// Bind the 
+				// Bind the operand branch of the tree
 				var operand = Visit(context.unaryExpression());
 
+				// If this fails to produce a BoundExpression it has failed so we retun null
 				if (operand == null || !(operand is BoundExpression))
 					return null;
 
+				// We bind the unary operator with the operator token text and the type of the BoundExpression
 				var op = UnaryOperator.Bind(context.op.Text, ((BoundExpression)operand).ValueType);
 
+				// If op has null the operator has failed to bind for the given types so this is reported as and error
 				if (op == null) {
 					diagnostics.AddDiagnostic(Diagnostic.ReportInvalidUnaryOperator(context.op.Line, context.op.Column, context.op.Text, ((BoundExpression)operand).ValueType));
 					return null;
@@ -141,6 +144,8 @@ namespace InterpreterLib.Binding {
 			bool operatorExists = context.ASSIGNMENT_OPERATOR() != null;
 			bool exprExists = context.expr != null;
 
+			// Error cases for when certain tokens exist
+			// varDeclExists == identifierExists checks that only assignments with exactly 1 of either an IDENTIFIER or variableDeclaration
 			if (varDeclExists == identifierExists || !operatorExists || !exprExists) {
 				diagnostics.AddDiagnostic(Diagnostic.ReportInvalidAssignment(context.Start.Line, context.Start.Column, context.GetText()));
 				return null;
@@ -154,25 +159,34 @@ namespace InterpreterLib.Binding {
 			var boundExpression = (BoundExpression)exprNode;
 			BoundVariable variable;
 
+			// If the variableDeclaration exists
 			if (varDeclExists) {
+				// We try to bind the declaration statement
 				var declStat = VisitVariableDeclaration(context.variableDeclaration(), boundExpression.ValueType, false);
 
+				// A failure has occured in the binding of the variable declaration if declStat is null
+				// An error should have already been reported so return null
 				if (declStat == null)
 					return null;
 
+				// Set variable to the BoundVariable bound in the declaration statement.
 				variable = declStat.VariableExpression.Variable;
-			} else {
+			} else {					// If variableDeclaration doesn't exist, then then IDENTIFIER must exist
+				// First we try to lookup the variable and assign it to the variable BoundVariable
+				// If this fails report an undefined variable error.
 				if (!scope.TryLookup(context.IDENTIFIER().GetText(), out variable)) {
 					diagnostics.AddDiagnostic(Diagnostic.ReportUndefinedVariable(context.Start.Line, context.Start.Column, context.IDENTIFIER().GetText()));
 					return null;
 				}
+
+				// If the variable found is readonly we also report a readonly variable error
+				if (variable.IsReadOnly) {
+					diagnostics.AddDiagnostic(Diagnostic.ReportReadonlyVariable(context.Start.Line, context.Start.Column, variable));
+					return null;
+				}
 			}
 
-			if(variable.IsReadOnly && !varDeclExists) {
-				diagnostics.AddDiagnostic(Diagnostic.ReportReadonlyVariable(context.Start.Line, context.Start.Column, variable));
-				return null;
-			}
-
+			// As a final check we make sure the type of variable matches the type of the bound expression
 			if (variable.ValueType != boundExpression.ValueType) {
 				diagnostics.AddDiagnostic(Diagnostic.ReportVariableTypeMismatch(context.Start.Line, context.Start.Column, variable.Name, variable.ValueType, boundExpression.ValueType));
 				return null;
@@ -192,11 +206,20 @@ namespace InterpreterLib.Binding {
 			bool typeNameExists = context.TYPE_NAME() != null;
 			bool isReadOnly;
 
+			/*  
+			 *  Report error cases for when tokens don't exist
+			 *  
+			 *  delimeterExists ^ typeNameExists
+			 *		checks for cases where only one of TYPE_DELIMETER and TYPE_NAME exist
+			 *  (requireType && !delimeterExists && !typeNameExists) 
+			 *		checks for cases where TYPE_DELIMETER and TYPE_NAME dont exist, but only when requireType is true
+			 */
 			if (!declareationExists || !identifierExists || delimeterExists ^ typeNameExists || (requireType && !delimeterExists && !typeNameExists)) {
 				diagnostics.AddDiagnostic(Diagnostic.ReportInvalidDeclaration(context.Start.Line, context.Start.Column, context.GetText()));
 				return null;
 			}
 
+			// Match the TYPE_NAME token for the declaration type. Report an error if this fails.
 			switch (context.DECL_VARIABLE().GetText()) {
 				case "var":
 					isReadOnly = false;
@@ -210,7 +233,9 @@ namespace InterpreterLib.Binding {
 					return null;
 			}
 
+			// If both TYPE_DELIMETER and TYPE_NAME exist 
 			if (delimeterExists && typeNameExists) {
+				// type variable to the corresponding Type. Report an error if this fails.
 				switch (context.TYPE_NAME().GetText()) {
 					case "int":
 						type = BoundType.Integer;
@@ -224,6 +249,7 @@ namespace InterpreterLib.Binding {
 				}
 			}
 
+			// Create bound variable with the parsed information.
 			var variable = new BoundVariable(context.IDENTIFIER().GetText(), isReadOnly, type);
 
 			if (!scope.TryDefine(variable)) {
