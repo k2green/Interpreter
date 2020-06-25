@@ -45,6 +45,11 @@ fragment INT: 'int';
 fragment BOOL: 'bool';
 
 fragment EQUALITY_OPERATOR: '==';
+fragment GREATER: '>=';
+fragment LESSER: '<=';
+fragment GREATER_STRICT: '>';
+fragment LESSER_STRICT: '<';
+
 fragment LOGICAL_OPERATOR: '&&' | '||';
 fragment MOD_OPERATOR : 'mod';
 
@@ -66,7 +71,15 @@ FOR : 'for';
 
 ADDITIVE_OP: '+' | '-';
 MULTIPLICATIVE_OP: '*' | '/';
-LOW_PRIORITY_OP: MOD_OPERATOR | EQUALITY_OPERATOR | LOGICAL_OPERATOR;
+
+LOW_PRIORITY_OP: MOD_OPERATOR
+			   | EQUALITY_OPERATOR
+			   | GREATER
+			   | LESSER
+			   | GREATER_STRICT
+			   | LESSER_STRICT
+			   | LOGICAL_OPERATOR;
+
 CARAT: '^';
 ASSIGNMENT_OPERATOR: '=';
 BANG: '!';

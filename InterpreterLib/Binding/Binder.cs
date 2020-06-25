@@ -291,8 +291,42 @@ namespace InterpreterLib.Binding {
 			return new BoundBlock(statements);
 		}
 
+		public override BoundNode VisitForStat([NotNull] GLangParser.ForStatContext context) {
+			bool forExists = context.FOR() != null;
+			bool lParenExists = context.L_PARENTHESIS() != null;
+			bool assignmentExists = context.assignmentStatement() != null;
+			bool commasExist = context.COMMA() != null && context.COMMA().Length == 2;
+			bool condExists = context.condition != null;
+			bool stepExists = context.step != null;
+			bool rParenExists = context.L_PARENTHESIS() != null;
+			bool bodyExists = context.body != null;
+
+			if(!forExists || !lParenExists || !assignmentExists || !commasExist || !condExists || !stepExists || !rParenExists || !bodyExists){
+				diagnostics.AddDiagnostic(Diagnostic.ReportInvalidFor(context.Start.Line, context.Start.Column));
+				return null;
+			}
+
+			var assignment = Visit(context.assignmentStatement());
+			var condition = Visit(context.condition);
+			var step = Visit(context.step);
+			var body = Visit(context.body);
+
+			assignmentExists = assignment != null;
+			condExists = condition != null;
+			stepExists = step != null;
+			bodyExists = body != null;
+
+			if (!assignmentExists || !condExists || !stepExists || !bodyExists)
+				return null;
+
+			if (!(assignment is BoundExpression && condition is BoundExpression && step is BoundExpression))
+				return null;
+
+			return new BoundForStatement((BoundExpression)assignment, (BoundExpression)condition, (BoundExpression)step, body);
+		}
+
 		public override BoundNode VisitIfStat([NotNull] GLangParser.IfStatContext context) {
-			if (context.IF() == null && context.L_BRACKET() == null && context.condition == null && context.R_BRACKET() == null && context.trueBranch == null) {
+			if (context.IF() == null && context.L_PARENTHESIS() == null && context.condition == null && context.R_PARENTHESIS() == null && context.trueBranch == null) {
 				diagnostics.ReportInvalidElse(context.Start.Line, context.Start.Column, context.GetText());
 				return null;
 			}
@@ -321,7 +355,7 @@ namespace InterpreterLib.Binding {
 		}
 
 		public override BoundNode VisitWhileStat([NotNull] GLangParser.WhileStatContext context) {
-			if (context.WHILE() != null && context.L_BRACKET() != null && context.condition != null && context.R_BRACKET() != null && context.body != null) {
+			if (context.WHILE() != null && context.L_PARENTHESIS() != null && context.condition != null && context.R_PARENTHESIS() != null && context.body != null) {
 				var expression = (BoundExpression)Visit(context.condition);
 
 				scope = new BoundScope(scope);

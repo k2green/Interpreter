@@ -10,6 +10,7 @@ namespace InterpreterLib.Binding.Tree {
 		Block,
 		If,
 		While,
-		VariableDeclaration
+		VariableDeclaration,
+		For
 	}
 }
