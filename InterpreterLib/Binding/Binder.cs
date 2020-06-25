@@ -136,10 +136,6 @@ namespace InterpreterLib.Binding {
 		}
 
 		public override BoundNode VisitAssignmentStatement([NotNull] GLangParser.AssignmentStatementContext context) {
-			return VisitAssignmentStatement(context, false, false);
-		}
-
-		private BoundNode VisitAssignmentStatement([NotNull] GLangParser.AssignmentStatementContext context, bool isDeclaration, bool isReadOnly) {
 			bool varDeclExists = context.variableDeclaration() != null;
 			bool identifierExists = context.IDENTIFIER() != null;
 			bool operatorExists = context.ASSIGNMENT_OPERATOR() != null;
@@ -170,6 +166,16 @@ namespace InterpreterLib.Binding {
 					diagnostics.AddDiagnostic(Diagnostic.ReportUndefinedVariable(context.Start.Line, context.Start.Column, context.IDENTIFIER().GetText()));
 					return null;
 				}
+			}
+
+			if(variable.IsReadOnly && !varDeclExists) {
+				diagnostics.AddDiagnostic(Diagnostic.ReportReadonlyVariable(context.Start.Line, context.Start.Column, variable));
+				return null;
+			}
+
+			if (variable.ValueType != boundExpression.ValueType) {
+				diagnostics.AddDiagnostic(Diagnostic.ReportVariableTypeMismatch(context.Start.Line, context.Start.Column, variable.Name, variable.ValueType, boundExpression.ValueType));
+				return null;
 			}
 
 			return new BoundAssignmentExpression(variable, boundExpression);

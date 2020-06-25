@@ -45,8 +45,21 @@ namespace InterpreterLib {
 					return EvaluateIf((BoundIfStatement)expression);
 				case NodeType.While:
 					return EvaluateWhile((BoundWhileStatement)expression);
+				case NodeType.VariableDeclaration:
+					return EvaluateVariableDeclaration((BoundDeclarationStatement)expression);
 				default: throw new Exception("Unimplemented node evaluator");
 			}
+		}
+
+		private object EvaluateVariableDeclaration(BoundDeclarationStatement expression) {
+			var variable = expression.VariableExpression.Variable;
+
+			if (variables.ContainsKey(variable))
+				variables[variable] = null;
+			else
+				variables.Add(variable, null);
+
+			return null;
 		}
 
 		private object EvaluateWhile(BoundWhileStatement expression) {
