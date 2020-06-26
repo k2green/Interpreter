@@ -3,7 +3,7 @@
 namespace InterpreterLib.Binding.Tree {
 	internal sealed class BoundUnaryExpression : BoundExpression {
 
-		public override BoundType ValueType => Op.OutputType;
+		public override TypeSymbol ValueType => Op.OutputType;
 
 		public override NodeType Type => NodeType.UnaryExpression;
 

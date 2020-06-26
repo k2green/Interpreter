@@ -1,5 +1,4 @@
 ﻿using InterpreterLib.Binding.Types;
-using System;
 using System.Collections.Generic;
 
 namespace InterpreterLib.Binding.Tree {
@@ -11,12 +10,12 @@ namespace InterpreterLib.Binding.Tree {
 		public UnaryOperatorContainer() {
 			operators = new HashSet<UnaryOperator>();
 
-			AddUnaryOperator("+", UnaryOperatorType.Identity, BoundType.Integer, BoundType.Double, BoundType.Byte);
-			AddUnaryOperator("-", UnaryOperatorType.Negation, BoundType.Integer, BoundType.Double, BoundType.Byte);
-			AddUnaryOperator("!", UnaryOperatorType.LogicalNot, BoundType.Boolean);
+			AddUnaryOperator("+", UnaryOperatorType.Identity, TypeSymbol.Integer, TypeSymbol.Double, TypeSymbol.Byte);
+			AddUnaryOperator("-", UnaryOperatorType.Negation, TypeSymbol.Integer, TypeSymbol.Double, TypeSymbol.Byte);
+			AddUnaryOperator("!", UnaryOperatorType.LogicalNot, TypeSymbol.Boolean);
 		}
 
-		private void AddUnaryOperator(string token, UnaryOperatorType type, params BoundType[] allowedTypes) {
+		private void AddUnaryOperator(string token, UnaryOperatorType type, params TypeSymbol[] allowedTypes) {
 			foreach(var allowedType in allowedTypes) {
 				operators.Add(new UnaryOperator(token, type, allowedType));
 			}

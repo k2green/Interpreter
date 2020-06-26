@@ -5,6 +5,6 @@ using System.Text;
 
 namespace InterpreterLib.Binding.Tree {
 	internal abstract class BoundExpression : BoundNode {
-		public abstract BoundType ValueType { get; }
+		public abstract TypeSymbol ValueType { get; }
 	}
 }

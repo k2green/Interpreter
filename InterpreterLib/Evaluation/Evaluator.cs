@@ -12,9 +12,9 @@ namespace InterpreterLib {
 		private DiagnosticContainer diagnostics;
 		private BoundNode root;
 
-		private Dictionary<BoundVariable, object> variables;
+		private Dictionary<VariableSymbol, object> variables;
 
-		internal Evaluator(BoundNode rootNode, Dictionary<BoundVariable, object> variables) {
+		internal Evaluator(BoundNode rootNode, Dictionary<VariableSymbol, object> variables) {
 			root = rootNode;
 			diagnostics = new DiagnosticContainer();
 			this.variables = variables;
@@ -75,7 +75,7 @@ namespace InterpreterLib {
 
 		private object EvaluateWhile(BoundWhileStatement expression) {
 			object outval = null;
-			if (expression.Condition.ValueType != BoundType.Boolean)
+			if (expression.Condition.ValueType != TypeSymbol.Boolean)
 				throw new Exception("Invalid expr");
 
 			while ((bool)Evaluate(expression.Condition)) {
@@ -86,7 +86,7 @@ namespace InterpreterLib {
 		}
 
 		private object EvaluateIf(BoundIfStatement ifStat) {
-			if (ifStat.Condition.ValueType != BoundType.Boolean)
+			if (ifStat.Condition.ValueType != TypeSymbol.Boolean)
 				throw new Exception("Invalid expr");
 
 			bool testCondition = (bool)Evaluate(ifStat.Condition);
@@ -147,10 +147,10 @@ namespace InterpreterLib {
 		}
 
 		private bool EvaluateEqualityOperation(object left, object right, BinaryOperator op) {
-			if (op.LeftType == BoundType.Integer && op.RightType == BoundType.Integer)
+			if (op.LeftType == TypeSymbol.Integer && op.RightType == TypeSymbol.Integer)
 				return ((int)left) == ((int)right);
 
-			if (op.LeftType == BoundType.Boolean && op.RightType == BoundType.Boolean)
+			if (op.LeftType == TypeSymbol.Boolean && op.RightType == TypeSymbol.Boolean)
 				return ((bool)left) == ((bool)right);
 
 			return false;

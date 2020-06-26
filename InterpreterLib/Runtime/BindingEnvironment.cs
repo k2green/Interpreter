@@ -57,7 +57,7 @@ namespace InterpreterLib.Runtime {
 			SyntaxRoot = parser.statement();
 		}
 
-		public DiagnosticResult<object> Evaluate(Dictionary<BoundVariable, object> variables) {
+		public DiagnosticResult<object> Evaluate(Dictionary<VariableSymbol, object> variables) {
 			if (GlobalScope.Root == null)
 				return new DiagnosticResult<object>(diagnostics, null);
 

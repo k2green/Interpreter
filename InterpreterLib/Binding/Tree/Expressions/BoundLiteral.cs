@@ -7,7 +7,7 @@ namespace InterpreterLib.Binding.Tree {
 	internal sealed class BoundLiteral : BoundExpression {
 
 		public object Value { get; }
-		public override BoundType ValueType { get; }
+		public override TypeSymbol ValueType { get; }
 		public override NodeType Type => NodeType.Literal;
 
 		private BoundLiteral(object value) {
@@ -15,23 +15,23 @@ namespace InterpreterLib.Binding.Tree {
 		}
 
 		public BoundLiteral(int value) : this((object) value) {
-			ValueType = BoundType.Integer;
+			ValueType = TypeSymbol.Integer;
 		}
 
 		public BoundLiteral(double value) : this((object)value) {
-			ValueType = BoundType.Double;
+			ValueType = TypeSymbol.Double;
 		}
 
 		public BoundLiteral(byte value) : this((object)value) {
-			ValueType = BoundType.Byte;
+			ValueType = TypeSymbol.Byte;
 		}
 
 		public BoundLiteral(bool value) : this((object)value) {
-			ValueType = BoundType.Boolean;
+			ValueType = TypeSymbol.Boolean;
 		}
 
 		public BoundLiteral(string value) : this((object)value) {
-			ValueType = BoundType.String;
+			ValueType = TypeSymbol.String;
 		}
 	}
 }

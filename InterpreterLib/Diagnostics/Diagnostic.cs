@@ -17,11 +17,11 @@ namespace InterpreterLib {
 
 		public override string ToString() => Message;
 
-		internal static Diagnostic ReportInvalidUnaryOperator(int line, int column, string operatorText, BoundType operandType) {
+		internal static Diagnostic ReportInvalidUnaryOperator(int line, int column, string operatorText, TypeSymbol operandType) {
 			return new Diagnostic(line, column, $"'{operatorText}' Operator is invalid for type {operandType}");
 		}
 
-		internal static Diagnostic ReportInvalidBinaryOperator(int line, int column, string operatorText, BoundType leftType, BoundType rightType) {
+		internal static Diagnostic ReportInvalidBinaryOperator(int line, int column, string operatorText, TypeSymbol leftType, TypeSymbol rightType) {
 			return new Diagnostic(line, column, $"'{operatorText}' Operator is invalid for types {leftType} and {rightType}");
 		}
 
@@ -29,7 +29,7 @@ namespace InterpreterLib {
 			return new Diagnostic(line, column, $"Invalid Syntax {invalidText}");
 		}
 
-		internal static Diagnostic ReportUndefinedVariable(int line, int column, BoundVariable variable) {
+		internal static Diagnostic ReportUndefinedVariable(int line, int column, VariableSymbol variable) {
 			return ReportUndefinedVariable(line, column, variable.ToString());
 		}
 
@@ -37,7 +37,7 @@ namespace InterpreterLib {
 			return new Diagnostic(line, column, $"Variable {message} is undefined");
 		}
 
-		internal static Diagnostic ReportRedefineVariable(int line, int column, BoundVariable variable, BoundVariable redefine) {
+		internal static Diagnostic ReportRedefineVariable(int line, int column, VariableSymbol variable, VariableSymbol redefine) {
 			return new Diagnostic(line, column, $"Variable {variable} cannot be reassigned {redefine}");
 		}
 
@@ -53,11 +53,11 @@ namespace InterpreterLib {
 			return new Diagnostic(line, column, $"Invalid variable declaration {v}");
 		}
 
-		internal static Diagnostic ReportVariableTypeMismatch(int line, int column, string name, BoundType valueType1, BoundType valueType2) {
+		internal static Diagnostic ReportVariableTypeMismatch(int line, int column, string name, TypeSymbol valueType1, TypeSymbol valueType2) {
 			return new Diagnostic(line, column, $"Cannot reassign {name} from {valueType1} to {valueType2}");
 		}
 
-		internal static Diagnostic ReportReadonlyVariable(int line, int column, BoundVariable lookup) {
+		internal static Diagnostic ReportReadonlyVariable(int line, int column, VariableSymbol lookup) {
 			return new Diagnostic(line, column, $"Variable {lookup} is read only");
 		}
 
@@ -81,7 +81,7 @@ namespace InterpreterLib {
 			return new Diagnostic(line, column, $"For loop {v} is invalid");
 		}
 
-		internal static Diagnostic ReportInvalidType(int line, int column, BoundType valueType, BoundType boolean) {
+		internal static Diagnostic ReportInvalidType(int line, int column, TypeSymbol valueType, TypeSymbol boolean) {
 			return new Diagnostic(line, column, $"Invalid type: {valueType} is not {boolean}");
 		}
 

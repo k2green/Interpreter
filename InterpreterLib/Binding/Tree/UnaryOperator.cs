@@ -1,19 +1,17 @@
 ﻿using InterpreterLib.Binding.Types;
-using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace InterpreterLib.Binding.Tree {
 	internal sealed class UnaryOperator {
 
 		public string TokenText { get; }
 		public UnaryOperatorType OperatorType { get; }
-		public BoundType OperandType;
-		public BoundType OutputType;
+		public TypeSymbol OperandType;
+		public TypeSymbol OutputType;
 
-		public UnaryOperator(string tokenText, UnaryOperatorType operatorType, BoundType operandType) : this(tokenText, operatorType, operandType, operandType) { }
+		public UnaryOperator(string tokenText, UnaryOperatorType operatorType, TypeSymbol operandType) : this(tokenText, operatorType, operandType, operandType) { }
 
-		public UnaryOperator(string tokenText, UnaryOperatorType operatorType, BoundType operandType, BoundType outputType) {
+		public UnaryOperator(string tokenText, UnaryOperatorType operatorType, TypeSymbol operandType, TypeSymbol outputType) {
 			TokenText = tokenText;
 			OperatorType = operatorType;
 			OperandType = operandType;
@@ -30,7 +28,7 @@ namespace InterpreterLib.Binding.Tree {
 			}
 		}
 
-		public static UnaryOperator Bind(string opText, BoundType inputType) {
+		public static UnaryOperator Bind(string opText, TypeSymbol inputType) {
 			foreach (UnaryOperator op in Operators) {
 				if (op.TokenText.Equals(opText) && op.OperandType.Equals(inputType))
 					return op;

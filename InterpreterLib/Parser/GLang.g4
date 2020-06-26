@@ -69,8 +69,11 @@ ELSE : 'else';
 WHILE : 'while';
 FOR : 'for';
 
+ASSIGNMENT_OPERATOR: '+=' | '-=' | '*=' | '/=' | '=';
+
 ADDITIVE_OP: '+' | '-';
 MULTIPLICATIVE_OP: '*' | '/';
+CARAT: '^';
 
 LOW_PRIORITY_OP: MOD_OPERATOR
 			   | EQUALITY_OPERATOR
@@ -80,8 +83,6 @@ LOW_PRIORITY_OP: MOD_OPERATOR
 			   | LESSER_STRICT
 			   | LOGICAL_OPERATOR;
 
-CARAT: '^';
-ASSIGNMENT_OPERATOR: '=';
 BANG: '!';
 
 IDENTIFIER: CHARACTER (CHARACTER | '_')*;

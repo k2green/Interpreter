@@ -42,7 +42,7 @@ namespace InterpreterLib.Binding {
 				var scope = new BoundScope(parent);
 				previous = stack.Pop();
 
-				foreach (BoundVariable variable in previous.Variables)
+				foreach (VariableSymbol variable in previous.Variables)
 					scope.TryDefine(variable);
 
 				parent = scope;
@@ -157,7 +157,7 @@ namespace InterpreterLib.Binding {
 				return null;
 
 			var boundExpression = (BoundExpression)exprNode;
-			BoundVariable variable;
+			VariableSymbol variable;
 
 			// If the variableDeclaration exists
 			if (varDeclExists) {
@@ -196,10 +196,10 @@ namespace InterpreterLib.Binding {
 		}
 
 		public override BoundNode VisitVariableDeclaration([NotNull] GLangParser.VariableDeclarationContext context) {
-			return VisitVariableDeclaration(context, BoundType.Integer, true);
+			return VisitVariableDeclaration(context, TypeSymbol.Integer, true);
 		}
 
-		private BoundDeclarationStatement VisitVariableDeclaration([NotNull] GLangParser.VariableDeclarationContext context, BoundType type, bool requireType) {
+		private BoundDeclarationStatement VisitVariableDeclaration([NotNull] GLangParser.VariableDeclarationContext context, TypeSymbol type, bool requireType) {
 			bool declareationExists = context.DECL_VARIABLE() != null;
 			bool identifierExists = context.IDENTIFIER() != null;
 			bool delimeterExists = context.TYPE_DELIMETER() != null;
@@ -238,10 +238,10 @@ namespace InterpreterLib.Binding {
 				// type variable to the corresponding Type. Report an error if this fails.
 				switch (context.TYPE_NAME().GetText()) {
 					case "int":
-						type = BoundType.Integer;
+						type = TypeSymbol.Integer;
 						break;
 					case "bool":
-						type = BoundType.Boolean;
+						type = TypeSymbol.Boolean;
 						break;
 					default:
 						diagnostics.AddDiagnostic(Diagnostic.ReportInvalidTypeName(context.Start.Line, context.Start.Column, context.TYPE_NAME().GetText()));
@@ -250,7 +250,7 @@ namespace InterpreterLib.Binding {
 			}
 
 			// Create bound variable with the parsed information.
-			var variable = new BoundVariable(context.IDENTIFIER().GetText(), isReadOnly, type);
+			var variable = new VariableSymbol(context.IDENTIFIER().GetText(), isReadOnly, type);
 
 			if (!scope.TryDefine(variable)) {
 				diagnostics.AddDiagnostic(Diagnostic.ReportRedefineVariable(context.Start.Line, context.Start.Column, scope[context.IDENTIFIER().GetText()], variable));
@@ -261,6 +261,9 @@ namespace InterpreterLib.Binding {
 		}
 
 		public override BoundNode VisitStatement([NotNull] GLangParser.StatementContext context) {
+			if (context.forStat() != null)
+				return Visit(context.forStat());
+
 			if (context.whileStat() != null)
 				return Visit(context.whileStat());
 
@@ -292,38 +295,26 @@ namespace InterpreterLib.Binding {
 		}
 
 		public override BoundNode VisitForStat([NotNull] GLangParser.ForStatContext context) {
-			bool forExists = context.FOR() != null;
-			bool lParenExists = context.L_PARENTHESIS() != null;
-			bool assignmentExists = context.assign != null;
-			bool commasExist = context.COMMA() != null && context.COMMA().Length == 2;
-			bool condExists = context.condition != null;
-			bool stepExists = context.step != null;
-			bool rParenExists = context.L_PARENTHESIS() != null;
-			bool bodyExists = context.body != null;
-
-			if(!forExists || !lParenExists || !assignmentExists || !commasExist || !condExists || !stepExists || !rParenExists || !bodyExists){
-				diagnostics.AddDiagnostic(Diagnostic.ReportInvalidFor(context.Start.Line, context.Start.Column, context.GetText()));
-				return null;
-			}
-
 			var assignment = Visit(context.assign);
 			var condition = Visit(context.condition);
 			var step = Visit(context.step);
 			var body = Visit(context.body);
 
-			assignmentExists = assignment != null;
-			condExists = condition != null;
-			stepExists = step != null;
-			bodyExists = body != null;
+			bool assignmentExists = assignment != null;
+			bool condExists = condition != null;
+			bool stepExists = step != null;
+			bool bodyExists = body != null;
 
-			if (!assignmentExists || !condExists || !stepExists || !bodyExists)
+			if (!assignmentExists || !condExists || !stepExists || !bodyExists) {
+				diagnostics.AddDiagnostic(Diagnostic.ReportInvalidFor(context.Start.Line, context.Start.Column, context.GetText()));
 				return null;
+			}
 
 			if (!(assignment is BoundAssignmentExpression && condition is BoundBinaryExpression && step is BoundAssignmentExpression))
 				return null;
 
-			if(((BoundExpression)condition).ValueType == BoundType.Boolean) {
-				diagnostics.AddDiagnostic(Diagnostic.ReportInvalidType(context.Start.Line, context.Start.Column, ((BoundExpression)condition).ValueType, BoundType.Boolean));
+			if(((BoundExpression)condition).ValueType != TypeSymbol.Boolean) {
+				diagnostics.AddDiagnostic(Diagnostic.ReportInvalidType(context.Start.Line, context.Start.Column, ((BoundExpression)condition).ValueType, TypeSymbol.Boolean));
 				return null;
 			}
 

@@ -30,44 +30,44 @@ namespace InterpreterLib.Binding.Tree {
 			AddBinaryOperator("^", BinaryOperatorType.LogicalXOr, BooleanDefinitions);
 		}
 
-		private void AddBinaryOperator(string token, BinaryOperatorType type, IEnumerable<Tuple<BoundType, BoundType, BoundType>> typeDefinitions) {
+		private void AddBinaryOperator(string token, BinaryOperatorType type, IEnumerable<Tuple<TypeSymbol, TypeSymbol, TypeSymbol>> typeDefinitions) {
 			foreach(var tuple in typeDefinitions) {
 				operators.Add(new BinaryOperator(token, type, tuple.Item1, tuple.Item2, tuple.Item3));
 			}
 		}
 
-		private void AddBinaryOperator(string token, BinaryOperatorType type, IEnumerable<Tuple<BoundType, BoundType>> typeDefinitions) {
+		private void AddBinaryOperator(string token, BinaryOperatorType type, IEnumerable<Tuple<TypeSymbol, TypeSymbol>> typeDefinitions) {
 			foreach (var tuple in typeDefinitions) {
 				operators.Add(new BinaryOperator(token, type, tuple.Item1, tuple.Item2));
 			}
 		}
 
-		private static Tuple<BoundType, BoundType, BoundType>[] NumericDefinitions = {
-			Tuple.Create(BoundType.Integer, BoundType.Integer, BoundType.Integer),
-			Tuple.Create(BoundType.Integer, BoundType.Double, BoundType.Double),
-			Tuple.Create(BoundType.Integer, BoundType.Byte, BoundType.Integer),
-			Tuple.Create(BoundType.Double, BoundType.Integer, BoundType.Double),
-			Tuple.Create(BoundType.Double, BoundType.Double, BoundType.Double),
-			Tuple.Create(BoundType.Double, BoundType.Byte, BoundType.Double),
-			Tuple.Create(BoundType.Byte, BoundType.Integer, BoundType.Integer),
-			Tuple.Create(BoundType.Byte, BoundType.Double, BoundType.Double),
-			Tuple.Create(BoundType.Byte, BoundType.Byte, BoundType.Byte)
+		private static Tuple<TypeSymbol, TypeSymbol, TypeSymbol>[] NumericDefinitions = {
+			Tuple.Create(TypeSymbol.Integer, TypeSymbol.Integer, TypeSymbol.Integer),
+			Tuple.Create(TypeSymbol.Integer, TypeSymbol.Double, TypeSymbol.Double),
+			Tuple.Create(TypeSymbol.Integer, TypeSymbol.Byte, TypeSymbol.Integer),
+			Tuple.Create(TypeSymbol.Double, TypeSymbol.Integer, TypeSymbol.Double),
+			Tuple.Create(TypeSymbol.Double, TypeSymbol.Double, TypeSymbol.Double),
+			Tuple.Create(TypeSymbol.Double, TypeSymbol.Byte, TypeSymbol.Double),
+			Tuple.Create(TypeSymbol.Byte, TypeSymbol.Integer, TypeSymbol.Integer),
+			Tuple.Create(TypeSymbol.Byte, TypeSymbol.Double, TypeSymbol.Double),
+			Tuple.Create(TypeSymbol.Byte, TypeSymbol.Byte, TypeSymbol.Byte)
 		};
 
-		private static Tuple<BoundType, BoundType, BoundType>[] ComparisonDefinitions = {
-			Tuple.Create(BoundType.Integer, BoundType.Integer, BoundType.Boolean)
+		private static Tuple<TypeSymbol, TypeSymbol>[] ComparisonDefinitions = {
+			Tuple.Create(TypeSymbol.Integer, TypeSymbol.Boolean)
 		};
 
-		private static Tuple<BoundType, BoundType>[] EqualityDifinitions = {
-			Tuple.Create(BoundType.Boolean, BoundType.Boolean),
-			Tuple.Create(BoundType.Byte, BoundType.Boolean),
-			Tuple.Create(BoundType.Double, BoundType.Boolean),
-			Tuple.Create(BoundType.Integer, BoundType.Boolean),
-			Tuple.Create(BoundType.String, BoundType.Boolean)
+		private static Tuple<TypeSymbol, TypeSymbol>[] EqualityDifinitions = {
+			Tuple.Create(TypeSymbol.Boolean, TypeSymbol.Boolean),
+			Tuple.Create(TypeSymbol.Byte, TypeSymbol.Boolean),
+			Tuple.Create(TypeSymbol.Double, TypeSymbol.Boolean),
+			Tuple.Create(TypeSymbol.Integer, TypeSymbol.Boolean),
+			Tuple.Create(TypeSymbol.String, TypeSymbol.Boolean)
 		};
 
-		private static Tuple<BoundType, BoundType>[] BooleanDefinitions = {
-			Tuple.Create(BoundType.Boolean, BoundType.Boolean)
+		private static Tuple<TypeSymbol, TypeSymbol>[] BooleanDefinitions = {
+			Tuple.Create(TypeSymbol.Boolean, TypeSymbol.Boolean)
 		};
 	}
 }

@@ -12,7 +12,7 @@ namespace Interpreter {
 			string input = null;
 			bool running = true;
 
-			Dictionary<BoundVariable, object> variables = new Dictionary<BoundVariable, object>();
+			Dictionary<VariableSymbol, object> variables = new Dictionary<VariableSymbol, object>();
 
 			Console.CancelKeyPress += delegate {
 				Environment.Exit(0);

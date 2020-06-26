@@ -1,17 +1,16 @@
 ﻿using InterpreterLib.Binding.Tree;
-using System;
+using InterpreterLib.Binding.Types;
 using System.Collections.Generic;
-using System.Text;
 
 namespace InterpreterLib.Binding {
 	internal sealed class BoundGlobalScope {
 
 		public BoundGlobalScope Previous { get; }
 		public IEnumerable<Diagnostic> Diagnostics { get; }
-		public IEnumerable<BoundVariable> Variables { get; }
+		public IEnumerable<VariableSymbol> Variables { get; }
 		public BoundNode Root { get; }
 
-		public BoundGlobalScope(BoundGlobalScope previous, IEnumerable<Diagnostic> diagnostics, IEnumerable<BoundVariable> variables, BoundNode root) {
+		public BoundGlobalScope(BoundGlobalScope previous, IEnumerable<Diagnostic> diagnostics, IEnumerable<VariableSymbol> variables, BoundNode root) {
 			Previous = previous;
 			Diagnostics = diagnostics;
 			Variables = variables;
