@@ -8,15 +8,11 @@ namespace InterpreterLib.Binding.Tree {
 		public override NodeType Type => NodeType.For;
 
 		public BoundExpression Assignment { get; }
-		public BoundExpression Condition { get; }
-		public BoundExpression Step { get; }
-		public BoundNode Body { get; }
+		public BoundWhileStatement While { get; }
 
-		public BoundForStatement(BoundExpression assignment, BoundExpression condition, BoundExpression step, BoundNode body) {
+		public BoundForStatement(BoundExpression assignment, BoundWhileStatement whileStat) {
 			Assignment = assignment;
-			Condition = condition;
-			Step = step;
-			Body = body;
+			While = whileStat;
 		}
 	}
 }

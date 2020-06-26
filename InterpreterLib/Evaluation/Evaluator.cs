@@ -53,16 +53,13 @@ namespace InterpreterLib {
 			}
 		}
 
-		private object EvaluateForStatement(BoundForStatement expression) {
-			object current = null;
-			int assignment = (int)Evaluate(expression.Assignment);
-			
-			while((bool) Evaluate(expression.Condition)) {
-				current = Evaluate(expression.Body);
-				variables[((BoundAssignmentExpression)expression.Assignment).Identifier] = Evaluate(expression.Step);
-			}
+		private object EvaluateForStatement(BoundForStatement statement) {
+			object assign = Evaluate(statement.Assignment);
 
-			return current;
+			if (assign == null)
+				return null;
+
+			return Evaluate(statement.While);
 		}
 
 		private object EvaluateVariableDeclaration(BoundDeclarationStatement expression) {
@@ -117,10 +114,8 @@ namespace InterpreterLib {
 		private object EvaluateAssignmentExpression(BoundAssignmentExpression assignment) {
 			object expression = Evaluate(assignment.Expression);
 
-			if (expression == null) {
-				diagnostics.AddDiagnostic(new Diagnostic(0, 0, "Failed to evaluate expression"));
+			if (expression == null) 
 				return null;
-			}
 
 			variables[assignment.Identifier] = expression;
 			return expression;

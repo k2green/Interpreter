@@ -8,7 +8,7 @@ literal : INTEGER | BOOLEAN | IDENTIFIER;
 
 block : L_BRACE statement* R_BRACE;
 
-forStat: FOR L_PARENTHESIS assignmentStatement COMMA condition=binaryExpression COMMA step=binaryExpression R_PARENTHESIS body=statement;
+forStat: FOR L_PARENTHESIS assign=assignmentStatement COMMA condition=binaryExpression COMMA step=assignmentStatement R_PARENTHESIS body=statement;
 
 ifStat : IF L_PARENTHESIS condition=binaryExpression R_PARENTHESIS trueBranch=statement (ELSE falseBranch=statement)?;
 whileStat: WHILE L_PARENTHESIS condition=binaryExpression R_PARENTHESIS body=statement;

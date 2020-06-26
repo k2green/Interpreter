@@ -70,14 +70,22 @@ namespace InterpreterLib {
 		}
 
 		internal static Diagnostic ReportInvalidTypeName(int line, int column, string v) {
-			throw new NotImplementedException();
+			return new Diagnostic(line, column, $"{v} is not a valid type");
 		}
 
 		internal static Diagnostic ReportInvalidAssignment(int line, int column, string v) {
-			throw new NotImplementedException();
+			return new Diagnostic(line, column, $"Assignment {v} is invalid");
 		}
 
-		internal static Diagnostic ReportInvalidFor(int line, int column) {
+		internal static Diagnostic ReportInvalidFor(int line, int column, string v) {
+			return new Diagnostic(line, column, $"For loop {v} is invalid");
+		}
+
+		internal static Diagnostic ReportInvalidType(int line, int column, BoundType valueType, BoundType boolean) {
+			return new Diagnostic(line, column, $"Invalid type: {valueType} is not {boolean}");
+		}
+
+		internal static Diagnostic ReportInvalidElse(int line, int column, string v) {
 			throw new NotImplementedException();
 		}
 	}

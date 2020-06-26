@@ -214,24 +214,25 @@ public partial class GLangParser : Parser {
 	}
 
 	public partial class ForStatContext : ParserRuleContext {
+		public AssignmentStatementContext assign;
 		public BinaryExpressionContext condition;
-		public BinaryExpressionContext step;
+		public AssignmentStatementContext step;
 		public StatementContext body;
 		public ITerminalNode FOR() { return GetToken(GLangParser.FOR, 0); }
 		public ITerminalNode L_PARENTHESIS() { return GetToken(GLangParser.L_PARENTHESIS, 0); }
-		public AssignmentStatementContext assignmentStatement() {
-			return GetRuleContext<AssignmentStatementContext>(0);
-		}
 		public ITerminalNode[] COMMA() { return GetTokens(GLangParser.COMMA); }
 		public ITerminalNode COMMA(int i) {
 			return GetToken(GLangParser.COMMA, i);
 		}
 		public ITerminalNode R_PARENTHESIS() { return GetToken(GLangParser.R_PARENTHESIS, 0); }
-		public BinaryExpressionContext[] binaryExpression() {
-			return GetRuleContexts<BinaryExpressionContext>();
+		public AssignmentStatementContext[] assignmentStatement() {
+			return GetRuleContexts<AssignmentStatementContext>();
 		}
-		public BinaryExpressionContext binaryExpression(int i) {
-			return GetRuleContext<BinaryExpressionContext>(i);
+		public AssignmentStatementContext assignmentStatement(int i) {
+			return GetRuleContext<AssignmentStatementContext>(i);
+		}
+		public BinaryExpressionContext binaryExpression() {
+			return GetRuleContext<BinaryExpressionContext>(0);
 		}
 		public StatementContext statement() {
 			return GetRuleContext<StatementContext>(0);
@@ -265,11 +266,11 @@ public partial class GLangParser : Parser {
 			{
 			State = 31; Match(FOR);
 			State = 32; Match(L_PARENTHESIS);
-			State = 33; assignmentStatement();
+			State = 33; _localctx.assign = assignmentStatement();
 			State = 34; Match(COMMA);
 			State = 35; _localctx.condition = binaryExpression(0);
 			State = 36; Match(COMMA);
-			State = 37; _localctx.step = binaryExpression(0);
+			State = 37; _localctx.step = assignmentStatement();
 			State = 38; Match(R_PARENTHESIS);
 			State = 39; _localctx.body = statement();
 			}
@@ -931,7 +932,7 @@ public partial class GLangParser : Parser {
 		'\x2', '!', '\"', '\a', '\r', '\x2', '\x2', '\"', '#', '\a', '\x15', '\x2', 
 		'\x2', '#', '$', '\x5', '\x10', '\t', '\x2', '$', '%', '\a', '\x4', '\x2', 
 		'\x2', '%', '&', '\x5', '\x14', '\v', '\x2', '&', '\'', '\a', '\x4', '\x2', 
-		'\x2', '\'', '(', '\x5', '\x14', '\v', '\x2', '(', ')', '\a', '\x16', 
+		'\x2', '\'', '(', '\x5', '\x10', '\t', '\x2', '(', ')', '\a', '\x16', 
 		'\x2', '\x2', ')', '*', '\x5', '\f', '\a', '\x2', '*', '\a', '\x3', '\x2', 
 		'\x2', '\x2', '+', ',', '\a', '\n', '\x2', '\x2', ',', '-', '\a', '\x15', 
 		'\x2', '\x2', '-', '.', '\x5', '\x14', '\v', '\x2', '.', '/', '\a', '\x16', 
