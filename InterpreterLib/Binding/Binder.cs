@@ -2,7 +2,9 @@
 using Antlr4.Runtime.Tree;
 using InterpreterLib.Binding.Tree;
 using InterpreterLib.Binding.Types;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace InterpreterLib.Binding {
 	internal sealed class Binder : GLangBaseVisitor<BoundNode> {
@@ -49,11 +51,54 @@ namespace InterpreterLib.Binding {
 		}
 
 		private BoundError Error(Diagnostic diagnostic) {
-			return new BoundError
+			diagnostics.AddDiagnostic(diagnostic);
+
+			return new BoundError(diagnostic, true, null);
+		}
+
+		private bool OnlyOne(params bool[] conditions) {
+			return conditions.Count(b => b) == 1;
 		}
 
 		public override BoundNode VisitLiteral([NotNull] GLangParser.LiteralContext context) {
-			return base.VisitLiteral(context);
+			bool hasIdentifier = context.IDENTIFIER() != null;
+			bool hasInteger = context.INTEGER() != null;
+			bool hasBool = context.BOOLEAN() != null;
+
+			if (!OnlyOne(hasIdentifier, hasInteger, hasBool))
+				return Error(Diagnostic.ReportInvalidLiteral(context.Start.Line, context.Start.Column, context.GetText()));
+
+			if (hasIdentifier && scope.TryLookup(context.IDENTIFIER().GetText(), out var variableSymbol))
+				return new BoundVariableExpression(variableSymbol);
+
+			if (hasInteger)
+				return new BoundLiteral(int.Parse(context.INTEGER().GetText()));
+
+			if (hasBool)
+				return new BoundLiteral(bool.Parse(context.BOOLEAN().GetText()));
+
+			throw new Exception($"OnlyOne failed to catch error. hasIdentifier = {hasIdentifier}, hasInteger = {hasIdentifier}, hasBool = {hasIdentifier}");
+		}
+
+		public override BoundNode VisitUnaryExpression([NotNull] GLangParser.UnaryExpressionContext context) {
+			bool hasAtom = context.atom != null;
+			bool hasBinExpr = context.L_PARENTHESIS() != null && context.binaryExpression() != null && context.R_PARENTHESIS() == null;
+			bool hasSubUnExpr = context.op != null && context.unaryExpression() != null;
+
+			if (!OnlyOne(hasAtom, hasBinExpr, hasSubUnExpr))
+				return Error(Diagnostic.ReportInvalidUnaryExpression(context.Start.Line, context.Start.Column, context.GetText()));
+
+			if (hasAtom)
+				return Visit(context.atom);
+
+			if (hasBinExpr)
+				return Visit(context.binaryExpression());
+
+			if (hasSubUnExpr) {
+
+			}
+
+			throw new Exception($"OnlyOne failed to catch error. hasAtom = {hasAtom}, hasBinExpr = {hasBinExpr}, hasSubUnExpr = {hasSubUnExpr}");
 		}
 	}
 }

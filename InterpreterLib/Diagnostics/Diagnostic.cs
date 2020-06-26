@@ -53,6 +53,10 @@ namespace InterpreterLib {
 			return new Diagnostic(line, column, $"Invalid variable declaration {v}");
 		}
 
+		internal static Diagnostic ReportInvalidLiteral(int line, int column, string v) {
+			throw new NotImplementedException();
+		}
+
 		internal static Diagnostic ReportVariableTypeMismatch(int line, int column, string name, TypeSymbol valueType1, TypeSymbol valueType2) {
 			return new Diagnostic(line, column, $"Cannot reassign {name} from {valueType1} to {valueType2}");
 		}
@@ -67,6 +71,10 @@ namespace InterpreterLib {
 
 		internal static Diagnostic ReportInvalidWhile(int line, int column, string v) {
 			return new Diagnostic(line, column, $"While loop {v} is invalid");
+		}
+
+		internal static Diagnostic ReportInvalidUnaryExpression(int line, int column, string v) {
+			throw new NotImplementedException();
 		}
 
 		internal static Diagnostic ReportInvalidTypeName(int line, int column, string v) {
