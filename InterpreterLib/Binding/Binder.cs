@@ -50,10 +50,13 @@ namespace InterpreterLib.Binding {
 			return parent;
 		}
 
-		private BoundError Error(Diagnostic diagnostic) {
-			diagnostics.AddDiagnostic(diagnostic);
+		private BoundError Error(Diagnostic diagnostic) => Error(diagnostic, true, null);
 
-			return new BoundError(diagnostic, true, null);
+		private BoundError Error(Diagnostic diagnostic, bool isCausing, params BoundNode[] children) {
+			if (diagnostic != null)
+				diagnostics.AddDiagnostic(diagnostic);
+
+			return new BoundError(diagnostic, isCausing, children);
 		}
 
 		private bool OnlyOne(params bool[] conditions) {
@@ -95,10 +98,90 @@ namespace InterpreterLib.Binding {
 				return Visit(context.binaryExpression());
 
 			if (hasSubUnExpr) {
+				var operand = Visit(context.unaryExpression());
 
+				if (!(operand is BoundExpression))
+					return Error(null, false, operand);
+
+				var op = UnaryOperator.Bind(context.op.Text, ((BoundExpression)operand).ValueType);
+
+				if (op == null)
+					return Error(Diagnostic.ReportInvalidUnaryOperator(context.Start.Line, context.Start.Column, context.op.Text, ((BoundExpression)operand).ValueType), true, operand);
+
+				return new BoundUnaryExpression(op, (BoundExpression)operand);
 			}
 
 			throw new Exception($"OnlyOne failed to catch error. hasAtom = {hasAtom}, hasBinExpr = {hasBinExpr}, hasSubUnExpr = {hasSubUnExpr}");
+		}
+
+		public override BoundNode VisitBinaryExpression([NotNull] GLangParser.BinaryExpressionContext context) {
+			bool hasAtom = context.atom != null;
+			bool hasExpression = context.left != null && context.op != null && context.right != null;
+
+			if (!OnlyOne(hasAtom, hasExpression))
+				return Error(Diagnostic.ReportInvalidBinaryExpression(context.Start.Line, context.Start.Column, context.GetText()));
+
+			if (hasAtom)
+				return Visit(context.atom);
+
+			if (hasExpression) {
+				var left = Visit(context.left);
+				var right = Visit(context.right);
+
+				if (!(left is BoundExpression) || !(right is BoundExpression))
+					return Error(null, false, left, right);
+
+				var op = BinaryOperator.Bind(context.op.Text, ((BoundExpression)left).ValueType, ((BoundExpression)right).ValueType);
+
+				if (op == null)
+					return Error(Diagnostic.ReportInvalidBinaryOperator(context.Start.Line, context.Start.Column, context.op.Text, ((BoundExpression)left).ValueType, ((BoundExpression)right).ValueType), true, left, right);
+
+				return new BoundBinaryExpression((BoundExpression)left, op, (BoundExpression)right);
+			}
+
+
+			throw new Exception($"OnlyOne failed to catch error. hasAtom = {hasAtom}, hasExpression = {hasExpression}");
+		}
+
+		public override BoundNode VisitVariableDeclaration([NotNull] GLangParser.VariableDeclarationContext context) {
+			return VisitVariableDeclaration(context, null);
+		}
+
+		private BoundNode VisitVariableDeclaration([NotNull] GLangParser.VariableDeclarationContext context, TypeSymbol type) {
+			bool hasVarDecl = context.DECL_VARIABLE() != null;
+			bool hasIdentifier = context.IDENTIFIER() != null;
+			bool hasDelimeter = context.TYPE_DELIMETER() != null;
+			bool hasTypeDef = context.TYPE_NAME() != null;
+			bool requireTypeCondition = type == null && !hasDelimeter && !hasTypeDef;
+			bool isReadOnly;
+
+			if (!hasVarDecl || !hasIdentifier || hasDelimeter ^ hasTypeDef || requireTypeCondition)
+				return Error(Diagnostic.ReportInvalidDeclaration(context.Start.Line, context.Start.Column, context.GetText()));
+
+			if (type == null) {
+				switch (context.TYPE_NAME().GetText()) {
+					case "int": type = TypeSymbol.Integer; break;
+					case "bool": type = TypeSymbol.Boolean; break;
+
+					default:
+						return Error(Diagnostic.ReportInvalidDeclaration(context.Start.Line, context.Start.Column, context.GetText()));
+				}
+			}
+
+			switch (context.DECL_VARIABLE().GetText()) { 
+				case "var": isReadOnly = false; break;
+				case "val": isReadOnly = true; break;
+
+				default:
+					return Error(Diagnostic.ReportInvalidDeclaration(context.Start.Line, context.Start.Column, context.GetText()));
+			}
+
+			var variable = new VariableSymbol(context.IDENTIFIER().GetText(), isReadOnly, type);
+
+			if (!scope.TryDefine(variable))
+				return Error(Diagnostic.ReportRedefineVariable(context.Start.Line, context.Start.Column, variable));
+
+			return new BoundDeclarationStatement(new BoundVariableExpression(variable));
 		}
 	}
 }

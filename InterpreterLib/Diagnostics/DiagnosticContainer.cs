@@ -13,7 +13,11 @@ namespace InterpreterLib {
 		}
 
 		internal void AddDiagnostic(Diagnostic diagnostic) => diagnostics.Add(diagnostic);
-		internal void AddDiagnostics(IEnumerable<Diagnostic> diagnosticEnum) => diagnostics.AddRange(diagnosticEnum);
+
+		internal void AddDiagnostics(IEnumerable<Diagnostic> diagnosticEnum) {
+			if (diagnosticEnum != null)
+				diagnostics.AddRange(diagnosticEnum);
+		}
 
 		public IEnumerable<string> Messages => from x in diagnostics
 											   select x.Message;

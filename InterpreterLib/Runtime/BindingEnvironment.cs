@@ -3,7 +3,6 @@ using Antlr4.Runtime.Tree;
 using InterpreterLib.Binding;
 using InterpreterLib.Binding.Tree;
 using InterpreterLib.Binding.Types;
-using InterpreterLib.Evaluation;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -17,7 +16,7 @@ namespace InterpreterLib.Runtime {
 		private BindingEnvironment previous;
 		private IParseTree SyntaxRoot;
 
-		public IEnumerable<Diagnostic> Diagnostics => diagnostics
+		public IEnumerable<Diagnostic> Diagnostics => diagnostics;
 
 		internal BoundGlobalScope GlobalScope {
 			get {
@@ -58,7 +57,7 @@ namespace InterpreterLib.Runtime {
 				}
 			}
 
-			SyntaxRoot = parser.statement();
+			SyntaxRoot = parser.binaryExpression();
 		}
 
 		public DiagnosticResult<object> Evaluate(Dictionary<VariableSymbol, object> variables) {

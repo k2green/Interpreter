@@ -2,13 +2,11 @@
 using InterpreterLib.Binding.Tree;
 using System;
 using System.Collections.Generic;
-using System.Text;
-using System.Linq;
-using Antlr4.Runtime.Tree;
 using InterpreterLib.Binding.Types;
 
 namespace InterpreterLib {
-	public class Evaluator {
+	internal class Evaluator : BoundTreeVisitor<object> {
+
 		private DiagnosticContainer diagnostics;
 		private BoundNode root;
 
@@ -21,48 +19,20 @@ namespace InterpreterLib {
 		}
 
 		public DiagnosticResult<object> Evaluate() {
-			object value = Evaluate(root);
+			object value = Visit(root);
 			return new DiagnosticResult<object>(diagnostics, value);
 		}
 
-		private object Evaluate(BoundNode expression) {
-			switch (expression.Type) {
-				case NodeType.Literal:
-					return EvaluateLiteral((BoundLiteral)expression);
-				case NodeType.UnaryExpression:
-					return EvaluateUnaryExpression((BoundUnaryExpression)expression);
-				case NodeType.BinaryExpression:
-					return EvaluateBinaryExpression((BoundBinaryExpression)expression);
-				case NodeType.AssignmentExpression:
-					return EvaluateAssignmentExpression((BoundAssignmentExpression)expression);
-				case NodeType.Variable:
-					return EvaluateVariable((BoundVariableExpression)expression);
-				case NodeType.Expression:
-					return EvaluateExpression((BoundExpressionStatement)expression);
-				case NodeType.Block:
-					return EvaluateBlock((BoundBlock)expression);
-				case NodeType.If:
-					return EvaluateIf((BoundIfStatement)expression);
-				case NodeType.While:
-					return EvaluateWhile((BoundWhileStatement)expression);
-				case NodeType.VariableDeclaration:
-					return EvaluateVariableDeclaration((BoundDeclarationStatement)expression);
-				case NodeType.For:
-					return EvaluateForStatement((BoundForStatement)expression);
-				default: throw new Exception("Unimplemented node evaluator");
-			}
-		}
-
-		private object EvaluateForStatement(BoundForStatement statement) {
-			object assign = Evaluate(statement.Assignment);
+		protected override object VisitForStatement(BoundForStatement statement) {
+			object assign = Visit(statement.Assignment);
 
 			if (assign == null)
 				return null;
 
-			return Evaluate(statement.While);
+			return Visit(statement.While);
 		}
 
-		private object EvaluateVariableDeclaration(BoundDeclarationStatement expression) {
+		protected override object VisitVariableDeclaration(BoundDeclarationStatement expression) {
 			var variable = expression.VariableExpression.Variable;
 
 			if (variables.ContainsKey(variable))
@@ -73,46 +43,46 @@ namespace InterpreterLib {
 			return null;
 		}
 
-		private object EvaluateWhile(BoundWhileStatement expression) {
+		protected override object VisitWhile(BoundWhileStatement expression) {
 			object outval = null;
 			if (expression.Condition.ValueType != TypeSymbol.Boolean)
 				throw new Exception("Invalid expr");
 
-			while ((bool)Evaluate(expression.Condition)) {
-				outval = Evaluate(expression.Body);
+			while ((bool)Visit(expression.Condition)) {
+				outval = Visit(expression.Body);
 			}
 
 			return outval;
 		}
 
-		private object EvaluateIf(BoundIfStatement ifStat) {
+		protected override object VisitIf(BoundIfStatement ifStat) {
 			if (ifStat.Condition.ValueType != TypeSymbol.Boolean)
 				throw new Exception("Invalid expr");
 
-			bool testCondition = (bool)Evaluate(ifStat.Condition);
+			bool testCondition = (bool)Visit(ifStat.Condition);
 			if (testCondition)
-				return Evaluate(ifStat.TrueBranch);
+				return Visit(ifStat.TrueBranch);
 			else if (ifStat.FalseBranch != null)
-				return Evaluate(ifStat.FalseBranch);
+				return Visit(ifStat.FalseBranch);
 
 			return null;
 		}
 
-		private object EvaluateBlock(BoundBlock expression) {
+		protected override object VisitBlock(BoundBlock expression) {
 			object val = null;
 
 			foreach (var stat in expression.Statements)
-				val = Evaluate(stat);
+				val = Visit(stat);
 
 			return val;
 		}
 
-		private object EvaluateExpression(BoundExpressionStatement expression) {
-			return Evaluate(expression.Expression);
+		protected override object VisitExpression(BoundExpressionStatement expression) {
+			return Visit(expression.Expression);
 		}
 
-		private object EvaluateAssignmentExpression(BoundAssignmentExpression assignment) {
-			object expression = Evaluate(assignment.Expression);
+		protected override object VisitAssignmentExpression(BoundAssignmentExpression assignment) {
+			object expression = Visit(assignment.Expression);
 
 			if (expression == null) 
 				return null;
@@ -121,19 +91,19 @@ namespace InterpreterLib {
 			return expression;
 		}
 
-		private object EvaluateVariable(BoundVariableExpression expression) {
+		protected override object VisitVariable(BoundVariableExpression expression) {
 			return variables[expression.Variable];
 		}
 
-		private object EvaluateBinaryExpression(BoundBinaryExpression expression) {
-			object left = Evaluate(expression.LeftExpression);
-			object right = Evaluate(expression.RightExpression);
+		protected override object VisitBinaryExpression(BoundBinaryExpression expression) {
+			object left = Visit(expression.LeftExpression);
+			object right = Visit(expression.RightExpression);
 
 			return GetOperatorEvaluator(expression.Op)(left, right);
 		}
 
-		private object EvaluateUnaryExpression(BoundUnaryExpression expression) {
-			object operandValue = Evaluate(expression.Operand);
+		protected override object VisitUnaryExpression(BoundUnaryExpression expression) {
+			object operandValue = Visit(expression.Operand);
 
 			switch (expression.Op.OperatorType) {
 				case UnaryOperatorType.Identity:
@@ -146,7 +116,7 @@ namespace InterpreterLib {
 			}
 		}
 
-		private bool EvaluateEqualityOperation(object left, object right, BinaryOperator op) {
+		private bool VisitEqualityOperation(object left, object right, BinaryOperator op) {
 			if (op.LeftType == TypeSymbol.Integer && op.RightType == TypeSymbol.Integer)
 				return ((int)left) == ((int)right);
 
@@ -171,7 +141,7 @@ namespace InterpreterLib {
 				case BinaryOperatorType.Modulus:
 					return (left, right) => (int)left % (int)right;
 				case BinaryOperatorType.Equality:
-					return (left, right) => EvaluateEqualityOperation(left, right, op);
+					return (left, right) => VisitEqualityOperation(left, right, op);
 				case BinaryOperatorType.LogicalAnd:
 					return (left, right) => (bool)left && (bool)right;
 				case BinaryOperatorType.LogicalOr:
@@ -191,8 +161,12 @@ namespace InterpreterLib {
 			}
 		}
 
-		private object EvaluateLiteral(BoundLiteral literal) {
+		protected override object VisitLiteral(BoundLiteral literal) {
 			return literal.Value;
+		}
+
+		protected override object VisitError(BoundError error) {
+			throw new NotImplementedException();
 		}
 	}
 }

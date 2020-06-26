@@ -96,5 +96,9 @@ namespace InterpreterLib {
 		internal static Diagnostic ReportInvalidElse(int line, int column, string v) {
 			throw new NotImplementedException();
 		}
+
+		internal static Diagnostic ReportInvalidBinaryExpression(int line, int column, string v) {
+			throw new NotImplementedException();
+		}
 	}
 }

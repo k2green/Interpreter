@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using InterpreterLib;
-using InterpreterLib.Binding;
+using InterpreterLib.Binding.Types;
 using InterpreterLib.Runtime;
 
 namespace Interpreter {
