@@ -10,6 +10,8 @@ block : L_BRACE statement* R_BRACE;
 
 forStat: FOR L_PARENTHESIS assign=assignmentStatement COMMA condition=binaryExpression COMMA step=assignmentStatement R_PARENTHESIS body=statement;
 
+function
+
 ifStat : IF L_PARENTHESIS condition=binaryExpression R_PARENTHESIS trueBranch=statement (ELSE falseBranch=statement)?;
 whileStat: WHILE L_PARENTHESIS condition=binaryExpression R_PARENTHESIS body=statement;
 
@@ -27,6 +29,8 @@ binaryExpression: left=binaryExpression op=CARAT right=binaryExpression
 				| left=binaryExpression op=MULTIPLICATIVE_OP right=binaryExpression
 				| left=binaryExpression op=ADDITIVE_OP right=binaryExpression
 				| left=binaryExpression op=LOW_PRIORITY_OP right=binaryExpression
+				| left=binaryExpression op=COMPARE_OP right=binaryExpression
+				| left=binaryExpression op=LOGICAL_OP right=binaryExpression
 				| atom=unaryExpression;
 				
 /*
@@ -50,7 +54,6 @@ fragment LESSER: '<=';
 fragment GREATER_STRICT: '>';
 fragment LESSER_STRICT: '<';
 
-fragment LOGICAL_OPERATOR: '&&' | '||';
 fragment MOD_OPERATOR : 'mod';
 
 WHITESPACE : [ \t\r\n]+ -> channel(HIDDEN);
@@ -75,13 +78,13 @@ ADDITIVE_OP: '+' | '-';
 MULTIPLICATIVE_OP: '*' | '/';
 CARAT: '^';
 
-LOW_PRIORITY_OP: MOD_OPERATOR
-			   | EQUALITY_OPERATOR
-			   | GREATER
-			   | LESSER
-			   | GREATER_STRICT
-			   | LESSER_STRICT
-			   | LOGICAL_OPERATOR;
+LOW_PRIORITY_OP: MOD_OPERATOR;
+COMPARE_OP: EQUALITY_OPERATOR
+		  | GREATER
+		  | LESSER
+		  | GREATER_STRICT
+		  | LESSER_STRICT;
+LOGICAL_OP: '&&' | '||';
 
 BANG: '!';
 

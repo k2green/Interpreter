@@ -25,5 +25,9 @@ namespace InterpreterLib {
 		IEnumerator IEnumerable.GetEnumerator() {
 			throw new NotImplementedException();
 		}
+
+		internal void AddDiagnostics(object diagnostics) {
+			throw new NotImplementedException();
+		}
 	}
 }

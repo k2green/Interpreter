@@ -2,6 +2,8 @@
 using Antlr4.Runtime.Tree;
 using InterpreterLib.Binding;
 using InterpreterLib.Binding.Tree;
+using InterpreterLib.Binding.Types;
+using InterpreterLib.Evaluation;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -14,6 +16,8 @@ namespace InterpreterLib.Runtime {
 		private readonly bool chainDiagnostics;
 		private BindingEnvironment previous;
 		private IParseTree SyntaxRoot;
+
+		public IEnumerable<Diagnostic> Diagnostics => diagnostics
 
 		internal BoundGlobalScope GlobalScope {
 			get {
