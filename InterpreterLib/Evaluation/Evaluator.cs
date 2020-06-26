@@ -47,8 +47,22 @@ namespace InterpreterLib {
 					return EvaluateWhile((BoundWhileStatement)expression);
 				case NodeType.VariableDeclaration:
 					return EvaluateVariableDeclaration((BoundDeclarationStatement)expression);
+				case NodeType.For:
+					return EvaluateForStatement((BoundForStatement)expression);
 				default: throw new Exception("Unimplemented node evaluator");
 			}
+		}
+
+		private object EvaluateForStatement(BoundForStatement expression) {
+			object current = null;
+			int assignment = (int)Evaluate(expression.Assignment);
+			
+			while((bool) Evaluate(expression.Condition)) {
+				current = Evaluate(expression.Body);
+				variables[((BoundAssignmentExpression)expression.Assignment).Identifier] = Evaluate(expression.Step);
+			}
+
+			return current;
 		}
 
 		private object EvaluateVariableDeclaration(BoundDeclarationStatement expression) {
@@ -169,6 +183,14 @@ namespace InterpreterLib {
 					return (left, right) => (bool)left || (bool)right;
 				case BinaryOperatorType.LogicalXOr:
 					return (left, right) => (bool)left ^ (bool)right;
+				case BinaryOperatorType.GreaterThan:
+					return (left, right) => (int)left >= (int)right; 
+				case BinaryOperatorType.LesserThan:
+					return (left, right) => (int)left <= (int)right;
+				case BinaryOperatorType.StrictGreaterThan:
+					return (left, right) => (int)left > (int)right;
+				case BinaryOperatorType.StrinLesserThan:
+					return (left, right) => (int)left < (int)right;
 				default:
 					throw new Exception("Invalid operator");
 			}

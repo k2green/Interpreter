@@ -20,6 +20,11 @@ namespace InterpreterLib.Binding.Tree {
 
 			AddBinaryOperator("==", BinaryOperatorType.Equality, EqualityDifinitions);
 
+			AddBinaryOperator(">=", BinaryOperatorType.GreaterThan, ComparisonDefinitions);
+			AddBinaryOperator("<=", BinaryOperatorType.LesserThan, ComparisonDefinitions);
+			AddBinaryOperator(">", BinaryOperatorType.StrictGreaterThan, ComparisonDefinitions);
+			AddBinaryOperator("<", BinaryOperatorType.StrinLesserThan, ComparisonDefinitions);
+
 			AddBinaryOperator("&&", BinaryOperatorType.LogicalAnd, BooleanDefinitions);
 			AddBinaryOperator("||", BinaryOperatorType.LogicalOr, BooleanDefinitions);
 			AddBinaryOperator("^", BinaryOperatorType.LogicalXOr, BooleanDefinitions);
@@ -47,6 +52,10 @@ namespace InterpreterLib.Binding.Tree {
 			Tuple.Create(BoundType.Byte, BoundType.Integer, BoundType.Integer),
 			Tuple.Create(BoundType.Byte, BoundType.Double, BoundType.Double),
 			Tuple.Create(BoundType.Byte, BoundType.Byte, BoundType.Byte)
+		};
+
+		private static Tuple<BoundType, BoundType, BoundType>[] ComparisonDefinitions = {
+			Tuple.Create(BoundType.Integer, BoundType.Integer, BoundType.Boolean)
 		};
 
 		private static Tuple<BoundType, BoundType>[] EqualityDifinitions = {
