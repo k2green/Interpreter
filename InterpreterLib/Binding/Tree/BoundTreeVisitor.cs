@@ -13,7 +13,7 @@ namespace InterpreterLib.Binding.Tree {
 				case NodeType.BinaryExpression:
 					return VisitBinaryExpression((BoundBinaryExpression)node);
 				case NodeType.AssignmentStatement:
-					return VisitAssignmentExpression((BoundAssignmentStatement)node);
+					return VisitAssignmentExpression((BoundAssignmentExpression)node);
 				case NodeType.Variable:
 					return VisitVariable((BoundVariableExpression)node);
 				case NodeType.Block:
@@ -23,7 +23,7 @@ namespace InterpreterLib.Binding.Tree {
 				case NodeType.While:
 					return VisitWhile((BoundWhileStatement)node);
 				case NodeType.VariableDeclaration:
-					return VisitVariableDeclaration((BoundDeclarationStatement)node);
+					return VisitVariableDeclaration((BoundVariableDeclarationStatement)node);
 				case NodeType.For:
 					return VisitForStatement((BoundForStatement)node);
 				case NodeType.Error:
@@ -35,12 +35,12 @@ namespace InterpreterLib.Binding.Tree {
 		protected abstract T VisitLiteral(BoundLiteral literal);
 		protected abstract T VisitUnaryExpression(BoundUnaryExpression expression);
 		protected abstract T VisitBinaryExpression(BoundBinaryExpression expression);
-		protected abstract T VisitAssignmentExpression(BoundAssignmentStatement expression);
+		protected abstract T VisitAssignmentExpression(BoundAssignmentExpression expression);
 		protected abstract T VisitVariable(BoundVariableExpression expression);
 		protected abstract T VisitBlock(BoundBlock block);
 		protected abstract T VisitIf(BoundIfStatement statement);
 		protected abstract T VisitWhile(BoundWhileStatement statement);
-		protected abstract T VisitVariableDeclaration(BoundDeclarationStatement statement);
+		protected abstract T VisitVariableDeclaration(BoundVariableDeclarationStatement statement);
 		protected abstract T VisitForStatement(BoundForStatement statement);
 		protected abstract T VisitError(BoundError error);
 	}
@@ -56,7 +56,7 @@ namespace InterpreterLib.Binding.Tree {
 				case NodeType.BinaryExpression:
 					return VisitBinaryExpression((BoundBinaryExpression)node);
 				case NodeType.AssignmentStatement:
-					return VisitAssignmentExpression((BoundAssignmentStatement)node);
+					return VisitAssignmentExpression((BoundAssignmentExpression)node);
 				case NodeType.Variable:
 					return VisitVariable((BoundVariableExpression)node);
 				case NodeType.Block:
@@ -66,7 +66,7 @@ namespace InterpreterLib.Binding.Tree {
 				case NodeType.While:
 					return VisitWhile((BoundWhileStatement)node);
 				case NodeType.VariableDeclaration:
-					return VisitVariableDeclaration((BoundDeclarationStatement)node);
+					return VisitVariableDeclaration((BoundVariableDeclarationStatement)node);
 				case NodeType.For:
 					return VisitForStatement((BoundForStatement)node);
 				case NodeType.Error:
@@ -78,12 +78,12 @@ namespace InterpreterLib.Binding.Tree {
 		protected abstract U VisitLiteral(BoundLiteral literal);
 		protected abstract U VisitUnaryExpression(BoundUnaryExpression expression);
 		protected abstract U VisitBinaryExpression(BoundBinaryExpression expression);
-		protected abstract U VisitAssignmentExpression(BoundAssignmentStatement expression);
+		protected abstract U VisitAssignmentExpression(BoundAssignmentExpression expression);
 		protected abstract U VisitVariable(BoundVariableExpression expression);
 		protected abstract T VisitBlock(BoundBlock block);
 		protected abstract T VisitIf(BoundIfStatement statement);
 		protected abstract T VisitWhile(BoundWhileStatement statement);
-		protected abstract T VisitVariableDeclaration(BoundDeclarationStatement statement);
+		protected abstract T VisitVariableDeclaration(BoundVariableDeclarationStatement statement);
 		protected abstract T VisitForStatement(BoundForStatement statement);
 		protected abstract T VisitError(BoundError error);
 	}
@@ -98,7 +98,7 @@ namespace InterpreterLib.Binding.Tree {
 				case NodeType.BinaryExpression:
 					return VisitBinaryExpression((BoundBinaryExpression)node, param1, param2);
 				case NodeType.AssignmentStatement:
-					return VisitAssignmentExpression((BoundAssignmentStatement)node, param1, param2);
+					return VisitAssignmentExpression((BoundAssignmentExpression)node, param1, param2);
 				case NodeType.Variable:
 					return VisitVariable((BoundVariableExpression)node, param1, param2);
 				case NodeType.Block:
@@ -108,7 +108,7 @@ namespace InterpreterLib.Binding.Tree {
 				case NodeType.While:
 					return VisitWhile((BoundWhileStatement)node, param1, param2);
 				case NodeType.VariableDeclaration:
-					return VisitVariableDeclaration((BoundDeclarationStatement)node, param1, param2);
+					return VisitVariableDeclaration((BoundVariableDeclarationStatement)node, param1, param2);
 				case NodeType.For:
 					return VisitForStatement((BoundForStatement)node, param1, param2);
 				case NodeType.Error:
@@ -120,12 +120,12 @@ namespace InterpreterLib.Binding.Tree {
 		protected abstract T VisitLiteral(BoundLiteral literal, U param1, V param2);
 		protected abstract T VisitUnaryExpression(BoundUnaryExpression expression, U param1, V param2);
 		protected abstract T VisitBinaryExpression(BoundBinaryExpression expression, U param1, V param2);
-		protected abstract T VisitAssignmentExpression(BoundAssignmentStatement expression, U param1, V param2);
+		protected abstract T VisitAssignmentExpression(BoundAssignmentExpression expression, U param1, V param2);
 		protected abstract T VisitVariable(BoundVariableExpression expression, U param1, V param2);
 		protected abstract T VisitBlock(BoundBlock block, U param1, V param2);
 		protected abstract T VisitIf(BoundIfStatement statement, U param1, V param2);
 		protected abstract T VisitWhile(BoundWhileStatement statement, U param1, V param2);
-		protected abstract T VisitVariableDeclaration(BoundDeclarationStatement statement, U param1, V param2);
+		protected abstract T VisitVariableDeclaration(BoundVariableDeclarationStatement statement, U param1, V param2);
 		protected abstract T VisitForStatement(BoundForStatement statement, U param1, V param2);
 		protected abstract T VisitError(BoundError error, U param1, V param2);
 	}

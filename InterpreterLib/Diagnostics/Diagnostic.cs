@@ -92,5 +92,25 @@ namespace InterpreterLib {
 		internal static Diagnostic ReportInvalidWhile(int line, int column, string text) {
 			return new Diagnostic(line, column, $"The while loop {text} is invalid");
 		}
+
+		internal static Diagnostic ReportInvalidDeclarationKeyword(int line, int column, string text) {
+			throw new NotImplementedException();
+		}
+
+		internal static Diagnostic ReportMissingTypeDelimeter(int line, int column) {
+			throw new NotImplementedException();
+		}
+
+		internal static Diagnostic ReportMissingTypeName(int line, int column) {
+			throw new NotImplementedException();
+		}
+
+		internal static Diagnostic ReportInvalidTypeName(int line, int column, string text) {
+			throw new NotImplementedException();
+		}
+
+		internal static Diagnostic ReportCannotDefine(int line, int column, string name) {
+			throw new NotImplementedException();
+		}
 	}
 }

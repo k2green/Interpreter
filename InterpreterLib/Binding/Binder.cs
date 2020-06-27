@@ -4,7 +4,7 @@ using InterpreterLib.Binding.Tree;
 using InterpreterLib.Binding.Types;
 using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Linq;
 
 namespace InterpreterLib.Binding {
 	internal sealed class Binder : GLangBaseVisitor<BoundNode> {
@@ -51,6 +51,8 @@ namespace InterpreterLib.Binding {
 		public DiagnosticResult<BoundNode> Bind(IParseTree tree) {
 			return new DiagnosticResult<BoundNode>(diagnostics, Visit(tree));
 		}
+
+		private bool OnlyOne(IEnumerable<bool> conditions) => conditions.Count(b => b) == 1;
 
 		private BoundError Error(Diagnostic diagnostic) {
 			diagnostics.AddDiagnostic(diagnostic);
@@ -156,132 +158,39 @@ namespace InterpreterLib.Binding {
 			return Error(Diagnostic.ReportInvalidBinaryExpression(context.Start.Line, context.Start.Column, context.GetText()));
 		}
 
-		public override BoundNode VisitAssignmentStatement([NotNull] GLangParser.AssignmentStatementContext context) {
-			bool varDeclExists = context.variableDeclaration() != null;
-			bool identifierExists = context.IDENTIFIER() != null;
-			bool operatorExists = context.ASSIGNMENT_OPERATOR() != null;
-			bool exprExists = context.expr != null;
+		public override BoundNode VisitAssignmentExpression([NotNull] GLangParser.AssignmentExpressionContext context) {
+			bool hasIdentifier = context.IDENTIFIER() != null;
+			bool hasAssignmentOp = context.ASSIGNMENT_OPERATOR() != null && context.ASSIGNMENT_OPERATOR().GetText().Equals("=");
+			bool hasExpression = context.binaryExpression() != null;
 
-			// Error cases for when certain tokens exist
-			// varDeclExists == identifierExists checks that only assignments with exactly 1 of either an IDENTIFIER or variableDeclaration
-			if (varDeclExists == identifierExists || !operatorExists || !exprExists) {
+			if (!hasIdentifier || !hasAssignmentOp || !hasExpression)
 				return Error(Diagnostic.ReportInvalidAssignment(context.Start.Line, context.Start.Column, context.GetText()));
+
+			var exprRule = context.binaryExpression();
+			var exprNodeResult = Visit(context.binaryExpression());
+
+			if(!(exprNodeResult is BoundExpression)) {
+				var diagnostic = Diagnostic.ReportFailedVisit(exprRule.Start.Line, exprRule.Start.Column, exprRule.GetText());
+				return Error(diagnostic, false, exprNodeResult);
 			}
 
-			BoundNode exprNode = Visit(context.expr);
-
-			if (!(exprNode is BoundExpression)) {
-				var token = context.binaryExpression().Start;
-				var diagnostic = Diagnostic.ReportFailedVisit(token.Line, token.Column, context.binaryExpression().GetText());
-				return Error(diagnostic, false, exprNode);
+			var expression = (BoundExpression)exprNodeResult;
+			if(!scope.TryLookup(context.IDENTIFIER().GetText(), out var variable)) {
+				var diagnostic = Diagnostic.ReportUndefinedVariable(context.Start.Line, context.Start.Column, context.IDENTIFIER().GetText());
+				return Error(diagnostic, false, exprNodeResult);
 			}
 
-			var boundExpression = (BoundExpression)exprNode;
-
-			// If the variableDeclaration exists
-			if (varDeclExists) {
-				// We try to bind the declaration statement
-				var declStat = VisitVariableDeclaration(context.variableDeclaration(), boundExpression.ValueType, false);
-
-				// A failure has occured in the binding of the variable declaration if declStat is null
-				// An error should have already been reported so return null
-				if (!(declStat is BoundDeclarationStatement)) {
-					var diagnostic = new Diagnostic(context.Start.Line, context.Start.Column, "Error in for");
-					return Error(diagnostic, false, declStat, exprNode);
-				}
-
-				var declaration = (BoundDeclarationStatement)declStat;
-				var variable = declaration.VariableExpression.Variable;
-				if (variable.ValueType != boundExpression.ValueType) {
-					var diagnostic = Diagnostic.ReportVariableTypeMismatch(context.Start.Line, context.Start.Column, variable.Name, variable.ValueType, boundExpression.ValueType);
-					return Error(diagnostic, true, exprNode);
-				}
-
-				return new BoundAssignmentStatement(declStat, boundExpression, variable);
-			} else {                    // If variableDeclaration doesn't exist, then then IDENTIFIER must exist
-										// First we try to lookup the variable and assign it to the variable BoundVariable
-										// If this fails report an undefined variable error.
-				if (!scope.TryLookup(context.IDENTIFIER().GetText(), out var variable)) {
-					var diagnostic = Diagnostic.ReportUndefinedVariable(context.Start.Line, context.Start.Column, context.IDENTIFIER().GetText());
-					return Error(diagnostic, true, exprNode);
-				}
-
-				// If the variable found is readonly we also report a readonly variable error
-				if (variable.IsReadOnly) {
-					var diagnostic = Diagnostic.ReportReadonlyVariable(context.Start.Line, context.Start.Column, variable);
-					return Error(diagnostic, true, exprNode);
-				}
-
-				// As a final check we make sure the type of variable matches the type of the bound expression
-				if (variable.ValueType != boundExpression.ValueType) {
-					var diagnostic = Diagnostic.ReportVariableTypeMismatch(context.Start.Line, context.Start.Column, variable.Name, variable.ValueType, boundExpression.ValueType);
-					return Error(diagnostic, true, exprNode);
-				}
-
-				return new BoundAssignmentStatement(new BoundVariableExpression(variable), boundExpression, variable);
-			}
-		}
-
-		public override BoundNode VisitVariableDeclaration([NotNull] GLangParser.VariableDeclarationContext context) {
-			return VisitVariableDeclaration(context, TypeSymbol.Integer, true);
-		}
-
-		private BoundNode VisitVariableDeclaration([NotNull] GLangParser.VariableDeclarationContext context, TypeSymbol type, bool requireType) {
-			bool declareationExists = context.DECL_VARIABLE() != null;
-			bool identifierExists = context.IDENTIFIER() != null;
-			bool delimeterExists = context.TYPE_DELIMETER() != null;
-			bool typeNameExists = context.TYPE_NAME() != null;
-			bool isReadOnly;
-
-			/*  
-			 *  Report error cases for when tokens don't exist
-			 *  
-			 *  delimeterExists ^ typeNameExists
-			 *		checks for cases where only one of TYPE_DELIMETER and TYPE_NAME exist
-			 *  (requireType && !delimeterExists && !typeNameExists) 
-			 *		checks for cases where TYPE_DELIMETER and TYPE_NAME dont exist, but only when requireType is true
-			 */
-			if (!declareationExists || !identifierExists || delimeterExists ^ typeNameExists || (requireType && !delimeterExists && !typeNameExists)) {
-				return Error(Diagnostic.ReportInvalidDeclaration(context.Start.Line, context.Start.Column, context.GetText()));
+			if(variable.IsReadOnly) {
+				var diagnostic = Diagnostic.ReportReadonlyVariable(context.Start.Line, context.Start.Column, variable);
+				return Error(diagnostic, true, exprNodeResult);
 			}
 
-			// Match the TYPE_NAME token for the declaration type. Report an error if this fails.
-			switch (context.DECL_VARIABLE().GetText()) {
-				case "var":
-					isReadOnly = false;
-					break;
-				case "val":
-					isReadOnly = true;
-					break;
-
-				default:
-					var token = context.DECL_VARIABLE().Symbol;
-					return Error(Diagnostic.ReportInvalidDeclaration(token.Line, token.Column, token.Text));
+			if (expression.ValueType != variable.ValueType) {
+				var diagnostic = Diagnostic.ReportCannotRedefine(context.Start.Line, context.Start.Column, variable.Name, variable.ValueType, expression.ValueType);
+				return Error(diagnostic, true, exprNodeResult);
 			}
 
-			// If both TYPE_DELIMETER and TYPE_NAME exist 
-			if (delimeterExists && typeNameExists) {
-				// type variable to the corresponding Type. Report an error if this fails.
-				switch (context.TYPE_NAME().GetText()) {
-					case "int":
-						type = TypeSymbol.Integer;
-						break;
-					case "bool":
-						type = TypeSymbol.Boolean;
-						break;
-					default:
-						var token = context.TYPE_NAME().Symbol;
-						return Error(Diagnostic.ReportInvalidDeclaration(token.Line, token.Column, token.Text));
-				}
-			}
-
-			// Create bound variable with the parsed information.
-			var variable = new VariableSymbol(context.IDENTIFIER().GetText(), isReadOnly, type);
-
-			if (!scope.TryDefine(variable))
-				return Error(Diagnostic.ReportRedefineVariable(context.Start.Line, context.Start.Column, scope[context.IDENTIFIER().GetText()], variable));
-
-			return new BoundDeclarationStatement(new BoundVariableExpression(variable));
+			return new BoundAssignmentExpression(variable, expression);
 		}
 
 		public override BoundNode VisitStatement([NotNull] GLangParser.StatementContext context) {
@@ -297,16 +206,14 @@ namespace InterpreterLib.Binding {
 			if (context.block() != null)
 				return Visit(context.block());
 
-			if (context.assignmentStatement() != null)
-				return Visit(context.assignmentStatement());
-
-			if (context.variableDeclaration() != null)
-				return Visit(context.variableDeclaration());
-
-			if (context.binaryExpression() != null)
-				return Visit(context.binaryExpression());
 
 			return Error(Diagnostic.ReportInvalidStatement(context.Start.Line, context.Start.Column, context.GetText()));
+		}
+
+		public override BoundNode VisitVariableDeclarationStatement([NotNull] GLangParser.VariableDeclarationStatementContext context) {
+			bool hasIdentifier = context.IDENTIFIER() != null;
+			bool hasAssignmentOp = context.ASSIGNMENT_OPERATOR() != null && context.ASSIGNMENT_OPERATOR().GetText().Equals("=");
+			bool hasExpression = context.binaryExpression() != null;
 		}
 
 		public override BoundNode VisitBlock([NotNull] GLangParser.BlockContext context) {
@@ -335,7 +242,7 @@ namespace InterpreterLib.Binding {
 				return Error(Diagnostic.ReportInvalidFor(context.Start.Line, context.Start.Column, context.GetText()));
 			}
 
-			if (!(assignment is BoundAssignmentStatement && condition is BoundBinaryExpression && step is BoundAssignmentStatement)) {
+			if (!(assignment is BoundAssignmentExpression && condition is BoundBinaryExpression && step is BoundAssignmentExpression)) {
 				var diagnostic = Diagnostic.ReportFailedVisit(context.Start.Line, context.Start.Column, context.GetText());
 				return Error(diagnostic, false, assignment, condition, step, body);
 			}

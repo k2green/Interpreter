@@ -38,7 +38,7 @@ namespace InterpreterLib {
 			return Visit(statement.While);
 		}
 
-		protected override object VisitVariableDeclaration(BoundDeclarationStatement expression) {
+		protected override object VisitVariableDeclaration(BoundVariableDeclarationStatement expression) {
 			var variable = expression.VariableExpression.Variable;
 
 			if (variables.ContainsKey(variable))
@@ -83,7 +83,7 @@ namespace InterpreterLib {
 			return val;
 		}
 
-		protected override object VisitAssignmentExpression(BoundAssignmentStatement assignment) {
+		protected override object VisitAssignmentExpression(BoundAssignmentExpression assignment) {
 			object expression = Visit(assignment.Expression);
 
 			if (expression == null) 

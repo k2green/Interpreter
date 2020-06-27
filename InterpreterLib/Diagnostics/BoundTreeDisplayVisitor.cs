@@ -15,7 +15,7 @@ namespace InterpreterLib.Diagnostics {
 			return Visit(node, SPACING, SPACING);
 		}
 
-		protected override IEnumerable<string> VisitAssignmentExpression(BoundAssignmentStatement expression, string prefix1, string prefix2) {
+		protected override IEnumerable<string> VisitAssignmentExpression(BoundAssignmentExpression expression, string prefix1, string prefix2) {
 			var line = new string[] {
 				$"{prefix1}Assignment Expression",
 				$"{prefix2 + NEXT_CHILD}Variable: {expression.Identifier}"
@@ -99,7 +99,7 @@ namespace InterpreterLib.Diagnostics {
 			return new string[] { $"{prefix1}Variable {expression.Variable}" };
 		}
 
-		protected override IEnumerable<string> VisitVariableDeclaration(BoundDeclarationStatement statement, string prefix1, string prefix2) {
+		protected override IEnumerable<string> VisitVariableDeclaration(BoundVariableDeclarationStatement statement, string prefix1, string prefix2) {
 			var baseLine = new string[] { $"{prefix1}Variable Declaration" };
 
 			return baseLine.Concat(Visit(statement.VariableExpression, prefix2 + LAST_CHILD, prefix2 + SPACING));

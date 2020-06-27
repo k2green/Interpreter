@@ -5,10 +5,19 @@ using System.Text;
 namespace InterpreterLib.Binding.Tree {
 	internal class BoundTreeRewriter {
 
+		public BoundNode RewriteNode(BoundNode node) {
+			if (node is BoundExpression)
+				return RewriteExpression((BoundExpression)node);
+			else if (node is BoundStatement)
+				return RewriteStatement((BoundStatement)node);
+			else
+				throw new Exception($"Invalid node {node.Type}");
+		}
+
 		protected virtual BoundStatement RewriteStatement(BoundStatement statement) {
 			switch (statement.Type) {
 				case NodeType.AssignmentStatement:
-					return RewriteAssignmentStatement((BoundAssignmentStatement)statement);
+					return RewriteAssignmentStatement((BoundAssignmentExpression)statement);
 				case NodeType.Block:
 					return RewriteBlock((BoundBlock)statement);
 				case NodeType.If:
@@ -16,7 +25,7 @@ namespace InterpreterLib.Binding.Tree {
 				case NodeType.While:
 					return RewriteWhileStatement((BoundWhileStatement)statement);
 				case NodeType.VariableDeclaration:
-					return RewriteVariableDeclaration((BoundDeclarationStatement)statement);
+					return RewriteVariableDeclaration((BoundVariableDeclarationStatement)statement);
 				case NodeType.For:
 					return RewriteForStatement((BoundForStatement)statement);
 
@@ -60,26 +69,20 @@ namespace InterpreterLib.Binding.Tree {
 			return new BoundBinaryExpression(rewritenLeftExpresson, expression.Op, rewritenRightExpresson);
 		}
 
-		protected virtual BoundStatement RewriteAssignmentStatement(BoundAssignmentStatement statement) {
+		protected virtual BoundStatement RewriteAssignmentStatement(BoundAssignmentExpression statement) {
+			var rewriteAssign = RewriteNode(statement.AssignmentIdentifier);
 			var expression = RewriteExpression(statement.Expression);
+			if (rewriteAssign == statement.AssignmentIdentifier && expression == statement.Expression)
+				return statement;
 
-			if (statement.IsDeclaration) {
-				var declaration = RewriteStatement(statement.DeclarationStatement);
-
-				if (statement.DeclarationStatement == declaration && statement.Expression == expression) 
-					return statement;
-
-				else return new BoundAssignmentStatement(declaration, expression)
-			} else {
-
-			}
+			return new BoundAssignmentExpression(rewriteAssign, expression, statement.Identifier);
 		}
 
 		protected virtual BoundStatement RewriteBlock(BoundBlock block) {
 			throw new NotImplementedException();
 		}
 
-		protected virtual BoundStatement RewriteError(BoundError error) {
+		protected virtual BoundNode RewriteError(BoundError error) {
 			throw new NotImplementedException();
 		}
 
@@ -91,7 +94,7 @@ namespace InterpreterLib.Binding.Tree {
 			throw new NotImplementedException();
 		}
 
-		protected virtual BoundStatement RewriteVariableDeclaration(BoundDeclarationStatement statement) {
+		protected virtual BoundStatement RewriteVariableDeclaration(BoundVariableDeclarationStatement statement) {
 			throw new NotImplementedException();
 		}
 

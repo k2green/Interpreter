@@ -7,6 +7,7 @@
 		While,
 		VariableDeclaration,
 		For,
-		Error
+		Error,
+		Expression
 	}
 }
