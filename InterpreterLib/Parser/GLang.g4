@@ -4,20 +4,36 @@ grammar GLang;
  * Parser Rules
  */
  
-literal : INTEGER | BOOLEAN | IDENTIFIER;
+
+	/*
+	 * Statements
+	 */
+		 
+statement :  forStat | whileStat | ifStat | block| variableDeclarationStatement | assignmentStatement  | expressionStatement;
+
 
 block : L_BRACE statement* R_BRACE;
+
+expressionStatement: binaryExpression;
 
 forStat: FOR L_PARENTHESIS assign=assignmentStatement COMMA condition=binaryExpression COMMA step=assignmentStatement R_PARENTHESIS body=statement;
 
 ifStat : IF L_PARENTHESIS condition=binaryExpression R_PARENTHESIS trueBranch=statement (ELSE falseBranch=statement)?;
 whileStat: WHILE L_PARENTHESIS condition=binaryExpression R_PARENTHESIS body=statement;
 
-statement :  forStat | whileStat | ifStat | block| assignmentStatement | variableDeclaration  | binaryExpression;
+variableDeclarationStatement: DECL_VARIABLE IDENTIFIER typeDefinition
+							| DECL_VARIABLE assignmentStatement;
 
-variableDeclaration : DECL_VARIABLE IDENTIFIER (TYPE_DELIMETER TYPE_NAME)?;
-assignmentStatement : variableDeclaration ASSIGNMENT_OPERATOR expr=binaryExpression
-					| IDENTIFIER ASSIGNMENT_OPERATOR expr=binaryExpression;
+typeDefinition: TYPE_DELIMETER TYPE_NAME;
+
+assignmentStatement : IDENTIFIER typeDefinition? ASSIGNMENT_OPERATOR expr=binaryExpression;
+
+
+	/*
+	 * Expressions
+	 */
+
+literal : INTEGER | BOOLEAN | IDENTIFIER;
 
 unaryExpression : L_PARENTHESIS binaryExpression R_PARENTHESIS
 				| op=(ADDITIVE_OP | BANG) unaryExpression
