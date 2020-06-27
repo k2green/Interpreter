@@ -78,11 +78,11 @@ namespace InterpreterLib.Binding {
 				if (scope.TryLookup(context.IDENTIFIER().GetText(), out var variable)) {
 					return new BoundVariableExpression(variable);
 				} else {
-					diagnostics.AddDiagnostic(Diagnostic.ReportUndefinedVariable(token.Line, token.Column, context.IDENTIFIER().GetText()));
+					Error(Diagnostic.ReportUndefinedVariable(token.Line, token.Column, context.IDENTIFIER().GetText()));
 				}
 			}
 
-			return Error(Diagnostic.ReportInvalidSyntax(token.Line, token.Column, context.GetText()));
+			return Error(Diagnostic.ReportInvalidLiteral(token.Line, token.Column, context.GetText()));
 		}
 
 		public override BoundNode VisitUnaryExpression([NotNull] GLangParser.UnaryExpressionContext context) {
@@ -101,7 +101,10 @@ namespace InterpreterLib.Binding {
 
 				// If this fails to produce a BoundExpression it has failed so we retun null
 				if (!(operand is BoundExpression)) {
-					var diagnostic = Diagnostic.ReportInvalidOperand(context.Start.Line, context.Start.Column, context.GetText());
+					int line = context.unaryExpression().Start.Line;
+					int column = context.unaryExpression().Start.Column;
+					var text = context.unaryExpression().GetText();
+					var diagnostic = Diagnostic.ReportFailedVisit(line, column, text);
 					return Error(diagnostic, false, operand);
 				}
 
@@ -117,7 +120,7 @@ namespace InterpreterLib.Binding {
 				return new BoundUnaryExpression(op, (BoundExpression)operand);
 			}
 
-			return Error(Diagnostic.ReportInvalidBinaryExpression(context.Start.Line, context.Start.Column, context.GetText()));
+			return Error(Diagnostic.ReportInvalidUnaryExpression(context.Start.Line, context.Start.Column, context.GetText()));
 		}
 
 		public override BoundNode VisitBinaryExpression([NotNull] GLangParser.BinaryExpressionContext context) {
@@ -132,7 +135,8 @@ namespace InterpreterLib.Binding {
 
 				// Return null if the binding of either child fails
 				if (!(left is BoundExpression) || !(right is BoundExpression)) {
-					var diagnostic = Diagnostic.ReportInvalidOperand(context.Start.Line, context.Start.Column, context.GetText());
+					var token = context.Start;
+					var diagnostic = Diagnostic.ReportFailedVisit(token.Line, token.Column, context.GetText());
 					return Error(diagnostic, false, left, right);
 				}
 
@@ -149,7 +153,7 @@ namespace InterpreterLib.Binding {
 				return new BoundBinaryExpression((BoundExpression)left, op, (BoundExpression)right);
 			}
 
-			return Error(Diagnostic.ReportInvalidSyntax(context.Start.Line, context.Start.Column, $"Binary Expression {context.GetText()}"));
+			return Error(Diagnostic.ReportInvalidBinaryExpression(context.Start.Line, context.Start.Column, context.GetText()));
 		}
 
 		public override BoundNode VisitAssignmentStatement([NotNull] GLangParser.AssignmentStatementContext context) {
@@ -161,14 +165,14 @@ namespace InterpreterLib.Binding {
 			// Error cases for when certain tokens exist
 			// varDeclExists == identifierExists checks that only assignments with exactly 1 of either an IDENTIFIER or variableDeclaration
 			if (varDeclExists == identifierExists || !operatorExists || !exprExists) {
-				diagnostics.AddDiagnostic(Diagnostic.ReportInvalidAssignment(context.Start.Line, context.Start.Column, context.GetText()));
-				return null;
+				return Error(Diagnostic.ReportInvalidAssignment(context.Start.Line, context.Start.Column, context.GetText()));
 			}
 
 			BoundNode exprNode = Visit(context.expr);
 
 			if (!(exprNode is BoundExpression)) {
-				var diagnostic = new Diagnostic(context.Start.Line, context.Start.Column, "Error in for");
+				var token = context.binaryExpression().Start;
+				var diagnostic = Diagnostic.ReportFailedVisit(token.Line, token.Column, context.binaryExpression().GetText());
 				return Error(diagnostic, false, exprNode);
 			}
 
@@ -327,7 +331,7 @@ namespace InterpreterLib.Binding {
 			}
 
 			if (!(assignment is BoundAssignmentExpression && condition is BoundBinaryExpression && step is BoundAssignmentExpression)) {
-				var diagnostic = Diagnostic.ReportInvalidFor(context.Start.Line, context.Start.Column, context.GetText());
+				var diagnostic = Diagnostic.ReportFailedVisit(context.Start.Line, context.Start.Column, context.GetText());
 				return Error(diagnostic, false, assignment, condition, step, body);
 			}
 
@@ -345,7 +349,7 @@ namespace InterpreterLib.Binding {
 			}
 
 			if (context.ELSE() == null ^ context.falseBranch == null) {
-				return Error(Diagnostic.ReportInvalidElse(context.Start.Line, context.Start.Column, context.GetText()));
+				return Error(Diagnostic.ReportMalformedElse(context.Start.Line, context.Start.Column, context.GetText()));
 			}
 
 			var condition = (BoundExpression)Visit(context.condition);

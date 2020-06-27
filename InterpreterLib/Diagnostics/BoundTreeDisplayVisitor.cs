@@ -46,7 +46,7 @@ namespace InterpreterLib.Diagnostics {
 		}
 
 		protected override IEnumerable<string> VisitError(BoundError error, string prefix1, string prefix2) {
-			IEnumerable<string> line = new string[] { $"{prefix1}Error {error.Error} is node cause of error: {(error.IsCausing ? "Yes" : "No")}" };
+			IEnumerable<string> line = new string[] { $"{prefix1}{error.Error}"};
 
 			if (error.Children != null) {
 				var children = error.Children.ToArray();
