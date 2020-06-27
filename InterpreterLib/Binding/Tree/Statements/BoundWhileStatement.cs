@@ -8,9 +8,9 @@ namespace InterpreterLib.Binding.Tree {
 		public override NodeType Type => NodeType.While;
 
 		public BoundExpression Condition { get; }
-		public BoundNode Body { get; }
+		public BoundStatement Body { get; }
 
-		public BoundWhileStatement(BoundExpression condition, BoundNode body) {
+		public BoundWhileStatement(BoundExpression condition, BoundStatement body) {
 			Condition = condition;
 			Body = body;
 		}

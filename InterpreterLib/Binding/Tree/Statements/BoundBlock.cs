@@ -5,12 +5,12 @@ using System.Text;
 namespace InterpreterLib.Binding.Tree {
 	internal sealed class BoundBlock : BoundStatement {
 		public override NodeType Type => NodeType.Block;
-		public IReadOnlyList<BoundNode> Statements => statements;
+		public IReadOnlyList<BoundStatement> Statements => statements;
 
-		private List<BoundNode> statements;
+		private List<BoundStatement> statements;
 
-		public BoundBlock(IEnumerable<BoundNode> statements) {
-			this.statements = new List<BoundNode>();
+		public BoundBlock(IEnumerable<BoundStatement> statements) {
+			this.statements = new List<BoundStatement>();
 			this.statements.AddRange(statements);
 		}
 	}

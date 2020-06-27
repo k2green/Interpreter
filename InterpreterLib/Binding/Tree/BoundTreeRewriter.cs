@@ -16,8 +16,6 @@ namespace InterpreterLib.Binding.Tree {
 
 		protected virtual BoundStatement RewriteStatement(BoundStatement statement) {
 			switch (statement.Type) {
-				case NodeType.AssignmentStatement:
-					return RewriteAssignmentStatement((BoundAssignmentExpression)statement);
 				case NodeType.Block:
 					return RewriteBlock((BoundBlock)statement);
 				case NodeType.If:
@@ -35,6 +33,8 @@ namespace InterpreterLib.Binding.Tree {
 
 		protected virtual BoundExpression RewriteExpression(BoundExpression expression) {
 			switch (expression.Type) {
+				case NodeType.AssignmentStatement:
+					return RewriteAssignmentExpression((BoundAssignmentExpression)expression);
 				case NodeType.Literal:
 					return RewriteLiteral((BoundLiteral)expression);
 				case NodeType.UnaryExpression:
@@ -48,15 +48,20 @@ namespace InterpreterLib.Binding.Tree {
 		}
 
 		protected virtual BoundExpression RewriteLiteral(BoundLiteral literal) {
-			throw new NotImplementedException();
+			return literal;
 		}
 
 		protected virtual BoundExpression RewriteUnaryExpression(BoundUnaryExpression expression) {
-			throw new NotImplementedException();
+			var operand = RewriteExpression(expression.Operand);
+
+			if (operand == expression.Operand)
+				return expression;
+
+			return new BoundUnaryExpression(expression.Op, operand);
 		}
 
 		protected virtual BoundExpression RewriteVariableExpression(BoundVariableExpression expression) {
-			throw new NotImplementedException();
+			return expression;
 		}
 
 		protected virtual BoundExpression RewriteBinaryExpression(BoundBinaryExpression expression) {
@@ -69,17 +74,31 @@ namespace InterpreterLib.Binding.Tree {
 			return new BoundBinaryExpression(rewritenLeftExpresson, expression.Op, rewritenRightExpresson);
 		}
 
-		protected virtual BoundStatement RewriteAssignmentStatement(BoundAssignmentExpression statement) {
-			var rewriteAssign = RewriteNode(statement.AssignmentIdentifier);
+		protected virtual BoundExpression RewriteAssignmentExpression(BoundAssignmentExpression statement) {
 			var expression = RewriteExpression(statement.Expression);
-			if (rewriteAssign == statement.AssignmentIdentifier && expression == statement.Expression)
+			if (expression == statement.Expression)
 				return statement;
 
-			return new BoundAssignmentExpression(rewriteAssign, expression, statement.Identifier);
+			return new BoundAssignmentExpression(statement.Identifier, expression);
 		}
 
 		protected virtual BoundStatement RewriteBlock(BoundBlock block) {
-			throw new NotImplementedException();
+			List<BoundStatement> rewrittenStatements = new List<BoundStatement>();
+			bool isSame = true;
+
+			foreach(var stat in block.Statements) {
+				var rewritten = RewriteStatement(stat);
+
+				if (rewritten != stat)
+					isSame = false;
+
+				rewrittenStatements.Add(rewritten);
+			}
+
+			if (isSame)
+				return block;
+
+			return new BoundBlock(rewrittenStatements);
 		}
 
 		protected virtual BoundNode RewriteError(BoundError error) {
@@ -87,19 +106,42 @@ namespace InterpreterLib.Binding.Tree {
 		}
 
 		protected virtual BoundStatement RewriteForStatement(BoundForStatement statement) {
-			throw new NotImplementedException();
+			var assignment = RewriteNode(statement.Assignment);
+			var cond = RewriteExpression(statement.Condition);
+			var step = RewriteExpression(statement.Step);
+
+			var body = RewriteStatement(statement.Body);
+
+			if (assignment == statement.Assignment && cond == statement.Condition && step == statement.Step && body == statement.Body)
+				return statement;
+
+			return new BoundForStatement(assignment, cond, step, body);
 		}
 
 		protected virtual BoundStatement RewriteIfStatement(BoundIfStatement statement) {
-			throw new NotImplementedException();
+			var cond = RewriteExpression(statement.Condition);
+
+			BoundStatement trueBranch = RewriteStatement(statement.TrueBranch);
+			BoundStatement falseBranch = statement.FalseBranch == null ? null : RewriteStatement(statement.FalseBranch);
+
+			if (cond == statement.Condition && trueBranch == statement.TrueBranch && falseBranch == statement.FalseBranch)
+				return statement;
+
+			return new BoundIfStatement(cond, trueBranch, falseBranch);
 		}
 
 		protected virtual BoundStatement RewriteVariableDeclaration(BoundVariableDeclarationStatement statement) {
-			throw new NotImplementedException();
+			return statement;
 		}
 
 		protected virtual BoundStatement RewriteWhileStatement(BoundWhileStatement statement) {
-			throw new NotImplementedException();
+			var cond = RewriteExpression(statement.Condition);
+			var body = RewriteStatement(statement.Body);
+
+			if (cond == statement.Condition && body == statement.Body)
+				return statement;
+
+			return new BoundWhileStatement(cond, body);
 		}
 	}
 }

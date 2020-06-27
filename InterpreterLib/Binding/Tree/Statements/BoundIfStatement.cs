@@ -8,10 +8,10 @@ namespace InterpreterLib.Binding.Tree {
 		public override NodeType Type => NodeType.If;
 
 		public BoundExpression Condition { get; }
-		public BoundNode TrueBranch { get; }
-		public BoundNode FalseBranch { get; }
+		public BoundStatement TrueBranch { get; }
+		public BoundStatement FalseBranch { get; }
 
-		public BoundIfStatement(BoundExpression condition, BoundNode trueBranch, BoundNode falseBranch) {
+		public BoundIfStatement(BoundExpression condition, BoundStatement trueBranch, BoundStatement falseBranch) {
 			Condition = condition;
 			TrueBranch = trueBranch;
 			FalseBranch = falseBranch;

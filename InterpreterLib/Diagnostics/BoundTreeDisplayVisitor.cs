@@ -102,7 +102,7 @@ namespace InterpreterLib.Diagnostics {
 		protected override IEnumerable<string> VisitVariableDeclaration(BoundVariableDeclarationStatement statement, string prefix1, string prefix2) {
 			var baseLine = new string[] { $"{prefix1}Variable Declaration" };
 
-			return baseLine.Concat(Visit(statement.VariableExpression, prefix2 + LAST_CHILD, prefix2 + SPACING));
+			return baseLine.Concat(Visit(statement.Initialiser, prefix2 + LAST_CHILD, prefix2 + SPACING));
 		}
 
 		protected override IEnumerable<string> VisitWhile(BoundWhileStatement statement, string prefix1, string prefix2) {

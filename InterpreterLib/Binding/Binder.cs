@@ -53,6 +53,7 @@ namespace InterpreterLib.Binding {
 		}
 
 		private bool OnlyOne(IEnumerable<bool> conditions) => conditions.Count(b => b) == 1;
+		private bool OnlyOne(params bool[] conditions) => OnlyOne((IEnumerable<bool>)conditions);
 
 		private BoundError Error(Diagnostic diagnostic) {
 			diagnostics.AddDiagnostic(diagnostic);
@@ -211,20 +212,112 @@ namespace InterpreterLib.Binding {
 		}
 
 		public override BoundNode VisitVariableDeclarationStatement([NotNull] GLangParser.VariableDeclarationStatementContext context) {
-			bool hasIdentifier = context.IDENTIFIER() != null;
-			bool hasAssignmentOp = context.ASSIGNMENT_OPERATOR() != null && context.ASSIGNMENT_OPERATOR().GetText().Equals("=");
-			bool hasExpression = context.binaryExpression() != null;
+			bool hasIdentifier = context.DECL_VARIABLE() != null && context.IDENTIFIER() != null;
+			bool hasTypeDef = context.TYPE_DELIMETER() != null && context.TYPE_NAME() != null;
+			bool hasExpression = context.ASSIGNMENT_OPERATOR() != null && context.ASSIGNMENT_OPERATOR().GetText().Equals("=") && context.binaryExpression() != null;
+			bool isReadOnly;
+			TypeSymbol type;
+			BoundExpression initialiser;
+
+			if (!hasIdentifier || !OnlyOne(hasTypeDef, hasExpression))
+				return Error(Diagnostic.ReportInvalidDeclaration(context.Start.Line, context.Start.Column, context.GetText()));
+
+			var declVarToken = context.DECL_VARIABLE().Symbol;
+			switch(declVarToken.Text) {
+				case "var":
+					isReadOnly = false;
+					break;
+				case "val":
+					isReadOnly = true;
+					break;
+
+				default: return Error(Diagnostic.ReportInvalidDeclarationKeyword(declVarToken.Line, declVarToken.Column, declVarToken.Text));
+			}
+
+			if(hasTypeDef) {
+				var typeNameToken = context.TYPE_NAME().Symbol;
+				initialiser = null;
+
+				switch (typeNameToken.Text) {
+					case "int":
+						type = TypeSymbol.Integer;
+						break;
+					case "bool":
+						type = TypeSymbol.Boolean;
+						break;
+
+					default: return Error(Diagnostic.ReportInvalidTypeName(typeNameToken.Line, typeNameToken.Column, typeNameToken.Text));
+				}
+			} else {
+				var exprRule = context.binaryExpression();
+				var initialVisit = Visit(exprRule);
+
+				if (!(initialVisit is BoundExpression)) {
+					var diagnostic = Diagnostic.ReportFailedVisit(exprRule.Start.Line, exprRule.Start.Column, exprRule.GetText());
+					return Error(diagnostic, false, initialVisit);
+				}
+
+				initialiser = (BoundExpression)initialVisit;
+				type = initialiser.ValueType;
+			}
+
+			var identifierToken = context.IDENTIFIER().Symbol;
+			var variable = new VariableSymbol(identifierToken.Text, isReadOnly, type);
+
+			if(!scope.TryDefine(variable)) {
+				var diagnostic = Diagnostic.ReportCannotDefine(identifierToken.Line, identifierToken.Column, identifierToken.Text);
+				return Error(diagnostic, true, initialiser);
+			}
+
+			return new BoundVariableDeclarationStatement(variable, initialiser);
+		}
+
+		public override BoundNode VisitExpressionStatement([NotNull] GLangParser.ExpressionStatementContext context) {
+			if (context.binaryExpression() == null)
+				return Error(Diagnostic.ReportInvalidExpressionStatement(context.Start.Line, context.Start.Column, context.GetText()));
+
+			var exprCtx = context.binaryExpression();
+			var initVisit = Visit(exprCtx);
+
+			if(!(initVisit is BoundExpression)) {
+				var diagnostic = Diagnostic.ReportFailedVisit(exprCtx.Start.Line, exprCtx.Start.Column, exprCtx.GetText());
+				return Error(diagnostic, false, initVisit);
+			}
+
+			return new BoundExpressionStatement((BoundExpression)initVisit);
 		}
 
 		public override BoundNode VisitBlock([NotNull] GLangParser.BlockContext context) {
 			if (context.L_BRACE() == null || context.statement() == null || context.R_BRACE() == null)
 				return Error(Diagnostic.ReportInvalidBlock(context.Start.Line, context.Start.Column, context.GetText()));
 
-			List<BoundNode> statements = new List<BoundNode>();
-			foreach (var stat in context.statement())
-				statements.Add(Visit(stat));
+			List<BoundStatement> statements = new List<BoundStatement>();
+			foreach (var stat in context.statement()) {
+				var nextVisit = Visit(stat);
+
+				if(!(nextVisit is BoundStatement)) {
+					var diagnostic = Diagnostic.ReportFailedVisit(stat.Start.Line, stat.Start.Column, stat.GetText());
+					return Error(diagnostic, false, statements.ToArray());
+				}
+
+				statements.Add((BoundStatement) nextVisit);
+			}
 
 			return new BoundBlock(statements);
+		}
+
+		public override BoundNode VisitForAssign([NotNull] GLangParser.ForAssignContext context) {
+			bool hasDeclaration = context.variableDeclarationStatement() != null;
+			bool hasAssignment = context.assignmentExpression() != null;
+
+			if (hasDeclaration == hasAssignment)
+				return Error(Diagnostic.ReportInvalidFor(context.Start.Line, context.Start.Column, context.GetText()));
+
+			if(hasDeclaration) {
+				return Visit(context.variableDeclarationStatement());
+			} else {
+				return Visit(context.variableDeclarationStatement());
+			}
 		}
 
 		public override BoundNode VisitForStat([NotNull] GLangParser.ForStatContext context) {
@@ -242,17 +335,17 @@ namespace InterpreterLib.Binding {
 				return Error(Diagnostic.ReportInvalidFor(context.Start.Line, context.Start.Column, context.GetText()));
 			}
 
-			if (!(assignment is BoundAssignmentExpression && condition is BoundBinaryExpression && step is BoundAssignmentExpression)) {
+			if (!((assignment is BoundAssignmentExpression || assignment is BoundVariableDeclarationStatement) && condition is BoundBinaryExpression && step is BoundAssignmentExpression)) {
 				var diagnostic = Diagnostic.ReportFailedVisit(context.Start.Line, context.Start.Column, context.GetText());
 				return Error(diagnostic, false, assignment, condition, step, body);
 			}
 
-			if (((BoundExpression)condition).ValueType != TypeSymbol.Boolean) {
+			if (condition is BoundExpression && ((BoundExpression)condition).ValueType != TypeSymbol.Boolean) {
 				var diagnostic = Diagnostic.ReportInvalidType(context.Start.Line, context.Start.Column, ((BoundExpression)condition).ValueType, TypeSymbol.Boolean);
 				return Error(diagnostic, true, assignment, condition, step, body);
 			}
 
-			return new BoundForStatement((BoundExpression)assignment, (BoundExpression)condition, (BoundExpression)step, body);
+			return new BoundForStatement(assignment, (BoundExpression)condition, (BoundExpression)step, body);
 		}
 
 		public override BoundNode VisitIfStat([NotNull] GLangParser.IfStatContext context) {

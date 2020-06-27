@@ -10,7 +10,7 @@ namespace InterpreterLib.Binding.Tree {
 
 		public override TypeSymbol ValueType => Expression.ValueType;
 
-		public BoundAssignmentExpression(BoundNode assignmentNode, BoundExpression expression, VariableSymbol variable) {
+		public BoundAssignmentExpression(VariableSymbol variable, BoundExpression expression) {
 			Expression = expression;
 			Identifier = variable;
 		}

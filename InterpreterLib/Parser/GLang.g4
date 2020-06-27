@@ -9,14 +9,15 @@ grammar GLang;
 	 * Statements
 	 */
 		 
-statement :  forStat | whileStat | ifStat | block| variableDeclarationStatement | assignmentExpression  | expressionStatement;
+statement :  forStat | whileStat | ifStat | block| variableDeclarationStatement | expressionStatement;
 
 
 block : L_BRACE statement* R_BRACE;
 
-expressionStatement: binaryExpression;
+expressionStatement: assignmentExpression | binaryExpression;
 
-forStat: FOR L_PARENTHESIS assign=assignmentExpression COMMA condition=binaryExpression COMMA step=assignmentExpression R_PARENTHESIS body=statement;
+forAssign : variableDeclarationStatement | assignmentExpression;
+forStat: FOR L_PARENTHESIS assign=forAssign COMMA condition=binaryExpression COMMA step=assignmentExpression R_PARENTHESIS body=statement;
 
 ifStat : IF L_PARENTHESIS condition=binaryExpression R_PARENTHESIS trueBranch=statement (ELSE falseBranch=statement)?;
 whileStat: WHILE L_PARENTHESIS condition=binaryExpression R_PARENTHESIS body=statement;

@@ -112,5 +112,13 @@ namespace InterpreterLib {
 		internal static Diagnostic ReportCannotDefine(int line, int column, string name) {
 			throw new NotImplementedException();
 		}
+
+		internal static Diagnostic ReportCannotRedefine(int line, int column, string name, TypeSymbol valueType1, TypeSymbol valueType2) {
+			throw new NotImplementedException();
+		}
+
+		internal static Diagnostic ReportInvalidExpressionStatement(int line, int column, string text) {
+			throw new NotImplementedException();
+		}
 	}
 }
