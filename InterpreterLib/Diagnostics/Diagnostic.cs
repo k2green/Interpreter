@@ -54,7 +54,7 @@ namespace InterpreterLib {
 		}
 
 		internal static Diagnostic ReportInvalidLiteral(int line, int column, string v) {
-			throw new NotImplementedException();
+			return new Diagnostic(line, column, $"Literal {v} is invalid");
 		}
 
 		internal static Diagnostic ReportVariableTypeMismatch(int line, int column, string name, TypeSymbol valueType1, TypeSymbol valueType2) {
@@ -74,7 +74,7 @@ namespace InterpreterLib {
 		}
 
 		internal static Diagnostic ReportInvalidUnaryExpression(int line, int column, string v) {
-			throw new NotImplementedException();
+			return new Diagnostic(line, column, $"Unary expression {v} is invalid");
 		}
 
 		internal static Diagnostic ReportInvalidTypeName(int line, int column, string v) {
@@ -83,6 +83,10 @@ namespace InterpreterLib {
 
 		internal static Diagnostic ReportInvalidAssignment(int line, int column, string v) {
 			return new Diagnostic(line, column, $"Assignment {v} is invalid");
+		}
+
+		internal static Diagnostic ReportInvalidOperand(int line, int column, string v) {
+			return new Diagnostic(line, column, $"Operand {v} is invalid");
 		}
 
 		internal static Diagnostic ReportInvalidFor(int line, int column, string v) {
@@ -98,6 +102,18 @@ namespace InterpreterLib {
 		}
 
 		internal static Diagnostic ReportInvalidBinaryExpression(int line, int column, string v) {
+			return new Diagnostic(line, column, $"Binary expression {v} is invalid");
+		}
+
+		internal static Diagnostic ReportRedefineVariable(int line, int column, VariableSymbol variable) {
+			throw new NotImplementedException();
+		}
+
+		internal static Diagnostic ReportInvalidBlock(int line, int column, string v) {
+			throw new NotImplementedException();
+		}
+
+		internal static Diagnostic ReportInvalidIf(int line, int column, string v) {
 			throw new NotImplementedException();
 		}
 	}

@@ -9,5 +9,7 @@ namespace InterpreterLib.Binding.Types {
 		public abstract string Name { get; }
 
 		public override string ToString() => Name;
+		public abstract override bool Equals(object obj);
+		public abstract override int GetHashCode();
 	}
 }

@@ -1,8 +1,8 @@
 ﻿using Antlr4.Runtime;
 using Antlr4.Runtime.Tree;
 using InterpreterLib.Binding;
-using InterpreterLib.Binding.Tree;
 using InterpreterLib.Binding.Types;
+using InterpreterLib.Diagnostics;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -57,7 +57,7 @@ namespace InterpreterLib.Runtime {
 				}
 			}
 
-			SyntaxRoot = parser.binaryExpression();
+			SyntaxRoot = parser.statement();
 		}
 
 		public DiagnosticResult<object> Evaluate(Dictionary<VariableSymbol, object> variables) {
@@ -69,6 +69,12 @@ namespace InterpreterLib.Runtime {
 			var evalResult = evaluator.Evaluate();
 			diagnostics.AddDiagnostics(evalResult.Diagnostics);
 			return new DiagnosticResult<object>(diagnostics, evalResult.Value);
+		}
+
+		public IEnumerable<string> ToText() {
+			BoundTreeDisplayVisitor display = new BoundTreeDisplayVisitor();
+
+			return display.GetText(GlobalScope.Root);
 		}
 	}
 }

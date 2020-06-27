@@ -29,13 +29,16 @@ namespace Interpreter {
 				else
 					env = env.ContinueWith(input);
 
-				var output = env.Evaluate(variables);
+				/*var output = env.Evaluate(variables);
 
 				if (output.Value != null)
 					Console.WriteLine(output.Value);
 
 				foreach (var message in output.Diagnostics)
-					Console.WriteLine(message);
+					Console.WriteLine(message);*/
+
+				foreach (var line in env.ToText())
+					Console.WriteLine(line);
 			}
 		}
 	}

@@ -10,8 +10,6 @@ block : L_BRACE statement* R_BRACE;
 
 forStat: FOR L_PARENTHESIS assign=assignmentStatement COMMA condition=binaryExpression COMMA step=assignmentStatement R_PARENTHESIS body=statement;
 
-function
-
 ifStat : IF L_PARENTHESIS condition=binaryExpression R_PARENTHESIS trueBranch=statement (ELSE falseBranch=statement)?;
 whileStat: WHILE L_PARENTHESIS condition=binaryExpression R_PARENTHESIS body=statement;
 

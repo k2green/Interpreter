@@ -16,5 +16,17 @@ namespace InterpreterLib.Binding.Types {
 			IsReadOnly = isReadOnly;
 			ValueType = valueType;
 		}
+
+		public override bool Equals(object obj) {
+			if (!(obj is VariableSymbol)) return false;
+
+			VariableSymbol symbol = (VariableSymbol)obj;
+
+			return Name.Equals(symbol.Name) && IsReadOnly == symbol.IsReadOnly && ValueType == symbol.ValueType;
+		}
+
+		public override int GetHashCode() {
+			return HashCode.Combine(Name, IsReadOnly, ValueType);
+		}
 	}
 }

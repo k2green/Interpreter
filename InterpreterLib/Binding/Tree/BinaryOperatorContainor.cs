@@ -54,20 +54,20 @@ namespace InterpreterLib.Binding.Tree {
 			Tuple.Create(TypeSymbol.Byte, TypeSymbol.Byte, TypeSymbol.Byte)
 		};
 
-		private static Tuple<TypeSymbol, TypeSymbol>[] ComparisonDefinitions = {
-			Tuple.Create(TypeSymbol.Integer, TypeSymbol.Boolean)
+		private static Tuple<TypeSymbol, TypeSymbol, TypeSymbol>[] ComparisonDefinitions = {
+			Tuple.Create(TypeSymbol.Integer, TypeSymbol.Integer, TypeSymbol.Boolean)
 		};
 
-		private static Tuple<TypeSymbol, TypeSymbol>[] EqualityDifinitions = {
-			Tuple.Create(TypeSymbol.Boolean, TypeSymbol.Boolean),
-			Tuple.Create(TypeSymbol.Byte, TypeSymbol.Boolean),
-			Tuple.Create(TypeSymbol.Double, TypeSymbol.Boolean),
-			Tuple.Create(TypeSymbol.Integer, TypeSymbol.Boolean),
-			Tuple.Create(TypeSymbol.String, TypeSymbol.Boolean)
+		private static Tuple<TypeSymbol, TypeSymbol, TypeSymbol>[] EqualityDifinitions = {
+			Tuple.Create(TypeSymbol.Boolean, TypeSymbol.Boolean, TypeSymbol.Boolean),
+			Tuple.Create(TypeSymbol.Byte, TypeSymbol.Byte, TypeSymbol.Boolean),
+			Tuple.Create(TypeSymbol.Double, TypeSymbol.Double, TypeSymbol.Boolean),
+			Tuple.Create(TypeSymbol.Integer, TypeSymbol.Integer, TypeSymbol.Boolean),
+			Tuple.Create(TypeSymbol.String, TypeSymbol.String, TypeSymbol.Boolean)
 		};
 
-		private static Tuple<TypeSymbol, TypeSymbol>[] BooleanDefinitions = {
-			Tuple.Create(TypeSymbol.Boolean, TypeSymbol.Boolean)
+		private static Tuple<TypeSymbol, TypeSymbol, TypeSymbol>[] BooleanDefinitions = {
+			Tuple.Create(TypeSymbol.Boolean, TypeSymbol.Boolean, TypeSymbol.Boolean)
 		};
 	}
 }

@@ -19,7 +19,13 @@ namespace InterpreterLib {
 		}
 
 		public DiagnosticResult<object> Evaluate() {
-			object value = Visit(root);
+			object value = null;
+
+			try {
+				value = Visit(root);
+			} catch(ErrorEncounteredException exception) { }
+
+
 			return new DiagnosticResult<object>(diagnostics, value);
 		}
 
@@ -166,7 +172,7 @@ namespace InterpreterLib {
 		}
 
 		protected override object VisitError(BoundError error) {
-			throw new NotImplementedException();
+			throw new ErrorEncounteredException();
 		}
 	}
 }

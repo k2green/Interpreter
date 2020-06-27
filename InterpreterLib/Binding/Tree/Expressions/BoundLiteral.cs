@@ -10,28 +10,9 @@ namespace InterpreterLib.Binding.Tree {
 		public override TypeSymbol ValueType { get; }
 		public override NodeType Type => NodeType.Literal;
 
-		private BoundLiteral(object value) {
+		public BoundLiteral(object value, TypeSymbol type) {
 			Value = value;
-		}
-
-		public BoundLiteral(int value) : this((object) value) {
-			ValueType = TypeSymbol.Integer;
-		}
-
-		public BoundLiteral(double value) : this((object)value) {
-			ValueType = TypeSymbol.Double;
-		}
-
-		public BoundLiteral(byte value) : this((object)value) {
-			ValueType = TypeSymbol.Byte;
-		}
-
-		public BoundLiteral(bool value) : this((object)value) {
-			ValueType = TypeSymbol.Boolean;
-		}
-
-		public BoundLiteral(string value) : this((object)value) {
-			ValueType = TypeSymbol.String;
+			ValueType = type;
 		}
 	}
 }
