@@ -23,7 +23,7 @@ namespace InterpreterLib {
 
 			try {
 				value = Visit(root);
-			} catch(ErrorEncounteredException exception) { }
+			} catch(ErrorEncounteredException exception) {  } // Allows the evaluator to exit if an error node is found.
 
 
 			return new DiagnosticResult<object>(diagnostics, value);
@@ -83,11 +83,7 @@ namespace InterpreterLib {
 			return val;
 		}
 
-		protected override object VisitExpression(BoundExpressionStatement expression) {
-			return Visit(expression.Expression);
-		}
-
-		protected override object VisitAssignmentExpression(BoundAssignmentExpression assignment) {
+		protected override object VisitAssignmentExpression(BoundAssignmentStatement assignment) {
 			object expression = Visit(assignment.Expression);
 
 			if (expression == null) 
@@ -172,6 +168,7 @@ namespace InterpreterLib {
 		}
 
 		protected override object VisitError(BoundError error) {
+			// If there is an error in the binding, we use an exception to bail out of the evaluation
 			throw new ErrorEncounteredException();
 		}
 	}

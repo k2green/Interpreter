@@ -30,14 +30,14 @@ namespace InterpreterLib.Binding {
 				return null;
 
 			var stack = new Stack<BoundGlobalScope>();
-			while(previous != null) {
+			while (previous != null) {
 				stack.Push(previous);
 				previous = previous.Previous;
 			}
 
 			BoundScope current = null;
 
-			while(stack.Count > 0) {
+			while (stack.Count > 0) {
 				previous = stack.Pop();
 				current = new BoundScope(current);
 
@@ -177,7 +177,6 @@ namespace InterpreterLib.Binding {
 			}
 
 			var boundExpression = (BoundExpression)exprNode;
-			VariableSymbol variable;
 
 			// If the variableDeclaration exists
 			if (varDeclExists) {
@@ -191,12 +190,18 @@ namespace InterpreterLib.Binding {
 					return Error(diagnostic, false, declStat, exprNode);
 				}
 
-				// Set variable to the BoundVariable bound in the declaration statement.
-				variable = ((BoundDeclarationStatement)declStat).VariableExpression.Variable;
-			} else {					// If variableDeclaration doesn't exist, then then IDENTIFIER must exist
-				// First we try to lookup the variable and assign it to the variable BoundVariable
-				// If this fails report an undefined variable error.
-				if (!scope.TryLookup(context.IDENTIFIER().GetText(), out variable)) {
+				var declaration = (BoundDeclarationStatement)declStat;
+				var variable = declaration.VariableExpression.Variable;
+				if (variable.ValueType != boundExpression.ValueType) {
+					var diagnostic = Diagnostic.ReportVariableTypeMismatch(context.Start.Line, context.Start.Column, variable.Name, variable.ValueType, boundExpression.ValueType);
+					return Error(diagnostic, true, exprNode);
+				}
+
+				return new BoundAssignmentStatement(declStat, boundExpression, variable);
+			} else {                    // If variableDeclaration doesn't exist, then then IDENTIFIER must exist
+										// First we try to lookup the variable and assign it to the variable BoundVariable
+										// If this fails report an undefined variable error.
+				if (!scope.TryLookup(context.IDENTIFIER().GetText(), out var variable)) {
 					var diagnostic = Diagnostic.ReportUndefinedVariable(context.Start.Line, context.Start.Column, context.IDENTIFIER().GetText());
 					return Error(diagnostic, true, exprNode);
 				}
@@ -206,15 +211,15 @@ namespace InterpreterLib.Binding {
 					var diagnostic = Diagnostic.ReportReadonlyVariable(context.Start.Line, context.Start.Column, variable);
 					return Error(diagnostic, true, exprNode);
 				}
-			}
 
-			// As a final check we make sure the type of variable matches the type of the bound expression
-			if (variable.ValueType != boundExpression.ValueType) {
-				var diagnostic = Diagnostic.ReportVariableTypeMismatch(context.Start.Line, context.Start.Column, variable.Name, variable.ValueType, boundExpression.ValueType);
-				return Error(diagnostic, true, exprNode);
-			}
+				// As a final check we make sure the type of variable matches the type of the bound expression
+				if (variable.ValueType != boundExpression.ValueType) {
+					var diagnostic = Diagnostic.ReportVariableTypeMismatch(context.Start.Line, context.Start.Column, variable.Name, variable.ValueType, boundExpression.ValueType);
+					return Error(diagnostic, true, exprNode);
+				}
 
-			return new BoundAssignmentExpression(variable, boundExpression);
+				return new BoundAssignmentStatement(new BoundVariableExpression(variable), boundExpression, variable);
+			}
 		}
 
 		public override BoundNode VisitVariableDeclaration([NotNull] GLangParser.VariableDeclarationContext context) {
@@ -273,7 +278,7 @@ namespace InterpreterLib.Binding {
 			// Create bound variable with the parsed information.
 			var variable = new VariableSymbol(context.IDENTIFIER().GetText(), isReadOnly, type);
 
-			if (!scope.TryDefine(variable)) 
+			if (!scope.TryDefine(variable))
 				return Error(Diagnostic.ReportRedefineVariable(context.Start.Line, context.Start.Column, scope[context.IDENTIFIER().GetText()], variable));
 
 			return new BoundDeclarationStatement(new BoundVariableExpression(variable));
@@ -330,17 +335,17 @@ namespace InterpreterLib.Binding {
 				return Error(Diagnostic.ReportInvalidFor(context.Start.Line, context.Start.Column, context.GetText()));
 			}
 
-			if (!(assignment is BoundAssignmentExpression && condition is BoundBinaryExpression && step is BoundAssignmentExpression)) {
+			if (!(assignment is BoundAssignmentStatement && condition is BoundBinaryExpression && step is BoundAssignmentStatement)) {
 				var diagnostic = Diagnostic.ReportFailedVisit(context.Start.Line, context.Start.Column, context.GetText());
 				return Error(diagnostic, false, assignment, condition, step, body);
 			}
 
-			if(((BoundExpression)condition).ValueType != TypeSymbol.Boolean) {
+			if (((BoundExpression)condition).ValueType != TypeSymbol.Boolean) {
 				var diagnostic = Diagnostic.ReportInvalidType(context.Start.Line, context.Start.Column, ((BoundExpression)condition).ValueType, TypeSymbol.Boolean);
 				return Error(diagnostic, true, assignment, condition, step, body);
 			}
 
-			return new BoundForStatement((BoundExpression)assignment, new BoundWhileStatement((BoundExpression)condition, new BoundBlock(new BoundNode[] { body, step })));
+			return new BoundForStatement((BoundExpression)assignment, (BoundExpression)condition, (BoundExpression)step, body);
 		}
 
 		public override BoundNode VisitIfStat([NotNull] GLangParser.IfStatContext context) {
@@ -374,7 +379,7 @@ namespace InterpreterLib.Binding {
 			if (context.WHILE() != null && context.L_PARENTHESIS() != null && context.condition != null && context.R_PARENTHESIS() != null && context.body != null) {
 				var expressionNode = Visit(context.condition);
 
-				if(!(expressionNode is BoundExpression)) {
+				if (!(expressionNode is BoundExpression)) {
 					var token = context.condition.Start;
 					var diagnostic = Diagnostic.ReportInvalidWhile(token.Line, token.Column, token.Text);
 					return Error(diagnostic, false, expressionNode);

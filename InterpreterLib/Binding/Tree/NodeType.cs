@@ -1,8 +1,7 @@
 ﻿namespace InterpreterLib.Binding.Tree {
 	public enum NodeType {
-		Literal, UnaryExpression, BinaryExpression, AssignmentExpression,
+		Literal, UnaryExpression, BinaryExpression, AssignmentStatement,
 		Variable,
-		Expression,
 		Block,
 		If,
 		While,

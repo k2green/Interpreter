@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 
 namespace InterpreterLib.Binding.Tree {
-	internal sealed class BoundIfStatement : BoundNode {
+	internal sealed class BoundIfStatement : BoundStatement {
 
 		public override NodeType Type => NodeType.If;
 
