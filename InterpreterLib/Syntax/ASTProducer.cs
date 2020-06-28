@@ -195,8 +195,14 @@ namespace InterpreterLib.Syntax {
 			if (context.variableDeclarationStatement() != null)
 				return Visit(context.variableDeclarationStatement());
 
-			if (context.assignmentExpression() != null)
-				return Visit(context.assignmentExpression());
+			if (context.assignmentExpression() != null) {
+				var visit = Visit(context.assignmentExpression());
+
+				if(!(visit is ExpressionSyntax))
+					return Error(Diagnostic.ReportInvalidForAssignment(context.Start.Line, context.Start.Column, context.GetText()));
+
+				return new ExpressionStatementSyntax((ExpressionSyntax)visit);
+			}
 
 			return Error(Diagnostic.ReportInvalidForAssignment(context.Start.Line, context.Start.Column, context.GetText()));
 		}
@@ -253,7 +259,7 @@ namespace InterpreterLib.Syntax {
 			var bodyCtx = context.statement();
 
 			if (whileKeywCtx == null || conditionCtx == null || lParenCtx == null || rParenCtx == null)
-				return Error(Diagnostic.ReportInvalisWhileStatement(context.Start.Line, context.Start.Column, context.GetText()));
+				return Error(Diagnostic.ReportInvalisForStatement(context.Start.Line, context.Start.Column, context.GetText()));
 
 			if (!whileKeywCtx.GetText().Equals("while") || !lParenCtx.GetText().Equals("(") || !rParenCtx.GetText().Equals(")"))
 				return Error(Diagnostic.ReportInvalidIfStatement(context.Start.Line, context.Start.Column, context.GetText()));
@@ -262,9 +268,42 @@ namespace InterpreterLib.Syntax {
 			var bodyVisit = Visit(bodyCtx);
 
 			if (!(condVisit is ExpressionSyntax && bodyVisit is StatementSyntax))
-				return Error(Diagnostic.ReportInvalisWhileStatement(context.Start.Line, context.Start.Column, context.GetText()));
+				return Error(Diagnostic.ReportInvalisForStatement(context.Start.Line, context.Start.Column, context.GetText()));
 
 			return new WhileLoopSyntax(Token(whileKeywCtx.Symbol), Token(lParenCtx.Symbol), (ExpressionSyntax)condVisit, Token(rParenCtx.Symbol), (StatementSyntax)bodyVisit);
+		}
+
+		public override SyntaxNode VisitForStatement([NotNull] GLangParser.ForStatementContext context) {
+			var forKeywCtx = context.FOR();
+			var lParenCtx = context.L_PARENTHESIS();
+			var assignmentCtx = context.declerationOrAssign();
+			var commasCtx = context.COMMA();
+			var conditionCtx = context.binaryExpression();
+			var stepCtx = context.assignmentExpression();
+			var rParenCtx = context.R_PARENTHESIS();
+			var bodyCtx = context.statement();
+
+			if(forKeywCtx == null || lParenCtx == null || assignmentCtx == null || commasCtx == null
+				|| conditionCtx == null || stepCtx == null || rParenCtx == null || bodyCtx == null)
+				return Error(Diagnostic.ReportInvalisForStatement(context.Start.Line, context.Start.Column, context.GetText()));
+
+			if(!forKeywCtx.GetText().Equals("for") || !lParenCtx.GetText().Equals("(") || !rParenCtx.GetText().Equals(")"))
+				return Error(Diagnostic.ReportInvalisForStatement(context.Start.Line, context.Start.Column, context.GetText()));
+
+			var assignVisit = Visit(context.declerationOrAssign());
+			var condVisit = Visit(context.binaryExpression());
+			var stepVisit = Visit(context.assignmentExpression());
+			var bodyVisit = Visit(context.statement());
+
+			if(!(assignVisit is StatementSyntax && condVisit is ExpressionSyntax && stepVisit is ExpressionSyntax && bodyVisit is StatementSyntax))
+				return Error(Diagnostic.ReportInvalisForStatement(context.Start.Line, context.Start.Column, context.GetText()));
+
+			return new ForLoopSyntax(
+				Token(forKeywCtx.Symbol),
+				Token(lParenCtx.Symbol),
+				(StatementSyntax) assignVisit, Token(commasCtx[0].Symbol), (ExpressionSyntax) condVisit, Token(commasCtx[1].Symbol), (ExpressionSyntax)stepVisit,
+				Token(rParenCtx.Symbol), 
+				(StatementSyntax) bodyVisit );
 		}
 	}
 }

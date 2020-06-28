@@ -93,7 +93,16 @@ namespace InterpreterLib.Syntax {
 				case SyntaxType.WhileLoop:
 					WriteWhileLoop((WhileLoopSyntax)node, prefix1, prefix2);
 					break;
+				case SyntaxType.ForLoop:
+					WriteForLoop((ForLoopSyntax)node, prefix1, prefix2);
+					break;
 			}
+		}
+
+		private void WriteForLoop(ForLoopSyntax node, string prefix1, string prefix2) {
+			Writer.WriteLine($"{prefix1}For loop");
+
+			WriteChildren(node.Children, prefix2);
 		}
 
 		private void WriteWhileLoop(WhileLoopSyntax node, string prefix1, string prefix2) {
