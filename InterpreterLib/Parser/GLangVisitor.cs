@@ -33,23 +33,17 @@ using IToken = Antlr4.Runtime.IToken;
 [System.CLSCompliant(false)]
 public interface IGLangVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <summary>
-	/// Visit a parse tree produced by <see cref="GLangParser.forAssign"/>.
+	/// Visit a parse tree produced by <see cref="GLangParser.declerationOrAssign"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
-	Result VisitForAssign([NotNull] GLangParser.ForAssignContext context);
+	Result VisitDeclerationOrAssign([NotNull] GLangParser.DeclerationOrAssignContext context);
 	/// <summary>
 	/// Visit a parse tree produced by <see cref="GLangParser.typeDefinition"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
 	Result VisitTypeDefinition([NotNull] GLangParser.TypeDefinitionContext context);
-	/// <summary>
-	/// Visit a parse tree produced by <see cref="GLangParser.binaryExpressionAssignment"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	/// <return>The visitor result.</return>
-	Result VisitBinaryExpressionAssignment([NotNull] GLangParser.BinaryExpressionAssignmentContext context);
 	/// <summary>
 	/// Visit a parse tree produced by <see cref="GLangParser.statement"/>.
 	/// </summary>
@@ -69,23 +63,23 @@ public interface IGLangVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitExpressionStatement([NotNull] GLangParser.ExpressionStatementContext context);
 	/// <summary>
-	/// Visit a parse tree produced by <see cref="GLangParser.forStat"/>.
+	/// Visit a parse tree produced by <see cref="GLangParser.forStatement"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
-	Result VisitForStat([NotNull] GLangParser.ForStatContext context);
+	Result VisitForStatement([NotNull] GLangParser.ForStatementContext context);
 	/// <summary>
-	/// Visit a parse tree produced by <see cref="GLangParser.ifStat"/>.
+	/// Visit a parse tree produced by <see cref="GLangParser.ifStatement"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
-	Result VisitIfStat([NotNull] GLangParser.IfStatContext context);
+	Result VisitIfStatement([NotNull] GLangParser.IfStatementContext context);
 	/// <summary>
-	/// Visit a parse tree produced by <see cref="GLangParser.whileStat"/>.
+	/// Visit a parse tree produced by <see cref="GLangParser.whileStatement"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
-	Result VisitWhileStat([NotNull] GLangParser.WhileStatContext context);
+	Result VisitWhileStatement([NotNull] GLangParser.WhileStatementContext context);
 	/// <summary>
 	/// Visit a parse tree produced by <see cref="GLangParser.variableDeclarationStatement"/>.
 	/// </summary>

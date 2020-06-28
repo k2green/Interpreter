@@ -36,17 +36,17 @@ using ParserRuleContext = Antlr4.Runtime.ParserRuleContext;
 [System.CLSCompliant(false)]
 public partial class GLangBaseListener : IGLangListener {
 	/// <summary>
-	/// Enter a parse tree produced by <see cref="GLangParser.forAssign"/>.
+	/// Enter a parse tree produced by <see cref="GLangParser.declerationOrAssign"/>.
 	/// <para>The default implementation does nothing.</para>
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
-	public virtual void EnterForAssign([NotNull] GLangParser.ForAssignContext context) { }
+	public virtual void EnterDeclerationOrAssign([NotNull] GLangParser.DeclerationOrAssignContext context) { }
 	/// <summary>
-	/// Exit a parse tree produced by <see cref="GLangParser.forAssign"/>.
+	/// Exit a parse tree produced by <see cref="GLangParser.declerationOrAssign"/>.
 	/// <para>The default implementation does nothing.</para>
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
-	public virtual void ExitForAssign([NotNull] GLangParser.ForAssignContext context) { }
+	public virtual void ExitDeclerationOrAssign([NotNull] GLangParser.DeclerationOrAssignContext context) { }
 	/// <summary>
 	/// Enter a parse tree produced by <see cref="GLangParser.typeDefinition"/>.
 	/// <para>The default implementation does nothing.</para>
@@ -59,18 +59,6 @@ public partial class GLangBaseListener : IGLangListener {
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitTypeDefinition([NotNull] GLangParser.TypeDefinitionContext context) { }
-	/// <summary>
-	/// Enter a parse tree produced by <see cref="GLangParser.binaryExpressionAssignment"/>.
-	/// <para>The default implementation does nothing.</para>
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	public virtual void EnterBinaryExpressionAssignment([NotNull] GLangParser.BinaryExpressionAssignmentContext context) { }
-	/// <summary>
-	/// Exit a parse tree produced by <see cref="GLangParser.binaryExpressionAssignment"/>.
-	/// <para>The default implementation does nothing.</para>
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	public virtual void ExitBinaryExpressionAssignment([NotNull] GLangParser.BinaryExpressionAssignmentContext context) { }
 	/// <summary>
 	/// Enter a parse tree produced by <see cref="GLangParser.statement"/>.
 	/// <para>The default implementation does nothing.</para>
@@ -108,41 +96,41 @@ public partial class GLangBaseListener : IGLangListener {
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitExpressionStatement([NotNull] GLangParser.ExpressionStatementContext context) { }
 	/// <summary>
-	/// Enter a parse tree produced by <see cref="GLangParser.forStat"/>.
+	/// Enter a parse tree produced by <see cref="GLangParser.forStatement"/>.
 	/// <para>The default implementation does nothing.</para>
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
-	public virtual void EnterForStat([NotNull] GLangParser.ForStatContext context) { }
+	public virtual void EnterForStatement([NotNull] GLangParser.ForStatementContext context) { }
 	/// <summary>
-	/// Exit a parse tree produced by <see cref="GLangParser.forStat"/>.
+	/// Exit a parse tree produced by <see cref="GLangParser.forStatement"/>.
 	/// <para>The default implementation does nothing.</para>
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
-	public virtual void ExitForStat([NotNull] GLangParser.ForStatContext context) { }
+	public virtual void ExitForStatement([NotNull] GLangParser.ForStatementContext context) { }
 	/// <summary>
-	/// Enter a parse tree produced by <see cref="GLangParser.ifStat"/>.
+	/// Enter a parse tree produced by <see cref="GLangParser.ifStatement"/>.
 	/// <para>The default implementation does nothing.</para>
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
-	public virtual void EnterIfStat([NotNull] GLangParser.IfStatContext context) { }
+	public virtual void EnterIfStatement([NotNull] GLangParser.IfStatementContext context) { }
 	/// <summary>
-	/// Exit a parse tree produced by <see cref="GLangParser.ifStat"/>.
+	/// Exit a parse tree produced by <see cref="GLangParser.ifStatement"/>.
 	/// <para>The default implementation does nothing.</para>
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
-	public virtual void ExitIfStat([NotNull] GLangParser.IfStatContext context) { }
+	public virtual void ExitIfStatement([NotNull] GLangParser.IfStatementContext context) { }
 	/// <summary>
-	/// Enter a parse tree produced by <see cref="GLangParser.whileStat"/>.
+	/// Enter a parse tree produced by <see cref="GLangParser.whileStatement"/>.
 	/// <para>The default implementation does nothing.</para>
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
-	public virtual void EnterWhileStat([NotNull] GLangParser.WhileStatContext context) { }
+	public virtual void EnterWhileStatement([NotNull] GLangParser.WhileStatementContext context) { }
 	/// <summary>
-	/// Exit a parse tree produced by <see cref="GLangParser.whileStat"/>.
+	/// Exit a parse tree produced by <see cref="GLangParser.whileStatement"/>.
 	/// <para>The default implementation does nothing.</para>
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
-	public virtual void ExitWhileStat([NotNull] GLangParser.WhileStatContext context) { }
+	public virtual void ExitWhileStatement([NotNull] GLangParser.WhileStatementContext context) { }
 	/// <summary>
 	/// Enter a parse tree produced by <see cref="GLangParser.variableDeclarationStatement"/>.
 	/// <para>The default implementation does nothing.</para>

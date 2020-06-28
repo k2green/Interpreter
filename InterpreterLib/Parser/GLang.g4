@@ -6,30 +6,29 @@ grammar GLang;
  
 
 
-forAssign: variableDeclarationStatement | assignmentExpression;
+declerationOrAssign: variableDeclarationStatement | assignmentExpression;
 typeDefinition: TYPE_DELIMETER TYPE_NAME;
-binaryExpressionAssignment : ASSIGNMENT_OPERATOR binaryExpression;
 
 	/*
 	 * Statements
 	 */
 		 
-statement :  forStat | whileStat | ifStat | block| variableDeclarationStatement | assignmentExpression  | expressionStatement;
+statement :  forStatement | whileStatement | ifStatement | block| variableDeclarationStatement | expressionStatement;
 
 
 block : L_BRACE statement* R_BRACE;
 
-expressionStatement: binaryExpression;
+expressionStatement: assignmentExpression | binaryExpression;
 
-forStat: FOR L_PARENTHESIS assign=forAssign COMMA condition=binaryExpression COMMA step=assignmentExpression R_PARENTHESIS body=statement;
+forStatement: FOR L_PARENTHESIS declerationOrAssign COMMA binaryExpression COMMA assignmentExpression R_PARENTHESIS statement;
 
-ifStat : IF L_PARENTHESIS condition=binaryExpression R_PARENTHESIS trueBranch=statement (ELSE falseBranch=statement)?;
-whileStat: WHILE L_PARENTHESIS condition=binaryExpression R_PARENTHESIS body=statement;
+ifStatement : IF L_PARENTHESIS binaryExpression R_PARENTHESIS trueBranch=statement (ELSE falseBranch=statement)?;
+whileStatement: WHILE L_PARENTHESIS binaryExpression R_PARENTHESIS body=statement;
 
 variableDeclarationStatement: DECL_VARIABLE IDENTIFIER typeDefinition
-							| DECL_VARIABLE IDENTIFIER typeDefinition? binaryExpressionAssignment;
+							| DECL_VARIABLE assignmentExpression;
 
-assignmentExpression : IDENTIFIER binaryExpressionAssignment;
+assignmentExpression : IDENTIFIER typeDefinition? ASSIGNMENT_OPERATOR binaryExpression;
 
 
 	/*

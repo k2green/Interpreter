@@ -35,7 +35,7 @@ using ParserRuleContext = Antlr4.Runtime.ParserRuleContext;
 [System.CLSCompliant(false)]
 public partial class GLangBaseVisitor<Result> : AbstractParseTreeVisitor<Result>, IGLangVisitor<Result> {
 	/// <summary>
-	/// Visit a parse tree produced by <see cref="GLangParser.forAssign"/>.
+	/// Visit a parse tree produced by <see cref="GLangParser.declerationOrAssign"/>.
 	/// <para>
 	/// The default implementation returns the result of calling <see cref="AbstractParseTreeVisitor{Result}.VisitChildren(IRuleNode)"/>
 	/// on <paramref name="context"/>.
@@ -43,7 +43,7 @@ public partial class GLangBaseVisitor<Result> : AbstractParseTreeVisitor<Result>
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
-	public virtual Result VisitForAssign([NotNull] GLangParser.ForAssignContext context) { return VisitChildren(context); }
+	public virtual Result VisitDeclerationOrAssign([NotNull] GLangParser.DeclerationOrAssignContext context) { return VisitChildren(context); }
 	/// <summary>
 	/// Visit a parse tree produced by <see cref="GLangParser.typeDefinition"/>.
 	/// <para>
@@ -54,16 +54,6 @@ public partial class GLangBaseVisitor<Result> : AbstractParseTreeVisitor<Result>
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
 	public virtual Result VisitTypeDefinition([NotNull] GLangParser.TypeDefinitionContext context) { return VisitChildren(context); }
-	/// <summary>
-	/// Visit a parse tree produced by <see cref="GLangParser.binaryExpressionAssignment"/>.
-	/// <para>
-	/// The default implementation returns the result of calling <see cref="AbstractParseTreeVisitor{Result}.VisitChildren(IRuleNode)"/>
-	/// on <paramref name="context"/>.
-	/// </para>
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	/// <return>The visitor result.</return>
-	public virtual Result VisitBinaryExpressionAssignment([NotNull] GLangParser.BinaryExpressionAssignmentContext context) { return VisitChildren(context); }
 	/// <summary>
 	/// Visit a parse tree produced by <see cref="GLangParser.statement"/>.
 	/// <para>
@@ -95,7 +85,7 @@ public partial class GLangBaseVisitor<Result> : AbstractParseTreeVisitor<Result>
 	/// <return>The visitor result.</return>
 	public virtual Result VisitExpressionStatement([NotNull] GLangParser.ExpressionStatementContext context) { return VisitChildren(context); }
 	/// <summary>
-	/// Visit a parse tree produced by <see cref="GLangParser.forStat"/>.
+	/// Visit a parse tree produced by <see cref="GLangParser.forStatement"/>.
 	/// <para>
 	/// The default implementation returns the result of calling <see cref="AbstractParseTreeVisitor{Result}.VisitChildren(IRuleNode)"/>
 	/// on <paramref name="context"/>.
@@ -103,9 +93,9 @@ public partial class GLangBaseVisitor<Result> : AbstractParseTreeVisitor<Result>
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
-	public virtual Result VisitForStat([NotNull] GLangParser.ForStatContext context) { return VisitChildren(context); }
+	public virtual Result VisitForStatement([NotNull] GLangParser.ForStatementContext context) { return VisitChildren(context); }
 	/// <summary>
-	/// Visit a parse tree produced by <see cref="GLangParser.ifStat"/>.
+	/// Visit a parse tree produced by <see cref="GLangParser.ifStatement"/>.
 	/// <para>
 	/// The default implementation returns the result of calling <see cref="AbstractParseTreeVisitor{Result}.VisitChildren(IRuleNode)"/>
 	/// on <paramref name="context"/>.
@@ -113,9 +103,9 @@ public partial class GLangBaseVisitor<Result> : AbstractParseTreeVisitor<Result>
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
-	public virtual Result VisitIfStat([NotNull] GLangParser.IfStatContext context) { return VisitChildren(context); }
+	public virtual Result VisitIfStatement([NotNull] GLangParser.IfStatementContext context) { return VisitChildren(context); }
 	/// <summary>
-	/// Visit a parse tree produced by <see cref="GLangParser.whileStat"/>.
+	/// Visit a parse tree produced by <see cref="GLangParser.whileStatement"/>.
 	/// <para>
 	/// The default implementation returns the result of calling <see cref="AbstractParseTreeVisitor{Result}.VisitChildren(IRuleNode)"/>
 	/// on <paramref name="context"/>.
@@ -123,7 +113,7 @@ public partial class GLangBaseVisitor<Result> : AbstractParseTreeVisitor<Result>
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
-	public virtual Result VisitWhileStat([NotNull] GLangParser.WhileStatContext context) { return VisitChildren(context); }
+	public virtual Result VisitWhileStatement([NotNull] GLangParser.WhileStatementContext context) { return VisitChildren(context); }
 	/// <summary>
 	/// Visit a parse tree produced by <see cref="GLangParser.variableDeclarationStatement"/>.
 	/// <para>

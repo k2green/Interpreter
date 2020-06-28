@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using InterpreterLib.Binding.Types;
 using InterpreterLib.Runtime;
+using InterpreterLib.Syntax;
 
 namespace Interpreter {
 	class Program {
@@ -24,21 +25,7 @@ namespace Interpreter {
 					builder.Append(input);
 				}*/
 
-				if (env == null)
-					env = new BindingEnvironment(input, false);
-				else
-					env = env.ContinueWith(input);
-
-				/*var output = env.Evaluate(variables);
-
-				if (output.Value != null)
-					Console.WriteLine(output.Value);
-
-				foreach (var message in output.Diagnostics)
-					Console.WriteLine(message);*/
-
-				foreach (var line in env.ToText())
-					Console.WriteLine(line);
+				SyntaxTreeWriter.ParseAndWriteTree(Console.Out, input);
 			}
 		}
 	}

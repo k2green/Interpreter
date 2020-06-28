@@ -48,15 +48,6 @@ namespace InterpreterLib.Diagnostics {
 		protected override IEnumerable<string> VisitError(BoundError error, string prefix1, string prefix2) {
 			IEnumerable<string> line = new string[] { $"{prefix1}{error.Error}"};
 
-			if (error.Children != null) {
-				var children = error.Children.ToArray();
-				for (int i = 0; i < children.Length - 1; i++) {
-					line = line.Concat(Visit(children[i], prefix2 + NEXT_CHILD, prefix2 + NO_CHILD));
-				}
-
-				line = line.Concat(Visit(children[children.Length - 1], prefix2 + LAST_CHILD, prefix2 + SPACING));
-			}
-
 			return line;
 		}
 

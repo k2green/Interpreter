@@ -4,6 +4,8 @@ using System.Text;
 
 namespace InterpreterLib.Binding.Types {
 	public enum SymbolType {
-		Variable, Type
+		Variable, Type,
+		Function,
+		Parameter
 	}
 }
