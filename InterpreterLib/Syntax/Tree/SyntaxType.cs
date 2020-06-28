@@ -14,6 +14,7 @@ namespace InterpreterLib.Syntax.Tree {
 		TypeDefinition,
 		Assignment,
 		Expression,
-		IfStatement
+		IfStatement,
+		WhileLoop
 	}
 }

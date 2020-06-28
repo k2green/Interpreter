@@ -90,7 +90,16 @@ namespace InterpreterLib.Syntax {
 				case SyntaxType.IfStatement:
 					WriteIfStatement((IfStatementSyntax)node, prefix1, prefix2);
 					break;
+				case SyntaxType.WhileLoop:
+					WriteWhileLoop((WhileLoopSyntax)node, prefix1, prefix2);
+					break;
 			}
+		}
+
+		private void WriteWhileLoop(WhileLoopSyntax node, string prefix1, string prefix2) {
+			Writer.WriteLine($"{prefix1}While loop");
+
+			WriteChildren(node.Children, prefix2);
 		}
 
 		private void WriteIfStatement(IfStatementSyntax node, string prefix1, string prefix2) {

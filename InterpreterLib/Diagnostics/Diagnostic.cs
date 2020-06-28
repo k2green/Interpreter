@@ -76,5 +76,9 @@ namespace InterpreterLib {
 		internal static Diagnostic ReportInvalidIfStatement(int line, int column, string v) {
 			throw new NotImplementedException();
 		}
+
+		internal static Diagnostic ReportInvalisWhileStatement(int line, int column, string v) {
+			throw new NotImplementedException();
+		}
 	}
 }

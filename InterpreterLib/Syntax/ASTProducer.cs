@@ -191,6 +191,16 @@ namespace InterpreterLib.Syntax {
 			return new ExpressionStatementSyntax((ExpressionSyntax)visit);
 		}
 
+		public override SyntaxNode VisitDeclerationOrAssign([NotNull] GLangParser.DeclerationOrAssignContext context) {
+			if (context.variableDeclarationStatement() != null)
+				return Visit(context.variableDeclarationStatement());
+
+			if (context.assignmentExpression() != null)
+				return Visit(context.assignmentExpression());
+
+			return Error(Diagnostic.ReportInvalidForAssignment(context.Start.Line, context.Start.Column, context.GetText()));
+		}
+
 		public override SyntaxNode VisitIfStatement([NotNull] GLangParser.IfStatementContext context) {
 			var ifKeywCtx = context.IF();
 			var lParenCtx = context.L_PARENTHESIS();
@@ -209,11 +219,14 @@ namespace InterpreterLib.Syntax {
 			if (elseCtx == null ^ falseCtx == null)
 				return Error(Diagnostic.ReportInvalidIfStatement(context.Start.Line, context.Start.Column, context.GetText()));
 
+			if (elseCtx != null && !elseCtx.GetText().Equals("else"))
+				return Error(Diagnostic.ReportInvalidIfStatement(context.Start.Line, context.Start.Column, context.GetText()));
+
 			var condVisit = Visit(conditionCtx);
 			var trueVisit = Visit(trueCtx);
 
 			if (!(condVisit is ExpressionSyntax && trueVisit is StatementSyntax))
-				return Error(Diagnostic.ReportInvalidExpressionStatement(context.Start.Line, context.Start.Column, context.GetText()));
+				return Error(Diagnostic.ReportInvalidIfStatement(context.Start.Line, context.Start.Column, context.GetText()));
 
 			TokenSyntax elseToken = null;
 			StatementSyntax falseStatement = null;
@@ -223,13 +236,35 @@ namespace InterpreterLib.Syntax {
 				var falseVisit = Visit(falseCtx);
 
 				if (!(falseVisit is StatementSyntax))
-					return Error(Diagnostic.ReportInvalidExpressionStatement(context.Start.Line, context.Start.Column, context.GetText()));
+					return Error(Diagnostic.ReportInvalidIfStatement(context.Start.Line, context.Start.Column, context.GetText()));
 
 				elseToken = Token(elseCtx.Symbol);
 				falseStatement = (StatementSyntax)falseVisit;
 			}
 
 			return new IfStatementSyntax(Token(ifKeywCtx.Symbol), Token(lParenCtx.Symbol), (ExpressionSyntax)condVisit, Token(rParenCtx.Symbol), (StatementSyntax)trueVisit, elseToken, falseStatement);
+		}
+
+		public override SyntaxNode VisitWhileStatement([NotNull] GLangParser.WhileStatementContext context) {
+			var whileKeywCtx = context.WHILE();
+			var lParenCtx = context.L_PARENTHESIS();
+			var conditionCtx = context.binaryExpression();
+			var rParenCtx = context.R_PARENTHESIS();
+			var bodyCtx = context.statement();
+
+			if (whileKeywCtx == null || conditionCtx == null || lParenCtx == null || rParenCtx == null)
+				return Error(Diagnostic.ReportInvalisWhileStatement(context.Start.Line, context.Start.Column, context.GetText()));
+
+			if (!whileKeywCtx.GetText().Equals("while") || !lParenCtx.GetText().Equals("(") || !rParenCtx.GetText().Equals(")"))
+				return Error(Diagnostic.ReportInvalidIfStatement(context.Start.Line, context.Start.Column, context.GetText()));
+
+			var condVisit = Visit(conditionCtx);
+			var bodyVisit = Visit(bodyCtx);
+
+			if (!(condVisit is ExpressionSyntax && bodyVisit is StatementSyntax))
+				return Error(Diagnostic.ReportInvalisWhileStatement(context.Start.Line, context.Start.Column, context.GetText()));
+
+			return new WhileLoopSyntax(Token(whileKeywCtx.Symbol), Token(lParenCtx.Symbol), (ExpressionSyntax)condVisit, Token(rParenCtx.Symbol), (StatementSyntax)bodyVisit);
 		}
 	}
 }
