@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace InterpreterLib.Binding.Tree.Expressions {
+namespace InterpreterLib.Binding.Tree{
 	internal sealed class BoundLabel : BoundStatement {
 		public override NodeType Type => NodeType.Label;
 

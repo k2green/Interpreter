@@ -75,7 +75,7 @@ namespace InterpreterLib.Diagnostics {
 			return lines.Concat(Visit(statement.Body, prefix2 + LAST_CHILD, prefix2 + SPACING));
 		}
 
-		protected override IEnumerable<string> VisitIf(BoundIfStatement statement, string prefix1, string prefix2) {
+		protected override IEnumerable<string> VisitIfStatement(BoundIfStatement statement, string prefix1, string prefix2) {
 			IEnumerable<string> line = new string[] { $"{prefix1}For Statement" };
 
 			line = line.Concat(Visit(statement.Condition, prefix2 + NEXT_CHILD, prefix2 + NO_CHILD));
@@ -101,22 +101,43 @@ namespace InterpreterLib.Diagnostics {
 			return baseLine.Concat(Visit(expression.Operand, prefix2 + LAST_CHILD, prefix2 + SPACING));
 		}
 
-		protected override IEnumerable<string> VisitVariable(BoundVariableExpression expression, string prefix1, string prefix2) {
+		protected override IEnumerable<string> VisitVariableExpression(BoundVariableExpression expression, string prefix1, string prefix2) {
 			return new string[] { $"{prefix1}Variable {expression.Variable}" };
 		}
 
 		protected override IEnumerable<string> VisitVariableDeclaration(BoundVariableDeclarationStatement statement, string prefix1, string prefix2) {
-			var baseLine = new string[] { $"{prefix1}Variable Declaration" };
+			IEnumerable<string> baseLine = new string[] { $"{prefix1}Variable Declaration" };
 
-			return baseLine.Concat(Visit(statement.Initialiser, prefix2 + LAST_CHILD, prefix2 + SPACING));
+			if(statement.Initialiser != null)
+				baseLine = baseLine.Concat(Visit(statement.Initialiser, prefix2 + LAST_CHILD, prefix2 + SPACING));
+
+			return baseLine;
 		}
 
-		protected override IEnumerable<string> VisitWhile(BoundWhileStatement statement, string prefix1, string prefix2) {
+		protected override IEnumerable<string> VisitWhileStatement(BoundWhileStatement statement, string prefix1, string prefix2) {
 			IEnumerable<string> lines = new string[] { $"{prefix1}While Statement" };
 
 			lines = lines.Concat(Visit(statement.Condition, prefix2 + NEXT_CHILD, prefix2 + NO_CHILD));
 
+			return lines.Concat(Visit(statement.Body, prefix2 + LAST_CHILD, prefix2 + SPACING));
+		}
+
+		protected override IEnumerable<string> VisitConditionalBranchStatement(BoundConditionalBranchStatement statement, string prefix1, string prefix2) {
+			IEnumerable<string> lines = new string[] { $"{prefix1}Conditional branch statement: conditional check = {statement.Check}" };
+
+			lines = lines.Concat(Visit(statement.Label, prefix2 + NEXT_CHILD, prefix2 + NO_CHILD));
+
 			return lines.Concat(Visit(statement.Condition, prefix2 + LAST_CHILD, prefix2 + SPACING));
+		}
+
+		protected override IEnumerable<string> VisitBranchStatement(BoundBranchStatement statement, string prefix1, string prefix2) {
+			IEnumerable<string> lines = new string[] { $"{prefix1}Branch statement" };
+
+			return lines.Concat(Visit(statement.Label, prefix2 + LAST_CHILD, prefix2 + SPACING));
+		}
+
+		protected override IEnumerable<string> VisitLabelStatement(BoundLabel statement, string prefix1, string prefix2) {
+			return new string[] { $"{prefix1}{statement.Name}" };
 		}
 	}
 }

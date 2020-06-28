@@ -1,11 +1,13 @@
 ﻿using Antlr4.Runtime;
 using Antlr4.Runtime.Tree;
 using InterpreterLib.Binding;
+using InterpreterLib.Binding.Lowering;
+using InterpreterLib.Binding.Tree;
 using InterpreterLib.Binding.Types;
 using InterpreterLib.Diagnostics;
 using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Linq;
 using System.Threading;
 
 namespace InterpreterLib.Runtime {
@@ -73,8 +75,15 @@ namespace InterpreterLib.Runtime {
 
 		public IEnumerable<string> ToText() {
 			BoundTreeDisplayVisitor display = new BoundTreeDisplayVisitor();
+			var lines = display.GetText(GlobalScope.Root);
+			lines = lines.Concat(new string[] { "", "", "" });
 
-			return display.GetText(GlobalScope.Root);
+			if (!diagnostics.Any() && GlobalScope.Root is BoundStatement) {
+				display = new BoundTreeDisplayVisitor();
+				lines = lines.Concat(display.GetText(Lowerer.Lower((BoundStatement)GlobalScope.Root)));
+			}
+
+			return lines;
 		}
 	}
 }

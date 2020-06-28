@@ -12,7 +12,7 @@ namespace InterpreterLib.Binding.Tree {
 					return VisitUnaryExpression((BoundUnaryExpression)node);
 				case NodeType.BinaryExpression:
 					return VisitBinaryExpression((BoundBinaryExpression)node);
-				case NodeType.AssignmentStatement:
+				case NodeType.AssignmentExpression:
 					return VisitAssignmentExpression((BoundAssignmentExpression)node);
 				case NodeType.Variable:
 					return VisitVariable((BoundVariableExpression)node);
@@ -56,7 +56,7 @@ namespace InterpreterLib.Binding.Tree {
 					return VisitUnaryExpression((BoundUnaryExpression)node);
 				case NodeType.BinaryExpression:
 					return VisitBinaryExpression((BoundBinaryExpression)node);
-				case NodeType.AssignmentStatement:
+				case NodeType.AssignmentExpression:
 					return VisitAssignmentExpression((BoundAssignmentExpression)node);
 				case NodeType.Variable:
 					return VisitVariable((BoundVariableExpression)node);
@@ -94,6 +94,9 @@ namespace InterpreterLib.Binding.Tree {
 
 	internal abstract class BoundTreeVisitor<T, U, V> {
 		protected T Visit(BoundNode node, U param1, V param2) {
+			if (node == null)
+				return default(T);
+
 			switch (node.Type) {
 				case NodeType.Literal:
 					return VisitLiteral((BoundLiteral)node, param1, param2);
@@ -101,16 +104,16 @@ namespace InterpreterLib.Binding.Tree {
 					return VisitUnaryExpression((BoundUnaryExpression)node, param1, param2);
 				case NodeType.BinaryExpression:
 					return VisitBinaryExpression((BoundBinaryExpression)node, param1, param2);
-				case NodeType.AssignmentStatement:
+				case NodeType.AssignmentExpression:
 					return VisitAssignmentExpression((BoundAssignmentExpression)node, param1, param2);
 				case NodeType.Variable:
-					return VisitVariable((BoundVariableExpression)node, param1, param2);
+					return VisitVariableExpression((BoundVariableExpression)node, param1, param2);
 				case NodeType.Block:
 					return VisitBlock((BoundBlock)node, param1, param2);
 				case NodeType.If:
-					return VisitIf((BoundIfStatement)node, param1, param2);
+					return VisitIfStatement((BoundIfStatement)node, param1, param2);
 				case NodeType.While:
-					return VisitWhile((BoundWhileStatement)node, param1, param2);
+					return VisitWhileStatement((BoundWhileStatement)node, param1, param2);
 				case NodeType.VariableDeclaration:
 					return VisitVariableDeclaration((BoundVariableDeclarationStatement)node, param1, param2);
 				case NodeType.For:
@@ -119,19 +122,28 @@ namespace InterpreterLib.Binding.Tree {
 					return VisitError((BoundError)node, param1, param2);
 				case NodeType.Expression:
 					return VisitExpressionStatement((BoundExpressionStatement)node, param1, param2);
+				case NodeType.Label:
+					return VisitLabelStatement((BoundLabel)node, param1, param2);
+				case NodeType.Branch:
+					return VisitBranchStatement((BoundBranchStatement)node, param1, param2);
+				case NodeType.ConditionalBranch:
+					return VisitConditionalBranchStatement((BoundConditionalBranchStatement)node, param1, param2);
 				default: throw new Exception("Unimplemented node evaluator");
 			}
 		}
 
+		protected abstract T VisitConditionalBranchStatement(BoundConditionalBranchStatement node, U param1, V param2);
+		protected abstract T VisitBranchStatement(BoundBranchStatement node, U param1, V param2);
+		protected abstract T VisitLabelStatement(BoundLabel node, U param1, V param2);
 		protected abstract T VisitExpressionStatement(BoundExpressionStatement statement, U param1, V param2);
 		protected abstract T VisitLiteral(BoundLiteral literal, U param1, V param2);
 		protected abstract T VisitUnaryExpression(BoundUnaryExpression expression, U param1, V param2);
 		protected abstract T VisitBinaryExpression(BoundBinaryExpression expression, U param1, V param2);
 		protected abstract T VisitAssignmentExpression(BoundAssignmentExpression expression, U param1, V param2);
-		protected abstract T VisitVariable(BoundVariableExpression expression, U param1, V param2);
+		protected abstract T VisitVariableExpression(BoundVariableExpression expression, U param1, V param2);
 		protected abstract T VisitBlock(BoundBlock block, U param1, V param2);
-		protected abstract T VisitIf(BoundIfStatement statement, U param1, V param2);
-		protected abstract T VisitWhile(BoundWhileStatement statement, U param1, V param2);
+		protected abstract T VisitIfStatement(BoundIfStatement statement, U param1, V param2);
+		protected abstract T VisitWhileStatement(BoundWhileStatement statement, U param1, V param2);
 		protected abstract T VisitVariableDeclaration(BoundVariableDeclarationStatement statement, U param1, V param2);
 		protected abstract T VisitForStatement(BoundForStatement statement, U param1, V param2);
 		protected abstract T VisitError(BoundError error, U param1, V param2);

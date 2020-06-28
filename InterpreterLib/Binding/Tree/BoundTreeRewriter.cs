@@ -14,26 +14,9 @@ namespace InterpreterLib.Binding.Tree {
 				throw new Exception($"Invalid node {node.Type}");
 		}
 
-		protected virtual BoundStatement RewriteStatement(BoundStatement statement) {
-			switch (statement.Type) {
-				case NodeType.Block:
-					return RewriteBlock((BoundBlock)statement);
-				case NodeType.If:
-					return RewriteIfStatement((BoundIfStatement)statement);
-				case NodeType.While:
-					return RewriteWhileStatement((BoundWhileStatement)statement);
-				case NodeType.VariableDeclaration:
-					return RewriteVariableDeclaration((BoundVariableDeclarationStatement)statement);
-				case NodeType.For:
-					return RewriteForStatement((BoundForStatement)statement);
-
-				default: throw new Exception($"Unexpected statement {statement.Type}");
-			}
-		}
-
 		protected virtual BoundExpression RewriteExpression(BoundExpression expression) {
 			switch (expression.Type) {
-				case NodeType.AssignmentStatement:
+				case NodeType.AssignmentExpression:
 					return RewriteAssignmentExpression((BoundAssignmentExpression)expression);
 				case NodeType.Literal:
 					return RewriteLiteral((BoundLiteral)expression);
@@ -82,11 +65,67 @@ namespace InterpreterLib.Binding.Tree {
 			return new BoundAssignmentExpression(statement.Identifier, expression);
 		}
 
+		protected virtual BoundStatement RewriteStatement(BoundStatement statement) {
+			switch (statement.Type) {
+				case NodeType.Block:
+					return RewriteBlock((BoundBlock)statement);
+				case NodeType.If:
+					return RewriteIfStatement((BoundIfStatement)statement);
+				case NodeType.While:
+					return RewriteWhileStatement((BoundWhileStatement)statement);
+				case NodeType.VariableDeclaration:
+					return RewriteVariableDeclaration((BoundVariableDeclarationStatement)statement);
+				case NodeType.For:
+					return RewriteForStatement((BoundForStatement)statement);
+				case NodeType.Expression:
+					return RewriteExpressionStatement((BoundExpressionStatement)statement);
+				case NodeType.Label:
+					return RewriteLabelStatement((BoundLabel)statement);
+				case NodeType.ConditionalBranch:
+					return RewriteConditionalBranchStatement((BoundConditionalBranchStatement)statement);
+				case NodeType.Branch:
+					return RewriteBranchStatement((BoundBranchStatement)statement);
+				default: throw new Exception($"Unexpected statement {statement.Type}");
+			}
+		}
+
+		private BoundStatement RewriteBranchStatement(BoundBranchStatement statement) {
+			var label = RewriteLabelStatement(statement.Label);
+
+			if (label == statement.Label)
+				return statement;
+
+			return new BoundBranchStatement(label);
+		}
+
+		private BoundStatement RewriteConditionalBranchStatement(BoundConditionalBranchStatement statement) {
+			var label = RewriteLabelStatement(statement.Label);
+			var condition = RewriteExpression(statement.Condition);
+
+			if (label == statement.Label && condition == statement.Condition)
+				return statement;
+
+			return new BoundConditionalBranchStatement(label, condition, statement.Check);
+		}
+
+		private BoundLabel RewriteLabelStatement(BoundLabel statement) {
+			return statement;
+		}
+
+		private BoundStatement RewriteExpressionStatement(BoundExpressionStatement statement) {
+			var expression = RewriteExpression(statement.Expression);
+
+			if (expression == statement.Expression)
+				return statement;
+
+			return new BoundExpressionStatement(expression);
+		}
+
 		protected virtual BoundStatement RewriteBlock(BoundBlock block) {
 			List<BoundStatement> rewrittenStatements = new List<BoundStatement>();
 			bool isSame = true;
 
-			foreach(var stat in block.Statements) {
+			foreach (var stat in block.Statements) {
 				var rewritten = RewriteStatement(stat);
 
 				if (rewritten != stat)
@@ -106,7 +145,7 @@ namespace InterpreterLib.Binding.Tree {
 		}
 
 		protected virtual BoundStatement RewriteForStatement(BoundForStatement statement) {
-			var assignment = RewriteNode(statement.Assignment);
+			var assignment = RewriteStatement(statement.Assignment);
 			var cond = RewriteExpression(statement.Condition);
 			var step = RewriteExpression(statement.Step);
 

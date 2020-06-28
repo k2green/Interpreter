@@ -3,7 +3,7 @@
 namespace InterpreterLib.Binding.Tree {
 	internal sealed class BoundAssignmentExpression : BoundExpression {
 
-		public override NodeType Type => NodeType.AssignmentStatement;
+		public override NodeType Type => NodeType.AssignmentExpression;
 
 		public VariableSymbol Identifier { get; }
 		public BoundExpression Expression { get; }

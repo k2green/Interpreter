@@ -7,12 +7,12 @@ namespace InterpreterLib.Binding.Tree {
 
 		public override NodeType Type => NodeType.For;
 
-		public BoundNode Assignment { get; }
+		public BoundStatement Assignment { get; }
 		public BoundExpression Condition { get; }
 		public BoundExpression Step { get; }
 		public BoundStatement Body { get; }
 
-		public BoundForStatement(BoundNode assignment, BoundExpression condition, BoundExpression step, BoundStatement body) {
+		public BoundForStatement(BoundStatement assignment, BoundExpression condition, BoundExpression step, BoundStatement body) {
 			Assignment = assignment;
 			Condition = condition;
 			Step = step;

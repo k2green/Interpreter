@@ -224,6 +224,7 @@ namespace InterpreterLib.Binding {
 			bool hasIdentifier = context.DECL_VARIABLE() != null && context.IDENTIFIER() != null;
 			bool hasTypeDef = context.TYPE_DELIMETER() != null && context.TYPE_NAME() != null;
 			bool hasExpression = context.ASSIGNMENT_OPERATOR() != null && context.ASSIGNMENT_OPERATOR().GetText().Equals("=") && context.binaryExpression() != null;
+
 			bool isReadOnly;
 			TypeSymbol type;
 			BoundExpression initialiser;
@@ -354,7 +355,13 @@ namespace InterpreterLib.Binding {
 				return Error(diagnostic, true, assignment, condition, step, body);
 			}
 
-			return new BoundForStatement(assignment, (BoundExpression)condition, (BoundExpression)step, (BoundStatement)body);
+			BoundStatement assignmentStatement;
+			if (assignment is BoundVariableDeclarationStatement)
+				assignmentStatement = (BoundVariableDeclarationStatement)assignment;
+			else
+				assignmentStatement = new BoundExpressionStatement((BoundAssignmentExpression)assignment);
+
+			return new BoundForStatement(assignmentStatement, (BoundExpression)condition, (BoundExpression)step, (BoundStatement)body);
 		}
 
 		public override BoundNode VisitIfStat([NotNull] GLangParser.IfStatContext context) {
@@ -391,7 +398,7 @@ namespace InterpreterLib.Binding {
 				return Error(diagnostic, false, condition, trueBrStat, falseBrStat);
 			}
 
-			if (!(falseBrStat is BoundStatement)) {
+			if (falseBrStat != null && !(falseBrStat is BoundStatement)) {
 				var diagnostic = Diagnostic.ReportFailedVisit(context.falseBranch.Start.Line, context.falseBranch.Start.Column, context.falseBranch.GetText());
 				return Error(diagnostic, false, condition, trueBrStat, falseBrStat);
 			}
