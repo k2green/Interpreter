@@ -207,6 +207,15 @@ namespace InterpreterLib.Binding {
 			if (context.block() != null)
 				return Visit(context.block());
 
+			if (context.variableDeclarationStatement() != null)
+				return Visit(context.variableDeclarationStatement());
+
+			if (context.assignmentExpression() != null)
+				return Visit(context.assignmentExpression());
+
+			if (context.expressionStatement() != null)
+				return Visit(context.expressionStatement());
+
 
 			return Error(Diagnostic.ReportInvalidStatement(context.Start.Line, context.Start.Column, context.GetText()));
 		}
@@ -316,7 +325,7 @@ namespace InterpreterLib.Binding {
 			if (hasDeclaration) {
 				return Visit(context.variableDeclarationStatement());
 			} else {
-				return Visit(context.variableDeclarationStatement());
+				return Visit(context.assignmentExpression());
 			}
 		}
 

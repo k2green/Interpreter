@@ -63,7 +63,7 @@ namespace InterpreterLib.Diagnostics {
 		protected override IEnumerable<string> VisitExpressionStatement(BoundExpressionStatement statement, string prefix1, string prefix2) {
 			IEnumerable<string> lines = new string[] { $"{prefix1}Expression Statement" };
 
-			return lines.Concat(Visit(statement.Expression, prefix2 + LAST_CHILD, prefix2 + NO_CHILD));
+			return lines.Concat(Visit(statement.Expression, prefix2 + LAST_CHILD, prefix2 + SPACING));
 		}
 
 		protected override IEnumerable<string> VisitForStatement(BoundForStatement statement, string prefix1, string prefix2) {
