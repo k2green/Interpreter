@@ -8,6 +8,8 @@
 		VariableDeclaration,
 		For,
 		Error,
-		Expression
+		Expression,
+		Label,
+		ConditionalBranch
 	}
 }

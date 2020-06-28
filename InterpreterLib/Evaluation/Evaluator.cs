@@ -30,23 +30,11 @@ namespace InterpreterLib {
 		}
 
 		protected override object VisitForStatement(BoundForStatement statement) {
-			object assign = Visit(statement.Assignment);
-
-			if (assign == null)
-				return null;
-
-			return Visit(statement.While);
+			throw new NotImplementedException();
 		}
 
 		protected override object VisitVariableDeclaration(BoundVariableDeclarationStatement expression) {
-			var variable = expression.VariableExpression.Variable;
-
-			if (variables.ContainsKey(variable))
-				variables[variable] = null;
-			else
-				variables.Add(variable, null);
-
-			return null;
+			throw new NotImplementedException();
 		}
 
 		protected override object VisitWhile(BoundWhileStatement expression) {
@@ -170,6 +158,10 @@ namespace InterpreterLib {
 		protected override object VisitError(BoundError error) {
 			// If there is an error in the binding, we use an exception to bail out of the evaluation
 			throw new ErrorEncounteredException();
+		}
+
+		protected override object VisitExpressionStatement(BoundExpressionStatement statement) {
+			throw new NotImplementedException();
 		}
 	}
 }

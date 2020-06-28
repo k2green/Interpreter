@@ -32,6 +32,7 @@ namespace InterpreterLib.Binding.Tree {
 			}
 		}
 
+		protected abstract T VisitExpressionStatement(BoundExpressionStatement statement);
 		protected abstract T VisitLiteral(BoundLiteral literal);
 		protected abstract T VisitUnaryExpression(BoundUnaryExpression expression);
 		protected abstract T VisitBinaryExpression(BoundBinaryExpression expression);
@@ -71,10 +72,13 @@ namespace InterpreterLib.Binding.Tree {
 					return VisitForStatement((BoundForStatement)node);
 				case NodeType.Error:
 					return VisitError((BoundError)node);
+				case NodeType.Expression:
+					return VisitExpressionStatement((BoundExpressionStatement) node);
 				default: throw new Exception("Unimplemented node evaluator");
 			}
 		}
 
+		protected abstract U VisitExpressionStatement(BoundExpressionStatement statement);
 		protected abstract U VisitLiteral(BoundLiteral literal);
 		protected abstract U VisitUnaryExpression(BoundUnaryExpression expression);
 		protected abstract U VisitBinaryExpression(BoundBinaryExpression expression);
@@ -113,10 +117,13 @@ namespace InterpreterLib.Binding.Tree {
 					return VisitForStatement((BoundForStatement)node, param1, param2);
 				case NodeType.Error:
 					return VisitError((BoundError)node, param1, param2);
+				case NodeType.Expression:
+					return VisitExpressionStatement((BoundExpressionStatement)node, param1, param2);
 				default: throw new Exception("Unimplemented node evaluator");
 			}
 		}
 
+		protected abstract T VisitExpressionStatement(BoundExpressionStatement statement, U param1, V param2);
 		protected abstract T VisitLiteral(BoundLiteral literal, U param1, V param2);
 		protected abstract T VisitUnaryExpression(BoundUnaryExpression expression, U param1, V param2);
 		protected abstract T VisitBinaryExpression(BoundBinaryExpression expression, U param1, V param2);

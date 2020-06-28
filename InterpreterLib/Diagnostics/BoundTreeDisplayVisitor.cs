@@ -60,13 +60,19 @@ namespace InterpreterLib.Diagnostics {
 			return line;
 		}
 
-		protected override IEnumerable<string> VisitForStatement(BoundForStatement statement, string prefix1, string prefix2) {
-			IEnumerable<string> line = new string[] { $"{prefix1}For Statement" };
+		protected override IEnumerable<string> VisitExpressionStatement(BoundExpressionStatement statement, string prefix1, string prefix2) {
+			IEnumerable<string> lines = new string[] { $"{prefix1}Expression Statement" };
 
-			line = line.Concat(Visit(statement.Assignment, prefix2 + NEXT_CHILD + "assignment=", prefix2 + NO_CHILD));
-			line = line.Concat(Visit(statement.Condition, prefix2 + NEXT_CHILD + "condition=", prefix2 + NO_CHILD));
-			line = line.Concat(Visit(statement.Step, prefix2 + NEXT_CHILD + "step=", prefix2 + NO_CHILD));
-			return line.Concat(Visit(statement.Body, prefix2 + LAST_CHILD, prefix2 + SPACING));
+			return lines.Concat(Visit(statement.Expression, prefix2 + LAST_CHILD, prefix2 + NO_CHILD));
+		}
+
+		protected override IEnumerable<string> VisitForStatement(BoundForStatement statement, string prefix1, string prefix2) {
+			IEnumerable<string> lines = new string[] { $"{prefix1}For Statement" };
+
+			lines = lines.Concat(Visit(statement.Assignment, prefix2 + NEXT_CHILD + "assignment=", prefix2 + NO_CHILD));
+			lines = lines.Concat(Visit(statement.Condition, prefix2 + NEXT_CHILD + "condition=", prefix2 + NO_CHILD));
+			lines = lines.Concat(Visit(statement.Step, prefix2 + NEXT_CHILD + "step=", prefix2 + NO_CHILD));
+			return lines.Concat(Visit(statement.Body, prefix2 + LAST_CHILD, prefix2 + SPACING));
 		}
 
 		protected override IEnumerable<string> VisitIf(BoundIfStatement statement, string prefix1, string prefix2) {
