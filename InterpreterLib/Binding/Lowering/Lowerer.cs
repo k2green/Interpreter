@@ -42,21 +42,6 @@ namespace InterpreterLib.Binding.Lowering {
 			return new BoundBlock(statements);
 		}
 
-		protected override BoundStatement RewriteVariableDeclaration(BoundVariableDeclarationStatement statement) {
-			if (statement.Initialiser == null)
-				return statement;
-
-			var newDeclaration = new BoundVariableDeclarationStatement(statement.Variable, null);
-			var assignment = new BoundExpressionStatement(new BoundAssignmentExpression(statement.Variable, statement.Initialiser));
-
-			var result = new BoundBlock(new BoundStatement[] {
-				newDeclaration,
-				assignment
-			});
-
-			return RewriteStatement(result);
-		}
-
 		protected override BoundStatement RewriteIfStatement(BoundIfStatement statement) {
 			/*  if(<condition>) <true> else <false>
 			 * 

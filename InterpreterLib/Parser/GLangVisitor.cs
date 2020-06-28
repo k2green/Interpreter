@@ -33,6 +33,24 @@ using IToken = Antlr4.Runtime.IToken;
 [System.CLSCompliant(false)]
 public interface IGLangVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <summary>
+	/// Visit a parse tree produced by <see cref="GLangParser.forAssign"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitForAssign([NotNull] GLangParser.ForAssignContext context);
+	/// <summary>
+	/// Visit a parse tree produced by <see cref="GLangParser.typeDefinition"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitTypeDefinition([NotNull] GLangParser.TypeDefinitionContext context);
+	/// <summary>
+	/// Visit a parse tree produced by <see cref="GLangParser.binaryExpressionAssignment"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitBinaryExpressionAssignment([NotNull] GLangParser.BinaryExpressionAssignmentContext context);
+	/// <summary>
 	/// Visit a parse tree produced by <see cref="GLangParser.statement"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
@@ -50,12 +68,6 @@ public interface IGLangVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
 	Result VisitExpressionStatement([NotNull] GLangParser.ExpressionStatementContext context);
-	/// <summary>
-	/// Visit a parse tree produced by <see cref="GLangParser.forAssign"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	/// <return>The visitor result.</return>
-	Result VisitForAssign([NotNull] GLangParser.ForAssignContext context);
 	/// <summary>
 	/// Visit a parse tree produced by <see cref="GLangParser.forStat"/>.
 	/// </summary>

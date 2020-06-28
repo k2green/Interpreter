@@ -11,6 +11,7 @@
 		Expression,
 		Label,
 		ConditionalBranch,
-		Branch
+		Branch,
+		TypeDefinition
 	}
 }

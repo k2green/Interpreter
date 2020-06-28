@@ -36,6 +36,42 @@ using ParserRuleContext = Antlr4.Runtime.ParserRuleContext;
 [System.CLSCompliant(false)]
 public partial class GLangBaseListener : IGLangListener {
 	/// <summary>
+	/// Enter a parse tree produced by <see cref="GLangParser.forAssign"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterForAssign([NotNull] GLangParser.ForAssignContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="GLangParser.forAssign"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitForAssign([NotNull] GLangParser.ForAssignContext context) { }
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="GLangParser.typeDefinition"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterTypeDefinition([NotNull] GLangParser.TypeDefinitionContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="GLangParser.typeDefinition"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitTypeDefinition([NotNull] GLangParser.TypeDefinitionContext context) { }
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="GLangParser.binaryExpressionAssignment"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterBinaryExpressionAssignment([NotNull] GLangParser.BinaryExpressionAssignmentContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="GLangParser.binaryExpressionAssignment"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitBinaryExpressionAssignment([NotNull] GLangParser.BinaryExpressionAssignmentContext context) { }
+	/// <summary>
 	/// Enter a parse tree produced by <see cref="GLangParser.statement"/>.
 	/// <para>The default implementation does nothing.</para>
 	/// </summary>
@@ -71,18 +107,6 @@ public partial class GLangBaseListener : IGLangListener {
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitExpressionStatement([NotNull] GLangParser.ExpressionStatementContext context) { }
-	/// <summary>
-	/// Enter a parse tree produced by <see cref="GLangParser.forAssign"/>.
-	/// <para>The default implementation does nothing.</para>
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	public virtual void EnterForAssign([NotNull] GLangParser.ForAssignContext context) { }
-	/// <summary>
-	/// Exit a parse tree produced by <see cref="GLangParser.forAssign"/>.
-	/// <para>The default implementation does nothing.</para>
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	public virtual void ExitForAssign([NotNull] GLangParser.ForAssignContext context) { }
 	/// <summary>
 	/// Enter a parse tree produced by <see cref="GLangParser.forStat"/>.
 	/// <para>The default implementation does nothing.</para>

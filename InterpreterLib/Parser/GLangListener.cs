@@ -32,6 +32,36 @@ using IToken = Antlr4.Runtime.IToken;
 [System.CLSCompliant(false)]
 public interface IGLangListener : IParseTreeListener {
 	/// <summary>
+	/// Enter a parse tree produced by <see cref="GLangParser.forAssign"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterForAssign([NotNull] GLangParser.ForAssignContext context);
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="GLangParser.forAssign"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitForAssign([NotNull] GLangParser.ForAssignContext context);
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="GLangParser.typeDefinition"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterTypeDefinition([NotNull] GLangParser.TypeDefinitionContext context);
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="GLangParser.typeDefinition"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitTypeDefinition([NotNull] GLangParser.TypeDefinitionContext context);
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="GLangParser.binaryExpressionAssignment"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterBinaryExpressionAssignment([NotNull] GLangParser.BinaryExpressionAssignmentContext context);
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="GLangParser.binaryExpressionAssignment"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitBinaryExpressionAssignment([NotNull] GLangParser.BinaryExpressionAssignmentContext context);
+	/// <summary>
 	/// Enter a parse tree produced by <see cref="GLangParser.statement"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
@@ -61,16 +91,6 @@ public interface IGLangListener : IParseTreeListener {
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	void ExitExpressionStatement([NotNull] GLangParser.ExpressionStatementContext context);
-	/// <summary>
-	/// Enter a parse tree produced by <see cref="GLangParser.forAssign"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	void EnterForAssign([NotNull] GLangParser.ForAssignContext context);
-	/// <summary>
-	/// Exit a parse tree produced by <see cref="GLangParser.forAssign"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	void ExitForAssign([NotNull] GLangParser.ForAssignContext context);
 	/// <summary>
 	/// Enter a parse tree produced by <see cref="GLangParser.forStat"/>.
 	/// </summary>

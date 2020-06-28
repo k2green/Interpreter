@@ -120,5 +120,9 @@ namespace InterpreterLib {
 		internal static Diagnostic ReportInvalidExpressionStatement(int line, int column, string text) {
 			throw new NotImplementedException();
 		}
+
+		internal static Diagnostic ReportCannotCast(int line, int column, string v) {
+			throw new NotImplementedException();
+		}
 	}
 }

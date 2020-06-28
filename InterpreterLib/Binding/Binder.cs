@@ -161,35 +161,26 @@ namespace InterpreterLib.Binding {
 
 		public override BoundNode VisitAssignmentExpression([NotNull] GLangParser.AssignmentExpressionContext context) {
 			bool hasIdentifier = context.IDENTIFIER() != null;
-			bool hasAssignmentOp = context.ASSIGNMENT_OPERATOR() != null && context.ASSIGNMENT_OPERATOR().GetText().Equals("=");
-			bool hasExpression = context.binaryExpression() != null;
+			bool hasAssignment = context.binaryExpressionAssignment() != null;
 
-			if (!hasIdentifier || !hasAssignmentOp || !hasExpression)
+			if (!hasIdentifier || !hasAssignment)
 				return Error(Diagnostic.ReportInvalidAssignment(context.Start.Line, context.Start.Column, context.GetText()));
 
-			var exprRule = context.binaryExpression();
-			var exprNodeResult = Visit(context.binaryExpression());
+			var exprRule = context.binaryExpressionAssignment();
+			var exprNodeResult = Visit(context.binaryExpressionAssignment());
 
-			if (!(exprNodeResult is BoundExpression)) {
-				var diagnostic = Diagnostic.ReportFailedVisit(exprRule.Start.Line, exprRule.Start.Column, exprRule.GetText());
-				return Error(diagnostic, false, exprNodeResult);
-			}
+			if (!(exprNodeResult is BoundExpression))
+				return Error(Diagnostic.ReportFailedVisit(exprRule.Start.Line, exprRule.Start.Column, exprRule.GetText()));
 
 			var expression = (BoundExpression)exprNodeResult;
-			if (!scope.TryLookup(context.IDENTIFIER().GetText(), out var variable)) {
-				var diagnostic = Diagnostic.ReportUndefinedVariable(context.Start.Line, context.Start.Column, context.IDENTIFIER().GetText());
-				return Error(diagnostic, false, exprNodeResult);
-			}
+			if (!scope.TryLookup(context.IDENTIFIER().GetText(), out var variable))
+				return Error(Diagnostic.ReportUndefinedVariable(context.Start.Line, context.Start.Column, context.IDENTIFIER().GetText()));
 
-			if (variable.IsReadOnly) {
-				var diagnostic = Diagnostic.ReportReadonlyVariable(context.Start.Line, context.Start.Column, variable);
-				return Error(diagnostic, true, exprNodeResult);
-			}
+			if (variable.IsReadOnly)
+				return Error(Diagnostic.ReportReadonlyVariable(context.Start.Line, context.Start.Column, variable));
 
-			if (expression.ValueType != variable.ValueType) {
-				var diagnostic = Diagnostic.ReportCannotRedefine(context.Start.Line, context.Start.Column, variable.Name, variable.ValueType, expression.ValueType);
-				return Error(diagnostic, true, exprNodeResult);
-			}
+			if (expression.ValueType != variable.ValueType)
+				return Error(Diagnostic.ReportCannotRedefine(context.Start.Line, context.Start.Column, variable.Name, variable.ValueType, expression.ValueType));
 
 			return new BoundAssignmentExpression(variable, expression);
 		}
@@ -220,17 +211,49 @@ namespace InterpreterLib.Binding {
 			return Error(Diagnostic.ReportInvalidStatement(context.Start.Line, context.Start.Column, context.GetText()));
 		}
 
+		public override BoundNode VisitTypeDefinition([NotNull] GLangParser.TypeDefinitionContext context) {
+			return base.VisitTypeDefinition(context);
+		}
+
 		public override BoundNode VisitVariableDeclarationStatement([NotNull] GLangParser.VariableDeclarationStatementContext context) {
 			bool hasIdentifier = context.DECL_VARIABLE() != null && context.IDENTIFIER() != null;
-			bool hasTypeDef = context.TYPE_DELIMETER() != null && context.TYPE_NAME() != null;
-			bool hasExpression = context.ASSIGNMENT_OPERATOR() != null && context.ASSIGNMENT_OPERATOR().GetText().Equals("=") && context.binaryExpression() != null;
+			bool hasTypeDef = context.typeDefinition() != null;
+			bool hasExpression = context.IDENTIFIER() != null && context.binaryExpressionAssignment() != null;
 
 			bool isReadOnly;
-			TypeSymbol type;
-			BoundExpression initialiser;
 
-			if (!hasIdentifier || !OnlyOne(hasTypeDef, hasExpression))
+			if (!hasIdentifier || (!hasTypeDef && !hasExpression))
 				return Error(Diagnostic.ReportInvalidDeclaration(context.Start.Line, context.Start.Column, context.GetText()));
+
+			TypeSymbol type = null;
+			BoundExpression expression = null;
+
+			if (hasExpression) {
+				var ctx = context.binaryExpressionAssignment();
+				var exprVisit = Visit(ctx);
+
+				if (!(exprVisit is BoundExpression))
+					return Error(Diagnostic.ReportFailedVisit(ctx.Start.Line, ctx.Start.Column, ctx.GetText()));
+
+				expression = (BoundExpression)exprVisit;
+				type = expression.ValueType;
+			}
+
+			if (hasTypeDef) {
+				var ctx = context.typeDefinition();
+				var defVisit = Visit(ctx);
+
+				if (!(defVisit is BoundTypeDefinition)) {
+					var diagnostic = Diagnostic.ReportFailedVisit(ctx.Start.Line, ctx.Start.Column, ctx.GetText());
+
+					if (expression != null)
+						return Error(diagnostic, false, defVisit, expression);
+
+					return Error(diagnostic, false, defVisit);
+				}
+
+				type = ((BoundTypeDefinition)defVisit).ValueType;
+			}
 
 			var declVarToken = context.DECL_VARIABLE().Symbol;
 			switch (declVarToken.Text) {
@@ -241,45 +264,20 @@ namespace InterpreterLib.Binding {
 					isReadOnly = true;
 					break;
 
-				default: return Error(Diagnostic.ReportInvalidDeclarationKeyword(declVarToken.Line, declVarToken.Column, declVarToken.Text));
+				default:
+					return Error(Diagnostic.ReportInvalidDeclarationKeyword(declVarToken.Line, declVarToken.Column, declVarToken.Text));
 			}
 
-			if (hasTypeDef) {
-				var typeNameToken = context.TYPE_NAME().Symbol;
-				initialiser = null;
+			var variable = new VariableSymbol(context.IDENTIFIER().GetText(), isReadOnly, type);
+			if (!scope.TryDefine(variable))
+				return Error(Diagnostic.ReportCannotDefine(declVarToken.Line, declVarToken.Column, variable.Name));
 
-				switch (typeNameToken.Text) {
-					case "int":
-						type = TypeSymbol.Integer;
-						break;
-					case "bool":
-						type = TypeSymbol.Boolean;
-						break;
-
-					default: return Error(Diagnostic.ReportInvalidTypeName(typeNameToken.Line, typeNameToken.Column, typeNameToken.Text));
-				}
-			} else {
-				var exprRule = context.binaryExpression();
-				var initialVisit = Visit(exprRule);
-
-				if (!(initialVisit is BoundExpression)) {
-					var diagnostic = Diagnostic.ReportFailedVisit(exprRule.Start.Line, exprRule.Start.Column, exprRule.GetText());
-					return Error(diagnostic, false, initialVisit);
-				}
-
-				initialiser = (BoundExpression)initialVisit;
-				type = initialiser.ValueType;
+			if (expression != null && type != expression.ValueType) {
+				var ctx = context.binaryExpressionAssignment();
+				return Error(Diagnostic.ReportCannotCast(ctx.Start.Line, ctx.Start.Column, ctx.GetText()));
 			}
 
-			var identifierToken = context.IDENTIFIER().Symbol;
-			var variable = new VariableSymbol(identifierToken.Text, isReadOnly, type);
-
-			if (!scope.TryDefine(variable)) {
-				var diagnostic = Diagnostic.ReportCannotDefine(identifierToken.Line, identifierToken.Column, identifierToken.Text);
-				return Error(diagnostic, true, initialiser);
-			}
-
-			return new BoundVariableDeclarationStatement(variable, initialiser);
+			return new BoundVariableDeclarationStatement(variable, expression);
 		}
 
 		public override BoundNode VisitExpressionStatement([NotNull] GLangParser.ExpressionStatementContext context) {

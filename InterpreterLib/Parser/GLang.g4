@@ -5,6 +5,11 @@ grammar GLang;
  */
  
 
+
+forAssign: variableDeclarationStatement | assignmentExpression;
+typeDefinition: TYPE_DELIMETER TYPE_NAME;
+binaryExpressionAssignment : ASSIGNMENT_OPERATOR binaryExpression;
+
 	/*
 	 * Statements
 	 */
@@ -16,16 +21,15 @@ block : L_BRACE statement* R_BRACE;
 
 expressionStatement: binaryExpression;
 
-forAssign: variableDeclarationStatement | assignmentExpression;
 forStat: FOR L_PARENTHESIS assign=forAssign COMMA condition=binaryExpression COMMA step=assignmentExpression R_PARENTHESIS body=statement;
 
 ifStat : IF L_PARENTHESIS condition=binaryExpression R_PARENTHESIS trueBranch=statement (ELSE falseBranch=statement)?;
 whileStat: WHILE L_PARENTHESIS condition=binaryExpression R_PARENTHESIS body=statement;
 
-variableDeclarationStatement: DECL_VARIABLE IDENTIFIER TYPE_DELIMETER TYPE_NAME
-							| DECL_VARIABLE IDENTIFIER ASSIGNMENT_OPERATOR binaryExpression;
+variableDeclarationStatement: DECL_VARIABLE IDENTIFIER typeDefinition
+							| DECL_VARIABLE IDENTIFIER typeDefinition? binaryExpressionAssignment;
 
-assignmentExpression : IDENTIFIER ASSIGNMENT_OPERATOR expr=binaryExpression;
+assignmentExpression : IDENTIFIER binaryExpressionAssignment;
 
 
 	/*
