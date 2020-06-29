@@ -1,8 +1,9 @@
 ﻿using Antlr4.Runtime;
+using InterpreterLib.Binding;
+using InterpreterLib.Diagnostics;
 using InterpreterLib.Syntax.Tree;
 using InterpreterLib.Syntax.Tree.Expressions;
 using InterpreterLib.Syntax.Tree.Statements;
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -10,12 +11,12 @@ using System.Linq;
 namespace InterpreterLib.Syntax {
 	public class SyntaxTreeWriter {
 		private const string NEXT_CHILD = "  ├─";
-		private const string NO_CHILD   = "  │ ";
+		private const string NO_CHILD = "  │ ";
 		private const string LAST_CHILD = "  └─";
-		private const string SPACING    = "    ";
+		private const string SPACING = "    ";
 
 
-		public TextWriter Writer {get; }
+		public TextWriter Writer { get; }
 
 		private SyntaxTreeWriter(TextWriter writer) {
 			Writer = writer;
@@ -33,7 +34,20 @@ namespace InterpreterLib.Syntax {
 
 			ASTProducer astProd = new ASTProducer();
 			SyntaxTreeWriter treeWriter = new SyntaxTreeWriter(writer);
-			treeWriter.Write(astProd.Visit(parser.statement()), "  ", "  ");
+
+			var tree = astProd.Visit(parser.statement());
+			treeWriter.Write(tree, "  ", "  ");
+
+			var global = Binder.BindGlobalScope(null, tree);
+			var boundWriter = new BoundTreeDisplayVisitor();
+
+			if (global.Value.Root != null) {
+				writer.WriteLine("\n");
+				foreach (var line in boundWriter.GetText(global.Value.Root)) {
+					writer.WriteLine(line);
+				}
+			}
+
 		}
 
 		private void WriteChildren(IEnumerable<SyntaxNode> children, string prefix) {
@@ -48,7 +62,7 @@ namespace InterpreterLib.Syntax {
 			for (index = 0; index < max; index++) {
 				var child = childArray[index];
 
-				if(child != null)
+				if (child != null)
 					Write(child, prefix + NEXT_CHILD, prefix + NO_CHILD);
 			}
 
@@ -124,7 +138,7 @@ namespace InterpreterLib.Syntax {
 		}
 
 		private void WriteVariableDeclaration(VariableDeclarationSyntax node, string prefix1, string prefix2) {
-			Writer.WriteLine($"{prefix1}Assignment Expression");
+			Writer.WriteLine($"{prefix1}Variable Declaration");
 
 			WriteChildren(node.Children, prefix2);
 		}
@@ -170,7 +184,8 @@ namespace InterpreterLib.Syntax {
 		}
 
 		internal void WriteToken(TokenSyntax tokenSyntax, string prefix1, string prefix2) {
-			Writer.WriteLine($"{prefix1}Token: {tokenSyntax.Token.Text} line={tokenSyntax.Token.Line} column={tokenSyntax.Token.Column}");
+			Writer.WriteLine($"{prefix1}Token: {tokenSyntax.Token.Text}");
+			Writer.WriteLine($"{prefix2}{LAST_CHILD}line={tokenSyntax.Token.Line} column={tokenSyntax.Token.Column}");
 		}
 	}
 }

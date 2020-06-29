@@ -17,6 +17,8 @@ namespace InterpreterLib.Binding.Types {
 		public override SymbolType Type => SymbolType.Type;
 		public override string Name { get; }
 
+		public override string ToString() => Name;
+
 		public override bool Equals(object obj) {
 			if (!(obj is TypeSymbol)) return false;
 

@@ -15,6 +15,7 @@ typeDefinition: TYPE_DELIMETER TYPE_NAME;
 		 
 statement :  forStatement | whileStatement | ifStatement | block| variableDeclarationStatement | expressionStatement;
 
+functionCall: IDENTIFIER L_PARENTHESIS params=(IDENTIFIER (COMMA IDENTIFIER)*)? R_PARENTHESIS
 
 block : L_BRACE statement* R_BRACE;
 

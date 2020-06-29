@@ -9,9 +9,15 @@ namespace InterpreterLib.Syntax.Tree.Expressions {
 		public override IEnumerable<SyntaxNode> Children { get { yield return IdentifierToken; } }
 
 		public TokenSyntax IdentifierToken { get; }
+		public override TextSpan Span { get; }
 
 		public VariableSyntax(TokenSyntax identifierToken) {
 			IdentifierToken = identifierToken;
+			Span = IdentifierToken.Span;
+		}
+
+		public override string ToString() {
+			return IdentifierToken.ToString();
 		}
 	}
 }

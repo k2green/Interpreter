@@ -7,6 +7,7 @@ namespace InterpreterLib.Syntax.Tree.Statements {
 	internal sealed class VariableDeclarationSyntax : StatementSyntax {
 
 		public override SyntaxType Type => SyntaxType.Declaration;
+		public override TextSpan Span { get; }
 
 		public override IEnumerable<SyntaxNode> Children {
 			get {
@@ -31,6 +32,20 @@ namespace InterpreterLib.Syntax.Tree.Statements {
 			Definition = definition;
 			OperatorToken = operatorToken;
 			Initialiser = initialiser;
+
+			Span = CreateNewSpan(keywordToken.Span, initialiser.Span);
+		}
+
+		public override string ToString() {
+			var builder = new StringBuilder();
+
+			builder.Append(KeywordToken).Append(" ");
+			builder.Append(IdentifierToken).Append(" ");
+			builder.Append(Definition).Append(" ");
+			builder.Append(OperatorToken).Append(" ");
+			builder.Append(Initialiser);
+
+			return builder.ToString();
 		}
 	}
 }

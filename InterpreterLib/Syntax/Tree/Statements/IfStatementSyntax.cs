@@ -6,6 +6,7 @@ using System.Text;
 namespace InterpreterLib.Syntax.Tree.Statements {
 	internal sealed class IfStatementSyntax : StatementSyntax {
 		public override SyntaxType Type => SyntaxType.IfStatement;
+		public override TextSpan Span { get; }
 
 		public override IEnumerable<SyntaxNode> Children {
 			get {
@@ -35,6 +36,25 @@ namespace InterpreterLib.Syntax.Tree.Statements {
 			TrueBranch = trueBranch;
 			ElseToken = elseToken;
 			FalseBranch = falseBranch;
+
+			if (ElseToken != null && FalseBranch != null)
+				Span = CreateNewSpan(ifToken.Span, falseBranch.Span);
+			else
+				Span = CreateNewSpan(ifToken.Span, trueBranch.Span);
+		}
+
+		public override string ToString() {
+			var builder = new StringBuilder();
+
+			builder.Append(IfToken).Append(" ");
+			builder.Append(LeftParenToken);
+			builder.Append(Condition);
+			builder.Append(RightParenToken).Append(" ");
+			builder.Append(TrueBranch).Append(" ");
+			builder.Append(ElseToken).Append(" ");
+			builder.Append(FalseBranch);
+
+			return builder.ToString();
 		}
 	}
 }

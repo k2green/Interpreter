@@ -16,10 +16,17 @@ namespace InterpreterLib.Syntax.Tree {
 
 		public TokenSyntax DelimeterToken { get; }
 		public TokenSyntax NameToken { get; }
+		public override TextSpan Span { get; }
 
 		public TypeDefinitionSyntax(TokenSyntax delimeterToken, TokenSyntax nameToken) {
 			DelimeterToken = delimeterToken;
 			NameToken = nameToken;
+
+			Span = CreateNewSpan(delimeterToken.Span, NameToken.Span);
+		}
+
+		public override string ToString() {
+			return DelimeterToken.ToString() + " " + NameToken.ToString();
 		}
 	}
 }

@@ -6,6 +6,7 @@ using System.Text;
 namespace InterpreterLib.Syntax.Tree.Statements {
 	internal sealed class WhileLoopSyntax : StatementSyntax {
 		public override SyntaxType Type => SyntaxType.WhileLoop;
+		public override TextSpan Span { get; }
 
 		public override IEnumerable<SyntaxNode> Children {
 			get {
@@ -29,6 +30,20 @@ namespace InterpreterLib.Syntax.Tree.Statements {
 			Condition = condition;
 			RightParenToken = rightParenToken;
 			Body = body;
+
+			Span = CreateNewSpan(whileToken.Span, body.Span);
+		}
+
+		public override string ToString() {
+			var builder = new StringBuilder();
+
+			builder.Append(WhileToken).Append(" ");
+			builder.Append(LeftParenToken);
+			builder.Append(Condition);
+			builder.Append(RightParenToken).Append(" ");
+			builder.Append(Body);
+
+			return builder.ToString();
 		}
 	}
 }

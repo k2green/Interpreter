@@ -6,10 +6,10 @@ using System.Text;
 
 namespace InterpreterLib.Diagnostics {
 	internal class BoundTreeDisplayVisitor : BoundTreeVisitor<IEnumerable<string>, string, string> {
-		public const string NEXT_CHILD = "  ├───";
-		public const string NO_CHILD = "  │   ";
-		public const string LAST_CHILD = "  └───";
-		public const string SPACING = "      ";
+		public const string NEXT_CHILD = "  ├─";
+		public const string NO_CHILD   = "  │ ";
+		public const string LAST_CHILD = "  └─";
+		public const string SPACING    = "    ";
 
 		public IEnumerable<string> GetText(BoundNode node) {
 			return Visit(node, SPACING, SPACING);
@@ -17,7 +17,7 @@ namespace InterpreterLib.Diagnostics {
 
 		protected override IEnumerable<string> VisitAssignmentExpression(BoundAssignmentExpression expression, string prefix1, string prefix2) {
 			var line = new string[] {
-				$"{prefix1}Assignment Expression",
+				$"{prefix1}Assignment Expression: {expression.Identifier}",
 				$"{prefix2 + NEXT_CHILD}Variable: {expression.Identifier}"
 			};
 
@@ -97,7 +97,7 @@ namespace InterpreterLib.Diagnostics {
 		}
 
 		protected override IEnumerable<string> VisitVariableDeclaration(BoundVariableDeclarationStatement statement, string prefix1, string prefix2) {
-			IEnumerable<string> baseLine = new string[] { $"{prefix1}Variable Declaration" };
+			IEnumerable<string> baseLine = new string[] { $"{prefix1}Variable Declaration: {statement.Variable}" };
 
 			if(statement.Initialiser != null)
 				baseLine = baseLine.Concat(Visit(statement.Initialiser, prefix2 + LAST_CHILD, prefix2 + SPACING));

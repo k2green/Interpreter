@@ -16,6 +16,7 @@ namespace InterpreterLib.Syntax.Tree {
 		Expression,
 		IfStatement,
 		WhileLoop,
-		ForLoop
+		ForLoop,
+		Block
 	}
 }

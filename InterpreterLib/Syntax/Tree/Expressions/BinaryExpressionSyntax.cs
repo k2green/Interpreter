@@ -16,11 +16,24 @@ namespace InterpreterLib.Syntax.Tree.Expressions {
 		public ExpressionSyntax LeftSyntax { get; }
 		public TokenSyntax OpToken { get; }
 		public ExpressionSyntax RightSyntax { get; }
+		public override TextSpan Span { get; }
 
 		public BinaryExpressionSyntax(ExpressionSyntax leftStntax, TokenSyntax opToken, ExpressionSyntax rightSyntax) {
 			LeftSyntax = leftStntax;
 			OpToken = opToken;
 			RightSyntax = rightSyntax;
+
+			Span = CreateNewSpan(leftStntax.Span, rightSyntax.Span);
+		}
+
+		public override string ToString() {
+			var builder = new StringBuilder();
+
+			builder.Append(LeftSyntax).Append(" ");
+			builder.Append(OpToken).Append(" ");
+			builder.Append(RightSyntax);
+
+			return builder.ToString();
 		}
 	}
 }

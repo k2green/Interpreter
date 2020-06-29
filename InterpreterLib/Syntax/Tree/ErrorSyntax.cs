@@ -8,11 +8,16 @@ namespace InterpreterLib.Syntax.Tree {
 		public override SyntaxType Type => SyntaxType.Error;
 		public override IEnumerable<SyntaxNode> Children => throw new Exception("Errors have no children");
 
+		public Diagnostic Diagnostic { get; }
+		public override TextSpan Span { get; }
+
 		public ErrorSyntax(Diagnostic diagnostic) {
 			Diagnostic = diagnostic;
+			Span = new TextSpan(0, 0, diagnostic.Line, diagnostic.Column);
 		}
 
-		public string CausingText { get; }
-		public Diagnostic Diagnostic { get; }
+		public override string ToString() {
+			return Diagnostic.ToString();
+		}
 	}
 }

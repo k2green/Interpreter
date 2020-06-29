@@ -19,12 +19,26 @@ namespace InterpreterLib.Syntax.Tree.Expressions {
 		public TypeDefinitionSyntax Definition { get; }
 		public TokenSyntax OperatorToken { get; }
 		public ExpressionSyntax Expression { get; }
+		public override TextSpan Span { get; }
 
-		public AssignmentExpressionSyntax(TokenSyntax identifierToken, TypeDefinitionSyntax definition, TokenSyntax operatorToken, ExpressionSyntax expression) {
+		public AssignmentExpressionSyntax( TokenSyntax identifierToken, TypeDefinitionSyntax definition, TokenSyntax operatorToken, ExpressionSyntax expression) {
 			IdentifierToken = identifierToken;
 			Definition = definition;
 			OperatorToken = operatorToken;
 			Expression = expression;
+
+			Span = CreateNewSpan(identifierToken.Span, expression.Span);
+		}
+
+		public override string ToString() {
+			var builder = new StringBuilder();
+
+			builder.Append(IdentifierToken).Append(" ");
+			builder.Append(Definition).Append(" ");
+			builder.Append(OperatorToken).Append(" ");
+			builder.Append(Expression);
+
+			return builder.ToString();
 		}
 	}
 }

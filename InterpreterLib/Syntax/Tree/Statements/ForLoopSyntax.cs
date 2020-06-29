@@ -6,6 +6,7 @@ using System.Text;
 namespace InterpreterLib.Syntax.Tree.Statements {
 	internal sealed class ForLoopSyntax : StatementSyntax {
 		public override SyntaxType Type => SyntaxType.ForLoop;
+		public override TextSpan Span { get; }
 
 		public override IEnumerable<SyntaxNode> Children {
 			get {
@@ -55,6 +56,22 @@ namespace InterpreterLib.Syntax.Tree.Statements {
 			Step = step;
 			RightParenToken = rightParenToken;
 			Body = body;
+
+			Span = CreateNewSpan(ForToken.Span, Body.Span);
+		}
+
+		public override string ToString() {
+			var builder = new StringBuilder();
+
+			builder.Append(ForToken).Append(" ");
+			builder.Append(LeftParenToken);
+			builder.Append(Assignment).Append(Comma1).Append(" ");
+			builder.Append(Condition).Append(Comma2).Append(" ");
+			builder.Append(Step);
+			builder.Append(RightParenToken).Append(" ");
+			builder.Append(Body);
+
+			return builder.ToString();
 		}
 	}
 }

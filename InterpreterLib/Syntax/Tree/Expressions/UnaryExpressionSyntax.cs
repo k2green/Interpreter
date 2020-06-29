@@ -14,10 +14,22 @@ namespace InterpreterLib.Syntax.Tree.Expressions {
 
 		public TokenSyntax OpToken { get; }
 		public ExpressionSyntax Expression { get; }
+		public override TextSpan Span { get; }
 
 		public UnaryExpressionSyntax(TokenSyntax opToken, ExpressionSyntax expression) {
 			OpToken = opToken;
 			Expression = expression;
+
+			Span = CreateNewSpan(OpToken.Span, Expression.Span);
+		}
+
+		public override string ToString() {
+			var builder = new StringBuilder();
+
+			builder.Append(OpToken).Append(" ");
+			builder.Append(Expression);
+
+			return builder.ToString();
 		}
 	}
 }
