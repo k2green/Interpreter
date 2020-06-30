@@ -72,6 +72,42 @@ public partial class GLangBaseListener : IGLangListener {
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitStatement([NotNull] GLangParser.StatementContext context) { }
 	/// <summary>
+	/// Enter a parse tree produced by <see cref="GLangParser.definedIdentifier"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterDefinedIdentifier([NotNull] GLangParser.DefinedIdentifierContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="GLangParser.definedIdentifier"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitDefinedIdentifier([NotNull] GLangParser.DefinedIdentifierContext context) { }
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="GLangParser.parametersDefinition"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterParametersDefinition([NotNull] GLangParser.ParametersDefinitionContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="GLangParser.parametersDefinition"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitParametersDefinition([NotNull] GLangParser.ParametersDefinitionContext context) { }
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="GLangParser.functionDefinition"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterFunctionDefinition([NotNull] GLangParser.FunctionDefinitionContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="GLangParser.functionDefinition"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitFunctionDefinition([NotNull] GLangParser.FunctionDefinitionContext context) { }
+	/// <summary>
 	/// Enter a parse tree produced by <see cref="GLangParser.functionCall"/>.
 	/// <para>The default implementation does nothing.</para>
 	/// </summary>

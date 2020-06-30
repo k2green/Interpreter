@@ -62,6 +62,36 @@ public interface IGLangListener : IParseTreeListener {
 	/// <param name="context">The parse tree.</param>
 	void ExitStatement([NotNull] GLangParser.StatementContext context);
 	/// <summary>
+	/// Enter a parse tree produced by <see cref="GLangParser.definedIdentifier"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterDefinedIdentifier([NotNull] GLangParser.DefinedIdentifierContext context);
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="GLangParser.definedIdentifier"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitDefinedIdentifier([NotNull] GLangParser.DefinedIdentifierContext context);
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="GLangParser.parametersDefinition"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterParametersDefinition([NotNull] GLangParser.ParametersDefinitionContext context);
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="GLangParser.parametersDefinition"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitParametersDefinition([NotNull] GLangParser.ParametersDefinitionContext context);
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="GLangParser.functionDefinition"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterFunctionDefinition([NotNull] GLangParser.FunctionDefinitionContext context);
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="GLangParser.functionDefinition"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitFunctionDefinition([NotNull] GLangParser.FunctionDefinitionContext context);
+	/// <summary>
 	/// Enter a parse tree produced by <see cref="GLangParser.functionCall"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>

@@ -107,7 +107,34 @@ namespace InterpreterLib.Syntax {
 				case SyntaxType.FunctionCall:
 					WriteFunctionCall((FunctionCallSyntax)node, prefix1, prefix2);
 					break;
+				case SyntaxType.TypedIdentifier:
+					WriteTypedIdentifier((TypedIdentifierSyntax)node, prefix1, prefix2);
+					break;
+				case SyntaxType.ParameterDefinition:
+					WriteParameterDefinition((ParameterDefinitionSyntax)node, prefix1, prefix2);
+					break;
+				case SyntaxType.FunctionDeclaration:
+					WriteFunctionDeclaration((FunctionDeclarationSyntax)node, prefix1, prefix2);
+					break;
 			}
+		}
+
+		private void WriteFunctionDeclaration(FunctionDeclarationSyntax node, string prefix1, string prefix2) {
+			Writer.WriteLine($"{prefix1}Function declaration");
+
+			WriteChildren(node.Children, prefix2);
+		}
+
+		private void WriteParameterDefinition(ParameterDefinitionSyntax node, string prefix1, string prefix2) {
+			Writer.WriteLine($"{prefix1}Parameters");
+
+			WriteChildren(node.Children, prefix2);
+		}
+
+		private void WriteTypedIdentifier(TypedIdentifierSyntax node, string prefix1, string prefix2) {
+			Writer.WriteLine($"{prefix1}Typed Identifier");
+
+			WriteChildren(node.Children, prefix2);
 		}
 
 		private void WriteFunctionCall(FunctionCallSyntax node, string prefix1, string prefix2) {

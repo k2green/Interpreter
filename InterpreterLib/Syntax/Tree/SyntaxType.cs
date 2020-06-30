@@ -18,6 +18,9 @@ namespace InterpreterLib.Syntax.Tree {
 		WhileLoop,
 		ForLoop,
 		Block,
-		FunctionCall
+		FunctionCall,
+		TypedIdentifier,
+		ParameterDefinition,
+		FunctionDeclaration
 	}
 }

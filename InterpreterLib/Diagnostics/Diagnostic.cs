@@ -133,7 +133,7 @@ namespace InterpreterLib {
 			return new Diagnostic(line, column, $"Syntax Error: Invalid body {v}");
 		}
 
-		internal static Diagnostic ReportInvalidStatement(int line, int column, string v) {
+		internal static Diagnostic ReportFailedVisit(int line, int column, string v) {
 			return new Diagnostic(line, column, $"Syntax Error: Invalid Statement {v}");
 		}
 
@@ -151,6 +151,18 @@ namespace InterpreterLib {
 
 		internal static Diagnostic ReportSyntaxError(int line, int column, string v) {
 			return new Diagnostic(line, column, $"Syntax Error: {v}");
+		}
+
+		internal static Diagnostic ReportInvalidTypedIdentifier(int line, int column, string v) {
+			throw new NotImplementedException();
+		}
+
+		internal static Diagnostic ReportInvalidParameterDefinition(int line, int column, string v) {
+			throw new NotImplementedException();
+		}
+
+		internal static Diagnostic ReportInvalidFunctionDef(int line, int column, string v) {
+			throw new NotImplementedException();
 		}
 	}
 }

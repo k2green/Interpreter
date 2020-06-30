@@ -13,7 +13,7 @@ typeDefinition: TYPE_DELIMETER TYPE_NAME;
 	 * Statements
 	 */
 		 
-statement : functionCall | forStatement | whileStatement | ifStatement | block| variableDeclarationStatement | expressionStatement;
+statement : functionDefinition | functionCall | forStatement | whileStatement | ifStatement | block| variableDeclarationStatement | expressionStatement;
 
 definedIdentifier: IDENTIFIER typeDefinition;
 parametersDefinition: L_PARENTHESIS (definedIdentifier (COMMA definedIdentifier)*)? R_PARENTHESIS;
