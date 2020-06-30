@@ -447,7 +447,7 @@ namespace InterpreterLib.Syntax {
 
 			var paramsList = new List<SyntaxNode>();
 
-			if (paramsCtx != null) {
+			if (paramsCtx != null && paramsCtx.Length > 0) {
 				for (int i = 0; i < paramsCtx.Length - 1; i++) {
 					var current = paramsCtx[i];
 					var currentVisit = Visit(current);
@@ -489,7 +489,7 @@ namespace InterpreterLib.Syntax {
 				return Error(Diagnostic.ReportInvalidFunctionDef(context.Start.Line, context.Start.Column, context.GetText()));
 
 			var keywToken = Token(keywCtx.Symbol);
-			var identToken = identCtx == null ? null : Token(keywCtx.Symbol);
+			var identToken = identCtx == null ? null : Token(identCtx.Symbol);
 			var parameters = (ParameterDefinitionSyntax)paramVisit;
 			var typeDef = (TypeDefinitionSyntax)typeDefVisit;
 			var body = (StatementSyntax)bodyVisit;
