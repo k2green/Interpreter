@@ -51,6 +51,12 @@ public interface IGLangVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitStatement([NotNull] GLangParser.StatementContext context);
 	/// <summary>
+	/// Visit a parse tree produced by <see cref="GLangParser.functionCall"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitFunctionCall([NotNull] GLangParser.FunctionCallContext context);
+	/// <summary>
 	/// Visit a parse tree produced by <see cref="GLangParser.block"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>

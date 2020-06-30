@@ -1,19 +1,23 @@
 ﻿using Antlr4.Runtime;
 using Antlr4.Runtime.Misc;
+using Antlr4.Runtime.Tree;
 using InterpreterLib.Syntax.Tree;
 using InterpreterLib.Syntax.Tree.Expressions;
 using InterpreterLib.Syntax.Tree.Statements;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace InterpreterLib.Syntax {
 	internal class ASTProducer : GLangBaseVisitor<SyntaxNode> {
 
 		private DiagnosticContainer diagnostics;
+		private TextWriter writer;
 
-		public ASTProducer() {
+		public ASTProducer(TextWriter output) {
 			diagnostics = new DiagnosticContainer();
+			writer = output;
 		}
 
 		private bool OnlyOne(IEnumerable<bool> conditions) => conditions.Count(b => b) == 1;
@@ -329,6 +333,87 @@ namespace InterpreterLib.Syntax {
 			}
 
 			return new BlockSyntax(Token(leftBraceCtx.Symbol), statements, Token(rightBraceCtx.Symbol));
+		}
+
+		public override SyntaxNode VisitFunctionCall([NotNull] GLangParser.FunctionCallContext context) {
+			var funcIdentifierCtx = context.funcName;
+			var leftParenCtx = context.L_PARENTHESIS();
+			var rightParenCtx = context.R_PARENTHESIS();
+
+			var expressionCtx = context.binaryExpression();
+			var commasCtx = context.COMMA();
+
+			if (funcIdentifierCtx == null || leftParenCtx == null || rightParenCtx == null)
+				return Error(Diagnostic.ReportInvalidFunctionCall(context.Start.Line, context.Start.Column, context.GetText()));
+
+			if (commasCtx != null)
+				writer.WriteLine($"expression count {expressionCtx.Length}");
+
+			if (expressionCtx != null)
+				writer.WriteLine($"expression count {commasCtx.Length}");
+
+			if (expressionCtx != null && commasCtx != null) {
+				if (expressionCtx.Length < 2 || commasCtx.Length != expressionCtx.Length - 1)
+					return Error(Diagnostic.ReportInvalidParameters(expressionCtx[0].Start.Line, expressionCtx[0].Start.Column, $"{context.GetText()} {expressionCtx.Length} {commasCtx.Length}"));
+			}
+
+			if (expressionCtx != null && commasCtx == null) {
+				if (expressionCtx.Length != 1)
+					return Error(Diagnostic.ReportInvalidParameters(expressionCtx[0].Start.Line, expressionCtx[0].Start.Column, $"{context.GetText()} {expressionCtx.Length} {commasCtx.Length}"));
+			}
+
+			var seperatedList = new List<SyntaxNode>();
+			if (expressionCtx != null) {
+				for (int i = 0; i < expressionCtx.Length - 1; i++) {
+					var exprVisit = Visit(expressionCtx[i]);
+					var commaToken = Token(commasCtx[i].Symbol);
+
+					if (!(exprVisit is ExpressionSyntax))
+						return Error(Diagnostic.ReportInvalidParameter(expressionCtx[i].Start.Line, expressionCtx[i].Start.Column, expressionCtx[i].GetText()));
+
+					seperatedList.Add(exprVisit);
+					seperatedList.Add(commaToken);
+				}
+
+				var lastCtx = expressionCtx[expressionCtx.Length - 1];
+				var lastExprVisit = Visit(lastCtx);
+
+				if (!(lastExprVisit is ExpressionSyntax))
+					return Error(Diagnostic.ReportInvalidParameter(lastCtx.Start.Line, lastCtx.Start.Column, lastCtx.GetText()));
+
+				seperatedList.Add(lastExprVisit);
+			}
+
+			return new FunctionCallSyntax(Token(funcIdentifierCtx), Token(leftParenCtx.Symbol), new SeperatedSyntaxList<ExpressionSyntax>(seperatedList), Token(rightParenCtx.Symbol));
+		}
+
+		public override SyntaxNode VisitErrorNode(IErrorNode node) {
+			return Error(Diagnostic.ReportSyntaxError(node.Symbol.Line, node.Symbol.Column, node.GetText()));
+		}
+
+		public override SyntaxNode VisitStatement([NotNull] GLangParser.StatementContext context) {
+			if (context.functionCall() != null)
+				return Visit(context.functionCall());
+
+			if (context.forStatement() != null)
+				return Visit(context.forStatement());
+
+			if (context.whileStatement() != null)
+				return Visit(context.whileStatement());
+
+			if (context.ifStatement() != null)
+				return Visit(context.ifStatement());
+
+			if (context.block() != null)
+				return Visit(context.block());
+
+			if (context.variableDeclarationStatement() != null)
+				return Visit(context.variableDeclarationStatement());
+
+			if (context.expressionStatement() != null)
+				return Visit(context.expressionStatement());
+
+			return Error(Diagnostic.ReportInvalidStatement(context.Start.Line, context.Start.Column, context.GetText()));
 		}
 	}
 }

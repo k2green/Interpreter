@@ -3,8 +3,8 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace InterpreterLib.Syntax.Tree {
-	internal sealed class TokenSyntax : SyntaxNode {
+namespace InterpreterLib.Syntax.Tree.Expressions {
+	internal sealed class TokenSyntax : ExpressionSyntax {
 		public override IEnumerable<SyntaxNode> Children => throw new Exception("Tokens have no children");
 		public override SyntaxType Type => SyntaxType.Token;
 

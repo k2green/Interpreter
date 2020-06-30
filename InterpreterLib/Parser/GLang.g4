@@ -13,9 +13,13 @@ typeDefinition: TYPE_DELIMETER TYPE_NAME;
 	 * Statements
 	 */
 		 
-statement :  forStatement | whileStatement | ifStatement | block| variableDeclarationStatement | expressionStatement;
+statement : functionCall | forStatement | whileStatement | ifStatement | block| variableDeclarationStatement | expressionStatement;
 
-functionCall: IDENTIFIER L_PARENTHESIS params=(IDENTIFIER (COMMA IDENTIFIER)*)? R_PARENTHESIS
+definedIdentifier: IDENTIFIER typeDefinition;
+parametersDefinition: L_PARENTHESIS (definedIdentifier (COMMA definedIdentifier)*)? R_PARENTHESIS;
+functionDefinition: FUNCTION IDENTIFIER? parametersDefinition typeDefinition statement;
+
+functionCall: funcName=IDENTIFIER L_PARENTHESIS (binaryExpression (COMMA binaryExpression)*)? R_PARENTHESIS;
 
 block : L_BRACE statement* R_BRACE;
 
@@ -26,7 +30,7 @@ forStatement: FOR L_PARENTHESIS declerationOrAssign COMMA binaryExpression COMMA
 ifStatement : IF L_PARENTHESIS binaryExpression R_PARENTHESIS trueBranch=statement (ELSE falseBranch=statement)?;
 whileStatement: WHILE L_PARENTHESIS binaryExpression R_PARENTHESIS body=statement;
 
-variableDeclarationStatement: DECL_VARIABLE IDENTIFIER typeDefinition
+variableDeclarationStatement: DECL_VARIABLE definedIdentifier
 							| DECL_VARIABLE assignmentExpression;
 
 assignmentExpression : IDENTIFIER typeDefinition? ASSIGNMENT_OPERATOR binaryExpression;
@@ -54,7 +58,7 @@ binaryExpression: left=binaryExpression op=CARAT right=binaryExpression
  * Lexer Rules
  */
 
-fragment DIGITS : '0'..'9'+;
+fragment DIGIT : '0'..'9';
 fragment TRUE : ('T' | 't') 'rue';
 fragment FALSE : ('F' | 'f') 'alse';
 fragment CHARACTER : 'a'..'z'|'A'..'Z';
@@ -81,13 +85,14 @@ TYPE_DELIMETER : ':';
 TYPE_NAME : INT | BOOL;
 
 BOOLEAN: TRUE | FALSE;
-INTEGER: DIGITS;
+INTEGER: DIGIT+;
 
 DECL_VARIABLE : VAL | VAR;
 IF : 'if';
 ELSE : 'else';
 WHILE : 'while';
 FOR : 'for';
+FUNCTION: 'function';
 
 ASSIGNMENT_OPERATOR: '+=' | '-=' | '*=' | '/=' | '=';
 
@@ -105,7 +110,7 @@ LOGICAL_OP: '&&' | '||';
 
 BANG: '!';
 
-IDENTIFIER: CHARACTER (CHARACTER | '_')*;
+IDENTIFIER: (CHARACTER | '_') (CHARACTER | DIGIT | '_')*;
 
 L_PARENTHESIS : '(';
 R_PARENTHESIS : ')';

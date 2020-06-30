@@ -136,5 +136,21 @@ namespace InterpreterLib {
 		internal static Diagnostic ReportInvalidStatement(int line, int column, string v) {
 			return new Diagnostic(line, column, $"Syntax Error: Invalid Statement {v}");
 		}
+
+		internal static Diagnostic ReportInvalidFunctionCall(int line, int column, string v) {
+			return new Diagnostic(line, column, $"Syntax Error: Invalid function call {v}");
+		}
+
+		internal static Diagnostic ReportInvalidParameters(int line, int column, string v) {
+			return new Diagnostic(line, column, $"Syntax Error: Invalid paremeter list {v}");
+		}
+
+		internal static Diagnostic ReportInvalidParameter(int line, int column, string v) {
+			return new Diagnostic(line, column, $"Syntax Error: Invalid paremeter {v}");
+		}
+
+		internal static Diagnostic ReportSyntaxError(int line, int column, string v) {
+			return new Diagnostic(line, column, $"Syntax Error: {v}");
+		}
 	}
 }

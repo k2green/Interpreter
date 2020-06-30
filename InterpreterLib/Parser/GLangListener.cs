@@ -62,6 +62,16 @@ public interface IGLangListener : IParseTreeListener {
 	/// <param name="context">The parse tree.</param>
 	void ExitStatement([NotNull] GLangParser.StatementContext context);
 	/// <summary>
+	/// Enter a parse tree produced by <see cref="GLangParser.functionCall"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterFunctionCall([NotNull] GLangParser.FunctionCallContext context);
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="GLangParser.functionCall"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitFunctionCall([NotNull] GLangParser.FunctionCallContext context);
+	/// <summary>
 	/// Enter a parse tree produced by <see cref="GLangParser.block"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>

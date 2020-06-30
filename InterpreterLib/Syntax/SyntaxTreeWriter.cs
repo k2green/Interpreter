@@ -4,6 +4,7 @@ using InterpreterLib.Diagnostics;
 using InterpreterLib.Syntax.Tree;
 using InterpreterLib.Syntax.Tree.Expressions;
 using InterpreterLib.Syntax.Tree.Statements;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -32,21 +33,11 @@ namespace InterpreterLib.Syntax {
 			GLangParser parser = new GLangParser(tokens);
 			parser.RemoveErrorListeners();
 
-			ASTProducer astProd = new ASTProducer();
+			ASTProducer astProd = new ASTProducer(writer);
 			SyntaxTreeWriter treeWriter = new SyntaxTreeWriter(writer);
 
 			var tree = astProd.Visit(parser.statement());
 			treeWriter.Write(tree, "  ", "  ");
-
-			var global = Binder.BindGlobalScope(null, tree);
-			var boundWriter = new BoundTreeDisplayVisitor();
-
-			if (global.Value.Root != null) {
-				writer.WriteLine("\n");
-				foreach (var line in boundWriter.GetText(global.Value.Root)) {
-					writer.WriteLine(line);
-				}
-			}
 
 		}
 
@@ -110,7 +101,25 @@ namespace InterpreterLib.Syntax {
 				case SyntaxType.ForLoop:
 					WriteForLoop((ForLoopSyntax)node, prefix1, prefix2);
 					break;
+				case SyntaxType.Block:
+					WriteBlock((BlockSyntax)node, prefix1, prefix2);
+					break;
+				case SyntaxType.FunctionCall:
+					WriteFunctionCall((FunctionCallSyntax)node, prefix1, prefix2);
+					break;
 			}
+		}
+
+		private void WriteFunctionCall(FunctionCallSyntax node, string prefix1, string prefix2) {
+			Writer.WriteLine($"{prefix1}Function call");
+
+			WriteChildren(node.Children, prefix2);
+		}
+
+		private void WriteBlock(BlockSyntax node, string prefix1, string prefix2) {
+			Writer.WriteLine($"{prefix1}Block");
+
+			WriteChildren(node.Children, prefix2);
 		}
 
 		private void WriteForLoop(ForLoopSyntax node, string prefix1, string prefix2) {
