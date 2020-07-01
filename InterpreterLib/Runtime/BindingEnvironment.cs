@@ -24,9 +24,9 @@ namespace InterpreterLib.Runtime {
 			get {
 				if (globalScope == null) {
 					var prevScope = previous == null ? null : previous.GlobalScope;
-					//var binderResult = Binder.BindGlobalScope(prevScope, SyntaxRoot);
-					//Interlocked.CompareExchange<BoundGlobalScope>(ref globalScope, binderResult.Value, null);
-					//diagnostics.AddDiagnostics(binderResult.Diagnostics);
+					var binderResult = Binder.BindGlobalScope(prevScope, SyntaxRoot);
+					Interlocked.CompareExchange<BoundGlobalScope>(ref globalScope, binderResult.Value, null);
+					diagnostics.AddDiagnostics(binderResult.Diagnostics);
 				}
 
 				return globalScope;

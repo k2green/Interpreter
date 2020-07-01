@@ -13,11 +13,11 @@ namespace InterpreterLib.Syntax {
 	internal class ASTProducer : GLangBaseVisitor<SyntaxNode> {
 
 		private DiagnosticContainer diagnostics;
-		private TextWriter writer;
+		private List<FunctionDeclarationSyntax> functionDeclarations;
 
-		public ASTProducer(TextWriter output) {
+		public ASTProducer() {
 			diagnostics = new DiagnosticContainer();
-			writer = output;
+			functionDeclarations = new List<FunctionDeclarationSyntax>();
 		}
 
 		private bool OnlyOne(IEnumerable<bool> conditions) => conditions.Count(b => b) == 1;
@@ -29,6 +29,10 @@ namespace InterpreterLib.Syntax {
 			diagnostics.AddDiagnostic(diagnostic);
 
 			return new ErrorSyntax(diagnostic);
+		}
+
+		public static DiagnosticResult<SyntaxNode> CreateAST(IParseTree tree) {
+			throw new NotImplementedException();
 		}
 
 		public override SyntaxNode VisitLiteral([NotNull] GLangParser.LiteralContext context) {
@@ -341,12 +345,6 @@ namespace InterpreterLib.Syntax {
 			if (funcIdentifierCtx == null || leftParenCtx == null || rightParenCtx == null)
 				return Error(Diagnostic.ReportInvalidFunctionCall(context.Start.Line, context.Start.Column, context.GetText()));
 
-			if (commasCtx != null)
-				writer.WriteLine($"expression count {expressionCtx.Length}");
-
-			if (expressionCtx != null)
-				writer.WriteLine($"expression count {commasCtx.Length}");
-
 			if (expressionCtx != null && commasCtx != null && expressionCtx.Length > 0 && commasCtx.Length > 0) {
 				if (expressionCtx.Length < 2 || commasCtx.Length != expressionCtx.Length - 1)
 					return Error(Diagnostic.ReportInvalidParameters(context.Start.Line, context.Start.Column, $"{context.GetText()} {expressionCtx.Length} {commasCtx.Length}"));
@@ -442,7 +440,7 @@ namespace InterpreterLib.Syntax {
 			if (paramsCtx != null && paramsCtx.Length > 0 && (commasCtx == null || commasCtx.Length <= 0) && paramsCtx.Length != 1)
 				return Error(Diagnostic.ReportInvalidParameterDefinition(context.Start.Line, context.Start.Column, context.GetText()));
 
-			if (paramsCtx != null && commasCtx != null && paramsCtx.Length > 0 && commasCtx.Length >0 && (paramsCtx.Length < 2 || commasCtx.Length != paramsCtx.Length - 1))
+			if (paramsCtx != null && commasCtx != null && paramsCtx.Length > 0 && commasCtx.Length > 0 && (paramsCtx.Length < 2 || commasCtx.Length != paramsCtx.Length - 1))
 				return Error(Diagnostic.ReportInvalidParameterDefinition(context.Start.Line, context.Start.Column, context.GetText()));
 
 			var paramsList = new List<SyntaxNode>();
@@ -493,7 +491,11 @@ namespace InterpreterLib.Syntax {
 			var parameters = (ParameterDefinitionSyntax)paramVisit;
 			var typeDef = (TypeDefinitionSyntax)typeDefVisit;
 			var body = (StatementSyntax)bodyVisit;
-			return new FunctionDeclarationSyntax(keywToken, identToken, parameters, typeDef, body);
+
+			var declSyntax = new FunctionDeclarationSyntax(keywToken, identToken, parameters, typeDef, body);
+
+			functionDeclarations.Add(declSyntax);
+			return declSyntax;
 		}
 	}
 }
