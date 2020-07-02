@@ -119,5 +119,3 @@ L_PARENTHESIS : '(';
 R_PARENTHESIS : ')';
 L_BRACE : '{';
 R_BRACE : '}';
-
-UNKNOWN_CHAR: .;

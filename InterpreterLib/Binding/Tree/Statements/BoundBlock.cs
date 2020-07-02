@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace InterpreterLib.Binding.Tree {
+namespace InterpreterLib.Binding.Tree.Statements {
 	internal sealed class BoundBlock : BoundStatement {
 		public override NodeType Type => NodeType.Block;
 		public IReadOnlyList<BoundStatement> Statements => statements;

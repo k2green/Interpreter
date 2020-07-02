@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using InterpreterLib.Binding.Tree.Expressions;
 using InterpreterLib.Binding.Types;
 
-namespace InterpreterLib.Binding.Tree {
+namespace InterpreterLib.Binding.Tree.Statements {
 	internal sealed class BoundExpressionStatement : BoundStatement {
 
 		public override NodeType Type => NodeType.Expression;

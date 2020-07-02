@@ -10,6 +10,23 @@ namespace InterpreterLib.Binding.Types {
 		public static readonly TypeSymbol Boolean = new TypeSymbol("bool");
 		public static readonly TypeSymbol String = new TypeSymbol("string");
 
+		private static TypeSymbol[] types = new TypeSymbol[] {
+			Integer, Byte, Double, Boolean, String
+
+		};
+
+		public static bool GetType(string typeStr, out TypeSymbol symbol) {
+			foreach (var type in types) {
+				if (type.Name.Equals(typeStr)) {
+					symbol = type;
+					return true;
+				}
+			}
+
+			symbol = null;
+			return false;
+		}
+
 		private TypeSymbol(string name) {
 			Name = name;
 		}

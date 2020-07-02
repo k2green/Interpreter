@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace InterpreterLib.Binding.Tree {
+namespace InterpreterLib.Binding.Tree.Expressions {
 	internal sealed class BoundLiteral : BoundExpression {
 
 		public object Value { get; }

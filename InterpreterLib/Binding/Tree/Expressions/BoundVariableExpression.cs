@@ -1,6 +1,6 @@
 ﻿using InterpreterLib.Binding.Types;
 
-namespace InterpreterLib.Binding.Tree {
+namespace InterpreterLib.Binding.Tree.Expressions {
 	internal sealed class BoundVariableExpression : BoundExpression {
 
 		public override TypeSymbol ValueType => Variable.ValueType;

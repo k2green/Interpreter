@@ -1,8 +1,9 @@
-﻿using System;
+﻿using InterpreterLib.Binding.Tree.Expressions;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace InterpreterLib.Binding.Tree {
+namespace InterpreterLib.Binding.Tree.Statements {
 	internal sealed class BoundForStatement : BoundStatement {
 
 		public override NodeType Type => NodeType.For;

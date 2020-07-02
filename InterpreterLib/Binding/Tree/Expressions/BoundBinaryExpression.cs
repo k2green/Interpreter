@@ -1,6 +1,6 @@
 ﻿using InterpreterLib.Binding.Types;
 
-namespace InterpreterLib.Binding.Tree {
+namespace InterpreterLib.Binding.Tree.Expressions {
 	internal sealed class BoundBinaryExpression : BoundExpression {
 
 		public override TypeSymbol ValueType => Op.OutputType;

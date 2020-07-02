@@ -33,7 +33,7 @@ namespace InterpreterLib.Syntax {
 			GLangParser parser = new GLangParser(tokens);
 			parser.RemoveErrorListeners();
 
-			ASTProducer astProd = new ASTProducer(writer);
+			ASTProducer astProd = new ASTProducer();
 			SyntaxTreeWriter treeWriter = new SyntaxTreeWriter(writer);
 
 			var tree = astProd.Visit(parser.statement());

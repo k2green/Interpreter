@@ -3,6 +3,7 @@ using Antlr4.Runtime.Tree;
 using InterpreterLib.Binding;
 using InterpreterLib.Binding.Lowering;
 using InterpreterLib.Binding.Tree;
+using InterpreterLib.Binding.Tree.Statements;
 using InterpreterLib.Binding.Types;
 using InterpreterLib.Diagnostics;
 using System;
@@ -20,6 +21,13 @@ namespace InterpreterLib.Runtime {
 
 		public IEnumerable<Diagnostic> Diagnostics => diagnostics;
 
+		public BindingEnvironment(string input, bool chainDiagnostics) : this(input, chainDiagnostics, null) {
+		}
+
+		public BindingEnvironment ContinueWith(string input) {
+			return new BindingEnvironment(input, chainDiagnostics, this);
+		}
+
 		internal BoundGlobalScope GlobalScope {
 			get {
 				if (globalScope == null) {
@@ -31,13 +39,6 @@ namespace InterpreterLib.Runtime {
 
 				return globalScope;
 			}
-		}
-
-		public BindingEnvironment(string input, bool chainDiagnostics) : this(input, chainDiagnostics, null) {
-		}
-
-		public BindingEnvironment ContinueWith(string input) {
-			return new BindingEnvironment(input, chainDiagnostics, this);
 		}
 
 		private BindingEnvironment(string input, bool chainDiagnostics, BindingEnvironment previous) {

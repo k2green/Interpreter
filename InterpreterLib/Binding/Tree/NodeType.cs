@@ -12,6 +12,7 @@
 		Label,
 		ConditionalBranch,
 		Branch,
-		TypeDefinition
+		TypeDefinition,
+		FunctionCall
 	}
 }

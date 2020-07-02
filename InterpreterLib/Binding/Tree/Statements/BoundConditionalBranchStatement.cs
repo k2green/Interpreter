@@ -1,8 +1,10 @@
-﻿using System;
+﻿using InterpreterLib.Binding.Tree.Expressions;
+using InterpreterLib.Binding.Tree.Statements;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace InterpreterLib.Binding.Tree {
+namespace InterpreterLib.Binding.Tree.Statements {
 	internal sealed class BoundConditionalBranchStatement : BoundStatement {
 
 		public override NodeType Type => NodeType.ConditionalBranch;

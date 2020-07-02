@@ -36,13 +36,16 @@ namespace InterpreterLib.Syntax {
 		}
 
 		public override SyntaxNode VisitLiteral([NotNull] GLangParser.LiteralContext context) {
+			// Check for each token type in a literal
 			bool hasInt = context.INTEGER() != null;
 			bool hasBool = context.BOOLEAN() != null;
 			bool hasIdentifier = context.IDENTIFIER() != null;
 
+			// Returns an error if there isn'n exactly one token
 			if (!(OnlyOne(hasInt, hasIdentifier, hasBool)))
 				return Error(Diagnostic.ReportInvalidLiteral(context.Start.Line, context.Start.Column, context.GetText()));
 
+			// Return a literal of variable Syntax depending on which token exists
 			if (hasInt)
 				return new LiteralSyntax(new TokenSyntax(context.INTEGER().Symbol));
 
@@ -52,6 +55,7 @@ namespace InterpreterLib.Syntax {
 			if (hasIdentifier)
 				return new VariableSyntax(new TokenSyntax(context.IDENTIFIER().Symbol));
 
+			// As a last resort, returns an error.
 			return Error(Diagnostic.ReportInvalidLiteral(context.Start.Line, context.Start.Column, context.GetText()));
 		}
 
@@ -60,14 +64,18 @@ namespace InterpreterLib.Syntax {
 			bool hasOperator = context.op != null;
 			bool hasExpression = context.binaryExpression() != null;
 
+			// Ensures that either the context has both an operator and an expression, or that is has an atom.
 			if ((!hasOperator || !hasExpression) && !hasAtom)
 				return Error(Diagnostic.ReportInvalidUnaryExpression(context.Start.Line, context.Start.Column, context.GetText()));
 
+			// Visit the atom if it exists
 			if (hasAtom)
 				return Visit(context.atom);
 
+			// Visit the binary expression
 			var visit = Visit(context.binaryExpression());
 
+			// Ensures the visit is an expression
 			if (!(visit is ExpressionSyntax))
 				return Error(Diagnostic.ReportInvalidUnaryExpression(context.Start.Line, context.Start.Column, context.GetText()));
 
@@ -80,15 +88,19 @@ namespace InterpreterLib.Syntax {
 			bool hasOperator = context.op != null;
 			bool hasRight = context.right != null;
 
+			// Ensures that either the context has both a left and right expression with an operator, or that it has an atom.
 			if ((!hasLeft || !hasOperator || !hasRight) && !hasAtom)
 				return Error(Diagnostic.ReportInvalidBinaryExpression(context.Start.Line, context.Start.Column, context.GetText()));
 
+			// Visit the atom if it exists
 			if (hasAtom)
 				return Visit(context.atom);
 
+			// Visit the sub-expression
 			var visitLeft = Visit(context.left);
 			var visitRight = Visit(context.right);
 
+			// Ensures the visis are expressions
 			if (!(visitLeft is ExpressionSyntax && visitRight is ExpressionSyntax))
 				return Error(Diagnostic.ReportInvalidBinaryExpression(context.Start.Line, context.Start.Column, context.GetText()));
 
@@ -109,6 +121,7 @@ namespace InterpreterLib.Syntax {
 		}
 
 		public override SyntaxNode VisitAssignmentExpression([NotNull] GLangParser.AssignmentExpressionContext context) {
+			// 
 			var identifierCtx = context.IDENTIFIER();
 			var typeDefCtx = context.typeDefinition();
 			var operatorCtx = context.ASSIGNMENT_OPERATOR();
@@ -385,11 +398,11 @@ namespace InterpreterLib.Syntax {
 		}
 
 		public override SyntaxNode VisitStatement([NotNull] GLangParser.StatementContext context) {
-			if (context.functionDefinition() != null)
+			/*if (context.functionDefinition() != null)
 				return Visit(context.functionDefinition());
 
 			if (context.functionCall() != null)
-				return Visit(context.functionCall());
+				return Visit(context.functionCall());*/
 
 			if (context.forStatement() != null)
 				return Visit(context.forStatement());
