@@ -15,6 +15,7 @@
 
 InterpreterLib/Parser/antlr-4.8-complete.jar
 InterpreterLib/Parser/CompileGrammar.bat
+InterpreterLib/Antlr4Parser/antlr-4.8-complete.jar
 InterpreterLib/Antlr4Parser/CompileGrammar.bat
 
 # Build results
