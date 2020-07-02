@@ -1,6 +1,4 @@
-﻿using Antlr4.Runtime.Misc;
-using Antlr4.Runtime.Tree;
-using InterpreterLib.Binding.Tree;
+﻿using InterpreterLib.Binding.Tree;
 using InterpreterLib.Binding.Tree.Expressions;
 using InterpreterLib.Binding.Tree.Statements;
 using InterpreterLib.Binding.Types;
@@ -311,7 +309,9 @@ namespace InterpreterLib.Binding {
 			if (bool.TryParse(literalText, out bool boolVal))
 				return new BoundLiteral(boolVal, TypeSymbol.Boolean);
 
-			throw new Exception("Binder encountered a syntax error");
+			var stringText = syntax.ToString();
+			var text = stringText.Substring(1, stringText.Length - 2);
+			return new BoundLiteral(text, TypeSymbol.String);
 		}
 	}
 }

@@ -41,7 +41,7 @@ public partial class GLangParser : Parser {
 		INTEGER=7, DECL_VARIABLE=8, IF=9, ELSE=10, WHILE=11, FOR=12, FUNCTION=13, 
 		ASSIGNMENT_OPERATOR=14, ADDITIVE_OP=15, MULTIPLICATIVE_OP=16, CARAT=17, 
 		LOW_PRIORITY_OP=18, COMPARE_OP=19, LOGICAL_OP=20, BANG=21, IDENTIFIER=22, 
-		L_PARENTHESIS=23, R_PARENTHESIS=24, L_BRACE=25, R_BRACE=26, UNKNOWN_CHAR=27;
+		L_PARENTHESIS=23, R_PARENTHESIS=24, L_BRACE=25, R_BRACE=26;
 	public const int
 		RULE_declerationOrAssign = 0, RULE_typeDefinition = 1, RULE_statement = 2, 
 		RULE_definedIdentifier = 3, RULE_parametersDefinition = 4, RULE_functionDefinition = 5, 
@@ -67,7 +67,7 @@ public partial class GLangParser : Parser {
 		"BOOLEAN", "INTEGER", "DECL_VARIABLE", "IF", "ELSE", "WHILE", "FOR", "FUNCTION", 
 		"ASSIGNMENT_OPERATOR", "ADDITIVE_OP", "MULTIPLICATIVE_OP", "CARAT", "LOW_PRIORITY_OP", 
 		"COMPARE_OP", "LOGICAL_OP", "BANG", "IDENTIFIER", "L_PARENTHESIS", "R_PARENTHESIS", 
-		"L_BRACE", "R_BRACE", "UNKNOWN_CHAR"
+		"L_BRACE", "R_BRACE"
 	};
 	public static readonly IVocabulary DefaultVocabulary = new Vocabulary(_LiteralNames, _SymbolicNames);
 
@@ -1359,7 +1359,7 @@ public partial class GLangParser : Parser {
 
 	private static char[] _serializedATN = {
 		'\x3', '\x608B', '\xA72A', '\x8133', '\xB9ED', '\x417C', '\x3BE7', '\x7786', 
-		'\x5964', '\x3', '\x1D', '\xB2', '\x4', '\x2', '\t', '\x2', '\x4', '\x3', 
+		'\x5964', '\x3', '\x1C', '\xB2', '\x4', '\x2', '\t', '\x2', '\x4', '\x3', 
 		'\t', '\x3', '\x4', '\x4', '\t', '\x4', '\x4', '\x5', '\t', '\x5', '\x4', 
 		'\x6', '\t', '\x6', '\x4', '\a', '\t', '\a', '\x4', '\b', '\t', '\b', 
 		'\x4', '\t', '\t', '\t', '\x4', '\n', '\t', '\n', '\x4', '\v', '\t', '\v', 

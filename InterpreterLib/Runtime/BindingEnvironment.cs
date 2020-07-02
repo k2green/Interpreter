@@ -6,6 +6,8 @@ using InterpreterLib.Binding.Tree;
 using InterpreterLib.Binding.Tree.Statements;
 using InterpreterLib.Binding.Types;
 using InterpreterLib.Diagnostics;
+using InterpreterLib.Syntax;
+using InterpreterLib.Syntax.Tree;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,7 +19,7 @@ namespace InterpreterLib.Runtime {
 		private BoundGlobalScope globalScope;
 		private readonly bool chainDiagnostics;
 		private BindingEnvironment previous;
-		private IParseTree SyntaxRoot;
+		private SyntaxNode SyntaxRoot;
 
 		public IEnumerable<Diagnostic> Diagnostics => diagnostics;
 
@@ -60,7 +62,12 @@ namespace InterpreterLib.Runtime {
 				}
 			}
 
-			SyntaxRoot = parser.statement();
+			var parserRoot = parser.statement();
+			var astResult = ASTProducer.CreateAST(parserRoot);
+
+			diagnostics.AddDiagnostics(astResult.Diagnostics);
+
+			SyntaxRoot = astResult.Value;
 		}
 
 		public DiagnosticResult<object> Evaluate(Dictionary<VariableSymbol, object> variables) {

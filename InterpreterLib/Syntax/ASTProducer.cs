@@ -32,7 +32,11 @@ namespace InterpreterLib.Syntax {
 		}
 
 		public static DiagnosticResult<SyntaxNode> CreateAST(IParseTree tree) {
-			throw new NotImplementedException();
+			ASTProducer producer = new ASTProducer();
+
+			var syntaxTree = producer.Visit(tree);
+
+			return new DiagnosticResult<SyntaxNode>(producer.diagnostics, syntaxTree);
 		}
 
 		public override SyntaxNode VisitLiteral([NotNull] GLangParser.LiteralContext context) {
@@ -40,9 +44,10 @@ namespace InterpreterLib.Syntax {
 			bool hasInt = context.INTEGER() != null;
 			bool hasBool = context.BOOLEAN() != null;
 			bool hasIdentifier = context.IDENTIFIER() != null;
+			bool hasString = context.STRING() != null;
 
 			// Returns an error if there isn'n exactly one token
-			if (!(OnlyOne(hasInt, hasIdentifier, hasBool)))
+			if (!(OnlyOne(hasInt, hasIdentifier, hasBool, hasString)))
 				return Error(Diagnostic.ReportInvalidLiteral(context.Start.Line, context.Start.Column, context.GetText()));
 
 			// Return a literal of variable Syntax depending on which token exists
@@ -55,25 +60,32 @@ namespace InterpreterLib.Syntax {
 			if (hasIdentifier)
 				return new VariableSyntax(new TokenSyntax(context.IDENTIFIER().Symbol));
 
+			if (hasString)
+				return new LiteralSyntax(new TokenSyntax(context.STRING().Symbol));
+
 			// As a last resort, returns an error.
 			return Error(Diagnostic.ReportInvalidLiteral(context.Start.Line, context.Start.Column, context.GetText()));
 		}
 
 		public override SyntaxNode VisitUnaryExpression([NotNull] GLangParser.UnaryExpressionContext context) {
-			bool hasAtom = context.atom != null;
-			bool hasOperator = context.op != null;
-			bool hasExpression = context.binaryExpression() != null;
 
-			// Ensures that either the context has both an operator and an expression, or that is has an atom.
-			if ((!hasOperator || !hasExpression) && !hasAtom)
+			bool hasAtom = context.atom != null;
+			bool hasUnaryOperation = context.op != null && context.unaryExpression() != null;
+			bool hasExpression = context.L_PARENTHESIS() != null && context.binaryExpression() != null && context.R_PARENTHESIS() != null;
+
+			if (!OnlyOne(hasAtom, hasUnaryOperation, hasExpression))
 				return Error(Diagnostic.ReportInvalidUnaryExpression(context.Start.Line, context.Start.Column, context.GetText()));
 
 			// Visit the atom if it exists
 			if (hasAtom)
 				return Visit(context.atom);
 
+			if (hasExpression)
+				return Visit(context.binaryExpression());
+				
+
 			// Visit the binary expression
-			var visit = Visit(context.binaryExpression());
+			var visit = Visit(context.unaryExpression());
 
 			// Ensures the visit is an expression
 			if (!(visit is ExpressionSyntax))

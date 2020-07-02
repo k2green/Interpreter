@@ -25,7 +25,10 @@ namespace Interpreter {
 					builder.Append(input);
 				}*/
 
-				SyntaxTreeWriter.ParseAndWriteTree(Console.Out, input);
+				if (input.ToLower().Equals("clear"))
+					Console.Clear();
+				else
+					SyntaxTreeWriter.ParseAndWriteTree(Console.Out, input);
 			}
 		}
 	}

@@ -33,12 +33,27 @@ namespace InterpreterLib.Syntax {
 			GLangParser parser = new GLangParser(tokens);
 			parser.RemoveErrorListeners();
 
-			ASTProducer astProd = new ASTProducer();
 			SyntaxTreeWriter treeWriter = new SyntaxTreeWriter(writer);
 
-			var tree = astProd.Visit(parser.statement());
-			treeWriter.Write(tree, "  ", "  ");
+			var astResult = ASTProducer.CreateAST(parser.statement());
 
+			if (astResult.Diagnostics.Any()) {
+				foreach (var diagnostic in astResult.Diagnostics)
+					writer.WriteLine(diagnostic);
+
+				return;
+			}
+
+			treeWriter.Write(astResult.Value, "  ", "  ");
+			var bindResult = Binder.BindGlobalScope(null, astResult.Value);
+
+			BoundTreeDisplayVisitor visitor = new BoundTreeDisplayVisitor();
+			var lines = visitor.GetText(bindResult.Value.Root);
+
+			writer.WriteLine("\n");
+
+			foreach (var line in lines)
+				writer.WriteLine(line);
 		}
 
 		private void WriteChildren(IEnumerable<SyntaxNode> children, string prefix) {
