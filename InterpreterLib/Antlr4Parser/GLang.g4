@@ -13,7 +13,7 @@ typeDefinition: TYPE_DELIMETER TYPE_NAME;
 	 * Statements
 	 */
 		 
-statement : functionDefinition | functionCall | forStatement | whileStatement | ifStatement | block| variableDeclarationStatement | expressionStatement;
+statement : forStatement | whileStatement | ifStatement | block| variableDeclarationStatement | expressionStatement;
 
 definedIdentifier: IDENTIFIER typeDefinition;
 parametersDefinition: L_PARENTHESIS (definedIdentifier (COMMA definedIdentifier)*)? R_PARENTHESIS;
@@ -40,7 +40,7 @@ assignmentExpression : IDENTIFIER typeDefinition? ASSIGNMENT_OPERATOR binaryExpr
 	 * Expressions
 	 */
 
-literal : INTEGER | BOOLEAN | IDENTIFIER;
+literal : INTEGER | BOOLEAN | IDENTIFIER | STRING;
 
 unaryExpression : L_PARENTHESIS binaryExpression R_PARENTHESIS
 				| op=(ADDITIVE_OP | BANG) unaryExpression
@@ -68,6 +68,7 @@ fragment VAL: 'val';
 
 fragment INT: 'int';
 fragment BOOL: 'bool';
+fragment STRING_TYPE: 'bool';
 
 fragment EQUALITY_OPERATOR: '==';
 fragment GREATER: '>=';
@@ -77,12 +78,14 @@ fragment LESSER_STRICT: '<';
 
 fragment MOD_OPERATOR : 'mod';
 
+STRING : '"' .*? '"';
+
 WHITESPACE : [ \t\r\n]+ -> channel(HIDDEN);
 
 COMMA : ',';
 
 TYPE_DELIMETER : ':';
-TYPE_NAME : INT | BOOL;
+TYPE_NAME : INT | BOOL | STRING_TYPE;
 
 BOOLEAN: TRUE | FALSE;
 INTEGER: DIGIT+;
