@@ -6,6 +6,7 @@ namespace InterpreterLib.Binding.Types {
 	public enum SymbolType {
 		Variable, Type,
 		Function,
-		Parameter
+		Parameter,
+		Label
 	}
 }

@@ -7,145 +7,265 @@ using System.Linq;
 using System.Text;
 
 namespace InterpreterLib.Diagnostics {
-	internal class BoundTreeDisplayVisitor : BoundTreeVisitor<IEnumerable<string>, string, string> {
+	internal class BoundTreeDisplayVisitor {
 		public const string NEXT_CHILD = "  ├─";
 		public const string NO_CHILD = "  │ ";
 		public const string LAST_CHILD = "  └─";
 		public const string SPACING = "    ";
 
-		public IEnumerable<string> GetText(BoundNode node) {
-			return Visit(node, "", "");
+
+		public const ConsoleColor DEFAULT_COLOR = ConsoleColor.White;
+		public const ConsoleColor STATEMENT_COLOR = ConsoleColor.DarkYellow;
+		public const ConsoleColor EXPRESSION_COLOR = ConsoleColor.Cyan;
+		public const ConsoleColor LITERAL_COLOR = ConsoleColor.Green;
+		public const ConsoleColor VARAIBLE_COLOR = ConsoleColor.Cyan;
+		public const ConsoleColor LABEL_COLOR = ConsoleColor.Gray;
+		public const ConsoleColor BRANCH_COLOR = ConsoleColor.DarkMagenta;
+
+		public void GetText(BoundStatement[] statements) {
+			Console.ForegroundColor = DEFAULT_COLOR;
+			Console.Write("└─");
+
+			Console.ForegroundColor = STATEMENT_COLOR;
+			Console.WriteLine("Block: ");
+
+			string prefix1 = "  " + NEXT_CHILD;
+			string prefix2 = "  " + NO_CHILD;
+
+			string LastPrefix1 = "  " + LAST_CHILD;
+			string LastPrefix2 = "  " + SPACING;
+
+			for (int i = 0; i < statements.Length - 1; i++)
+				Visit(statements[i], prefix1, prefix2);
+
+			Visit(statements[statements.Length - 1], LastPrefix1, LastPrefix2);
 		}
 
-		protected override IEnumerable<string> VisitAssignmentExpression(BoundAssignmentExpression expression, string prefix1, string prefix2) {
-			var line = new string[] {
-				$"{prefix1}Assignment Expression: {expression.Identifier}",
-				$"{prefix2}{NEXT_CHILD}Variable: {expression.Identifier}"
-			};
-
-			return line.Concat(Visit(expression.Expression, prefix2 + LAST_CHILD, prefix2 + SPACING));
+		public void GetText(BoundNode node) {
+			Visit(node, "", "");
 		}
 
-		protected override IEnumerable<string> VisitBinaryExpression(BoundBinaryExpression expression, string prefix1, string prefix2) {
+		protected void Visit(BoundNode node, string prefix1, string prefix2) {
+			Console.ForegroundColor = DEFAULT_COLOR;
+
+			switch (node.Type) {
+				case NodeType.Literal:
+					VisitLiteral((BoundLiteral)node, prefix1, prefix2); break;
+				case NodeType.UnaryExpression:
+					VisitUnaryExpression((BoundUnaryExpression)node, prefix1, prefix2); break;
+				case NodeType.BinaryExpression:
+					VisitBinaryExpression((BoundBinaryExpression)node, prefix1, prefix2); break;
+				case NodeType.AssignmentExpression:
+					VisitAssignmentExpression((BoundAssignmentExpression)node, prefix1, prefix2); break;
+				case NodeType.Variable:
+					VisitVariableExpression((BoundVariableExpression)node, prefix1, prefix2); break;
+				case NodeType.Block:
+					VisitBlock((BoundBlock)node, prefix1, prefix2); break;
+				case NodeType.If:
+					VisitIfStatement((BoundIfStatement)node, prefix1, prefix2); break;
+				case NodeType.While:
+					VisitWhileStatement((BoundWhileStatement)node, prefix1, prefix2); break;
+				case NodeType.VariableDeclaration:
+					VisitVariableDeclaration((BoundVariableDeclarationStatement)node, prefix1, prefix2); break;
+				case NodeType.For:
+					VisitForStatement((BoundForStatement)node, prefix1, prefix2); break;
+				case NodeType.Error:
+					VisitError((BoundError)node, prefix1, prefix2); break;
+				case NodeType.Expression:
+					VisitExpressionStatement((BoundExpressionStatement)node, prefix1, prefix2); break;
+				case NodeType.ConditionalBranch:
+					VisitConditionalBranchStatement((BoundConditionalBranchStatement)node, prefix1, prefix2); break;
+				case NodeType.Branch:
+					VisitBranchStatement((BoundBranchStatement)node, prefix1, prefix2); break;
+				case NodeType.Label:
+					VisitLabelStatement((BoundLabel)node, prefix1, prefix2); break;
+				default: throw new Exception("Unimplemented node evaluator");
+			}
+		}
+
+		private void VisitAssignmentExpression(BoundAssignmentExpression expression, string prefix1, string prefix2) {
+			Console.Write(prefix1);
+
+			Console.ForegroundColor = EXPRESSION_COLOR;
+			Console.WriteLine($"Assignment Expression: {expression.Identifier}");
+
+			Console.ForegroundColor = DEFAULT_COLOR;
+			Console.Write($"{prefix2}{NEXT_CHILD}");
+
+			Console.ForegroundColor = EXPRESSION_COLOR;
+			Console.WriteLine($"Variable: {expression.Identifier}");
+
+			Visit(expression.Expression, prefix2 + LAST_CHILD, prefix2 + SPACING);
+		}
+
+		private void VisitBinaryExpression(BoundBinaryExpression expression, string prefix1, string prefix2) {
 			var op = expression.Op;
-			var startText = new string[] { $"{prefix1}BinaryExpression" };
-			var operatorText = new string[] { $"{prefix2}{NEXT_CHILD}{op.TokenText} : ({op.LeftType}, {op.RightType}) => {op.OutputType}" };
 
-			return startText
-				.Concat(Visit(expression.LeftExpression, prefix2 + NEXT_CHILD, prefix2 + NO_CHILD))
-				.Concat(operatorText)
-				.Concat(Visit(expression.RightExpression, prefix2 + LAST_CHILD, prefix2 + SPACING));
+			Console.Write(prefix1);
+			Console.ForegroundColor = EXPRESSION_COLOR;
+
+			Console.WriteLine($"BinaryExpression");
+			Visit(expression.LeftExpression, prefix2 + NEXT_CHILD, prefix2 + NO_CHILD);
+
+			Console.ForegroundColor = DEFAULT_COLOR;
+			Console.Write($"{prefix2}{NEXT_CHILD}");
+
+			Console.ForegroundColor = EXPRESSION_COLOR;
+			Console.WriteLine($"{op.TokenText} : ({op.LeftType}, {op.RightType}) => {op.OutputType}");
+
+			Visit(expression.RightExpression, prefix2 + LAST_CHILD, prefix2 + SPACING);
 		}
 
-		protected override IEnumerable<string> VisitBlock(BoundBlock block, string prefix1, string prefix2) {
-			IEnumerable<string> line = new string[] { $"{prefix1}Block" };
+		private void VisitBlock(BoundBlock block, string prefix1, string prefix2) {
+			Console.Write(prefix1);
+
+			Console.ForegroundColor = STATEMENT_COLOR;
+			Console.WriteLine($"Block");
 
 			if (block.Statements != null) {
 				for (int i = 0; i < block.Statements.Count - 1; i++)
-					line = line.Concat(Visit(block.Statements[i], prefix2 + NEXT_CHILD, prefix2 + NO_CHILD));
+					Visit(block.Statements[i], prefix2 + NEXT_CHILD, prefix2 + NO_CHILD);
 
-				line = line.Concat(Visit(block.Statements[block.Statements.Count - 1], prefix2 + LAST_CHILD, prefix2 + SPACING));
+				Visit(block.Statements[block.Statements.Count - 1], prefix2 + LAST_CHILD, prefix2 + SPACING);
 			}
-
-			return line;
 		}
 
-		protected override IEnumerable<string> VisitError(BoundError error, string prefix1, string prefix2) {
-			IEnumerable<string> line = new string[] { $"{prefix1}{error.Error}" };
-
-			return line;
+		private void VisitError(BoundError error, string prefix1, string prefix2) {
+			Console.WriteLine($"{prefix1}{error.Error}");
 		}
 
-		protected override IEnumerable<string> VisitExpressionStatement(BoundExpressionStatement statement, string prefix1, string prefix2) {
-			IEnumerable<string> lines = new string[] { $"{prefix1}Expression Statement" };
+		private void VisitExpressionStatement(BoundExpressionStatement statement, string prefix1, string prefix2) {
+			Console.Write(prefix1);
 
-			return lines.Concat(Visit(statement.Expression, prefix2 + LAST_CHILD, prefix2 + SPACING));
+			Console.ForegroundColor = STATEMENT_COLOR;
+			Console.WriteLine($"Expression Statement");
+
+			Visit(statement.Expression, prefix2 + LAST_CHILD, prefix2 + SPACING);
 		}
 
-		protected override IEnumerable<string> VisitForStatement(BoundForStatement statement, string prefix1, string prefix2) {
-			IEnumerable<string> lines = new string[] { $"{prefix1}For Statement" };
+		private void VisitForStatement(BoundForStatement statement, string prefix1, string prefix2) {
+			Console.Write(prefix1);
 
-			lines = lines.Concat(Visit(statement.Assignment, prefix2 + NEXT_CHILD + "a: ", prefix2 + NO_CHILD));
-			lines = lines.Concat(Visit(statement.Condition, prefix2 + NEXT_CHILD + "c: ", prefix2 + NO_CHILD));
-			lines = lines.Concat(Visit(statement.Step, prefix2 + NEXT_CHILD + "s:", prefix2 + NO_CHILD));
-			return lines.Concat(Visit(statement.Body, prefix2 + LAST_CHILD, prefix2 + SPACING));
+			Console.ForegroundColor = STATEMENT_COLOR;
+			Console.WriteLine($"For Statement");
+
+			Visit(statement.Assignment, prefix2 + NEXT_CHILD + "a: ", prefix2 + NO_CHILD);
+			Visit(statement.Condition, prefix2 + NEXT_CHILD + "c: ", prefix2 + NO_CHILD);
+			Visit(statement.Step, prefix2 + NEXT_CHILD + "s:", prefix2 + NO_CHILD);
+			Visit(statement.Body, prefix2 + LAST_CHILD, prefix2 + SPACING);
 		}
 
-		protected override IEnumerable<string> VisitIfStatement(BoundIfStatement statement, string prefix1, string prefix2) {
-			IEnumerable<string> line = new string[] { $"{prefix1}For Statement" };
+		private void VisitIfStatement(BoundIfStatement statement, string prefix1, string prefix2) {
+			Console.Write(prefix1);
 
-			line = line.Concat(Visit(statement.Condition, prefix2 + NEXT_CHILD, prefix2 + NO_CHILD));
+			Console.ForegroundColor = STATEMENT_COLOR;
+			Console.WriteLine($"For Statement");
+
+			Visit(statement.Condition, prefix2 + NEXT_CHILD, prefix2 + NO_CHILD);
 
 			if (statement.FalseBranch != null) {
-				line = line.Concat(Visit(statement.TrueBranch, prefix2 + NEXT_CHILD, prefix2 + NO_CHILD));
-				line = line.Concat(Visit(statement.FalseBranch, prefix2 + LAST_CHILD, prefix2 + SPACING));
+				Visit(statement.TrueBranch, prefix2 + NEXT_CHILD, prefix2 + NO_CHILD);
+				Visit(statement.FalseBranch, prefix2 + LAST_CHILD, prefix2 + SPACING);
 			} else {
-				line = line.Concat(Visit(statement.TrueBranch, prefix2 + LAST_CHILD, prefix2 + SPACING));
+				Visit(statement.TrueBranch, prefix2 + LAST_CHILD, prefix2 + SPACING);
 			}
-
-			return line;
 		}
 
-		protected override IEnumerable<string> VisitLiteral(BoundLiteral literal, string prefix1, string prefix2) {
-			return new string[] {
-				$"{prefix1}Literal",
-				$"{prefix2}{LAST_CHILD}{literal.Value} : {literal.ValueType}"
-			};
+		private void VisitLiteral(BoundLiteral literal, string prefix1, string prefix2) {
+			Console.Write(prefix1);
+
+			Console.ForegroundColor = LITERAL_COLOR;
+			Console.WriteLine($"Literal = {literal.Value} : {literal.ValueType}");
 		}
 
-		protected override IEnumerable<string> VisitUnaryExpression(BoundUnaryExpression expression, string prefix1, string prefix2) {
+		private void VisitUnaryExpression(BoundUnaryExpression expression, string prefix1, string prefix2) {
 			var op = expression.Op;
-			var baseLine = new string[] {
-				$"{prefix1}Unary expression",
-				$"{prefix2}{NEXT_CHILD}{op.TokenText} : {op.OperandType} => {op.OutputType}"
-			};
+			Console.Write(prefix1);
 
-			return baseLine.Concat(Visit(expression.Operand, prefix2 + LAST_CHILD, prefix2 + SPACING));
+			Console.ForegroundColor = EXPRESSION_COLOR;
+			Console.WriteLine($"Unary expression");
+
+			Console.ForegroundColor = DEFAULT_COLOR;
+			Console.Write($"{prefix2}{NEXT_CHILD}");
+
+			Console.ForegroundColor = EXPRESSION_COLOR;
+			Console.WriteLine($"{op.TokenText} : {op.OperandType} => {op.OutputType}");
+
+			Visit(expression.Operand, prefix2 + LAST_CHILD, prefix2 + SPACING);
 		}
 
-		protected override IEnumerable<string> VisitVariableExpression(BoundVariableExpression expression, string prefix1, string prefix2) {
-			return new string[] { $"{prefix1}Variable {expression.Variable}" };
+		private void VisitVariableExpression(BoundVariableExpression expression, string prefix1, string prefix2) {
+			Console.Write(prefix1);
+
+			Console.ForegroundColor = VARAIBLE_COLOR;
+			Console.WriteLine($"Variable { expression.Variable}");
 		}
 
-		protected override IEnumerable<string> VisitVariableDeclaration(BoundVariableDeclarationStatement statement, string prefix1, string prefix2) {
-			IEnumerable<string> baseLine = new string[] {
-				$"{prefix1}Variable Declaration",
-				$"{prefix2}{NEXT_CHILD}Variable Name: {statement.Variable}"
-			};
+		private void VisitVariableDeclaration(BoundVariableDeclarationStatement statement, string prefix1, string prefix2) {
+			Console.Write(prefix1);
+
+			Console.ForegroundColor = STATEMENT_COLOR;
+			Console.WriteLine("Variable Declaration");
+
+			Console.ForegroundColor = DEFAULT_COLOR;
+			Console.Write($"{prefix2}{LAST_CHILD}");
+
+			Console.ForegroundColor = STATEMENT_COLOR;
+			Console.WriteLine($"Variable Name: {statement.Variable}");
 
 			if (statement.Initialiser != null)
-				baseLine = baseLine.Concat(Visit(statement.Initialiser, prefix2 + LAST_CHILD, prefix2 + SPACING));
-
-			return baseLine;
+				Visit(statement.Initialiser, prefix2 + LAST_CHILD, prefix2 + SPACING);
 		}
 
-		protected override IEnumerable<string> VisitWhileStatement(BoundWhileStatement statement, string prefix1, string prefix2) {
-			IEnumerable<string> lines = new string[] { $"{prefix1}While Statement" };
+		private void VisitWhileStatement(BoundWhileStatement statement, string prefix1, string prefix2) {
+			Console.Write(prefix1);
 
-			lines = lines.Concat(Visit(statement.Condition, prefix2 + NEXT_CHILD, prefix2 + NO_CHILD));
+			Console.ForegroundColor = STATEMENT_COLOR;
+			Console.WriteLine($"While Statement");
 
-			return lines.Concat(Visit(statement.Body, prefix2 + LAST_CHILD, prefix2 + SPACING));
+			Visit(statement.Condition, prefix2 + NEXT_CHILD, prefix2 + NO_CHILD);
+			Visit(statement.Body, prefix2 + LAST_CHILD, prefix2 + SPACING);
 		}
 
-		protected override IEnumerable<string> VisitConditionalBranchStatement(BoundConditionalBranchStatement statement, string prefix1, string prefix2) {
-			IEnumerable<string> lines = new string[] {
-				$"{prefix1}Conditional branch statement",
-				$"{prefix2}{NEXT_CHILD}conditional check = {statement.Check}"
-			};
+		private void VisitConditionalBranchStatement(BoundConditionalBranchStatement statement, string prefix1, string prefix2) {
+			Console.Write(prefix1);
 
-			lines = lines.Concat(Visit(statement.Label, prefix2 + NEXT_CHILD, prefix2 + NO_CHILD));
+			Console.ForegroundColor = BRANCH_COLOR;
+			Console.WriteLine($"Conditional branch statement");
 
-			return lines.Concat(Visit(statement.Condition, prefix2 + LAST_CHILD, prefix2 + SPACING));
+			Visit(statement.Condition, prefix2 + NEXT_CHILD, prefix2 + NO_CHILD);
+
+			Console.ForegroundColor = DEFAULT_COLOR;
+			Console.Write($"{prefix2}{NEXT_CHILD}");
+
+			Console.ForegroundColor = BRANCH_COLOR;
+			Console.WriteLine($"Branch if true = {statement.BranchIfTrue}");
+
+			Console.ForegroundColor = DEFAULT_COLOR;
+			Console.Write($"{prefix2}{LAST_CHILD}");
+
+			Console.ForegroundColor = BRANCH_COLOR;
+			Console.WriteLine($"Label: {statement.Label}");
 		}
 
-		protected override IEnumerable<string> VisitBranchStatement(BoundBranchStatement statement, string prefix1, string prefix2) {
-			IEnumerable<string> lines = new string[] { $"{prefix1}Branch statement" };
+		private void VisitBranchStatement(BoundBranchStatement statement, string prefix1, string prefix2) {
+			Console.Write(prefix1);
 
-			return lines.Concat(Visit(statement.Label, prefix2 + LAST_CHILD, prefix2 + SPACING));
+			Console.ForegroundColor = BRANCH_COLOR;
+			Console.WriteLine($"Branch statement");
+
+			Console.ForegroundColor = DEFAULT_COLOR;
+			Console.Write($"{prefix2}{LAST_CHILD}");
+
+			Console.ForegroundColor = BRANCH_COLOR;
+			Console.WriteLine($"Label: {statement.Label}");
 		}
 
-		protected override IEnumerable<string> VisitLabelStatement(BoundLabel statement, string prefix1, string prefix2) {
-			return new string[] { $"{prefix1}{statement.Name}" };
+		private void VisitLabelStatement(BoundLabel statement, string prefix1, string prefix2) {
+			Console.Write(prefix1);
+
+			Console.ForegroundColor = LABEL_COLOR;
+			Console.WriteLine($"Label: {statement.Label}");
 		}
 	}
 }

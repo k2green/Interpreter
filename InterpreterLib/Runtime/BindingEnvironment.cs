@@ -71,7 +71,7 @@ namespace InterpreterLib.Runtime {
 		}
 
 		public DiagnosticResult<object> Evaluate(Dictionary<VariableSymbol, object> variables) {
-			if (GlobalScope.Root == null)
+			if (GlobalScope == null || GlobalScope.Root == null || diagnostics.Any())
 				return new DiagnosticResult<object>(diagnostics, null);
 
 			Evaluator evaluator = new Evaluator(GlobalScope.Root, variables);
@@ -81,17 +81,11 @@ namespace InterpreterLib.Runtime {
 			return new DiagnosticResult<object>(diagnostics, evalResult.Value);
 		}
 
-		public DiagnosticResult<IEnumerable<string>> ToText() {
-			BoundTreeDisplayVisitor display = new BoundTreeDisplayVisitor();
-			var lines = display.GetText(GlobalScope.Root)
-							.Concat(new string[] { "", "", "" });
-
-			if (!diagnostics.Any() && GlobalScope.Root is BoundStatement) {
-				display = new BoundTreeDisplayVisitor();
-				lines = lines.Concat(display.GetText(Lowerer.Lower((BoundStatement)GlobalScope.Root)));
+		public void PrintText() {
+			if (!diagnostics.Any()) {
+				BoundTreeDisplayVisitor display = new BoundTreeDisplayVisitor();
+				display.GetText(GlobalScope.Root);
 			}
-
-			return new DiagnosticResult<IEnumerable<string>>(diagnostics, lines);
 		}
 	}
 }

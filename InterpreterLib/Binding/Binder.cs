@@ -1,4 +1,5 @@
-﻿using InterpreterLib.Binding.Tree;
+﻿using InterpreterLib.Binding.Lowering;
+using InterpreterLib.Binding.Tree;
 using InterpreterLib.Binding.Tree.Expressions;
 using InterpreterLib.Binding.Tree.Statements;
 using InterpreterLib.Binding.Types;
@@ -23,8 +24,19 @@ namespace InterpreterLib.Binding {
 		public static DiagnosticResult<BoundGlobalScope> BindGlobalScope(BoundGlobalScope prev, SyntaxNode tree) {
 			var binder = new Binder(CreateParentScopes(prev));
 			var res = binder.BindRoot(tree);
-			var globScope = new BoundGlobalScope(prev, binder.scope.GetVariables(), res.Value);
+			BoundGlobalScope globScope;
 
+			if (!(res.Value is BoundStatement statement)) {
+				return new DiagnosticResult<BoundGlobalScope>(res.Diagnostics, prev);
+			}
+
+			if (res.Diagnostics.Any()) {
+				globScope = new BoundGlobalScope(prev, binder.scope.GetVariables(), new BoundStatement[] { statement });
+				return new DiagnosticResult<BoundGlobalScope>(res.Diagnostics, globScope);
+			}
+
+			var lowered = Lowerer.Lower(statement);
+			globScope = new BoundGlobalScope(prev, binder.scope.GetVariables(), lowered.Statements.ToArray());
 			return new DiagnosticResult<BoundGlobalScope>(res.Diagnostics, globScope);
 		}
 
@@ -100,10 +112,10 @@ namespace InterpreterLib.Binding {
 			foreach (var statSyntax in syntax.Statements) {
 				var bound = Bind(statSyntax);
 
-				if (!(bound is BoundStatement))
-					return Error(Diagnostic.ReportFailedBind(statSyntax.Span.Line, statSyntax.Span.Column, statSyntax.ToString()));
+				if (!(bound is BoundStatement statement))
+					return bound;
 
-				statements.Add((BoundStatement)bound);
+				statements.Add(statement);
 			}
 
 			return new BoundBlock(statements);
@@ -119,14 +131,17 @@ namespace InterpreterLib.Binding {
 			var stepVisit = Bind(syntax.Step);
 			var bodyVisit = Bind(syntax.Body);
 
-			if (!(assignVisit is BoundStatement && bodyVisit is BoundStatement &&
-				conditionVisit is BoundExpression && stepVisit is BoundExpression))
-				return Error(Diagnostic.ReportFailedBind(syntax.Span.Line, syntax.Span.Column, syntax.ToString()));
+			if (!(assignVisit is BoundStatement assignment))
+				return assignVisit;
 
-			var assignment = (BoundStatement)assignVisit;
-			var condition = (BoundExpression)conditionVisit;
-			var step = (BoundExpression)stepVisit;
-			var body = (BoundStatement)bodyVisit;
+			if (!(bodyVisit is BoundExpression condition))
+				return bodyVisit;
+
+			if (!(conditionVisit is BoundExpression step))
+				return conditionVisit;
+
+			if (!(stepVisit is BoundStatement body))
+				return stepVisit;
 
 			if (condition.ValueType != TypeSymbol.Boolean)
 				return Error(Diagnostic.ReportInvalidType(syntax.Condition.Span.Line, syntax.Condition.Span.Column, syntax.Condition.ToString(), TypeSymbol.Boolean));
@@ -138,11 +153,11 @@ namespace InterpreterLib.Binding {
 			var conditionVisit = Bind(syntax.Condition);
 			var bodyVisit = Bind(syntax.Body);
 
-			if (!(conditionVisit is BoundExpression && bodyVisit is BoundStatement))
-				return Error(Diagnostic.ReportFailedBind(syntax.Span.Line, syntax.Span.Column, syntax.ToString()));
+			if (!(conditionVisit is BoundExpression condition))
+				return conditionVisit;
 
-			var condition = (BoundExpression)conditionVisit;
-			var body = (BoundStatement)bodyVisit;
+			if (!(bodyVisit is BoundStatement body))
+				return bodyVisit;
 
 			if (condition.ValueType != TypeSymbol.Boolean)
 				return Error(Diagnostic.ReportInvalidType(syntax.Condition.Span.Line, syntax.Condition.Span.Column, syntax.Condition.ToString(), TypeSymbol.Boolean));
@@ -155,11 +170,15 @@ namespace InterpreterLib.Binding {
 			var trueBranchVisit = Bind(syntax.TrueBranch);
 			var falseBranchVisit = syntax.FalseBranch == null ? null : Bind(syntax.FalseBranch);
 
-			if (!(conditionVisit is BoundExpression && trueBranchVisit is BoundStatement) || (falseBranchVisit != null && !(falseBranchVisit is BoundStatement)))
-				return Error(Diagnostic.ReportFailedBind(syntax.Span.Line, syntax.Span.Column, syntax.ToString()));
+			if (!(conditionVisit is BoundExpression boundCondition))
+				return conditionVisit;
 
-			var boundCondition = (BoundExpression)conditionVisit;
-			var boundTrueBr = (BoundStatement)trueBranchVisit;
+			if (!(trueBranchVisit is BoundStatement boundTrueBr))
+				return trueBranchVisit;
+
+			if (falseBranchVisit != null && !(falseBranchVisit is BoundStatement))
+				return falseBranchVisit;
+
 			var boundFalseBr = falseBranchVisit == null ? null : (BoundStatement)falseBranchVisit;
 
 			if (boundCondition.ValueType != TypeSymbol.Boolean)
@@ -171,10 +190,10 @@ namespace InterpreterLib.Binding {
 		private BoundNode BindExpressionStatement(ExpressionStatementSyntax syntax) {
 			var expressionVisit = Bind(syntax.Expression);
 
-			if (!(expressionVisit is BoundExpression))
-				return Error(Diagnostic.ReportFailedBind(syntax.Expression.Span.Line, syntax.Expression.Span.Column, syntax.Expression.ToString()));
+			if (!(expressionVisit is BoundExpression expression))
+				return expressionVisit;
 
-			return new BoundExpressionStatement((BoundExpression)expressionVisit);
+			return new BoundExpressionStatement(expression);
 		}
 
 		private BoundNode BindAssignmentExpression(AssignmentExpressionSyntax syntax) {
@@ -184,10 +203,8 @@ namespace InterpreterLib.Binding {
 			string identifierText = syntax.IdentifierToken.Token.Text;
 			var boundExpression = Bind(syntax.Expression);
 
-			if (!(boundExpression is BoundExpression))
-				return Error(Diagnostic.ReportFailedBind(syntax.Expression.Span.Line, syntax.Expression.Span.Column, syntax.Expression.ToString()));
-
-			var expression = (BoundExpression)boundExpression;
+			if (!(boundExpression is BoundExpression expression))
+				return boundExpression;
 
 			if (!scope.TryLookup(identifierText, out var variable))
 				return Error(Diagnostic.ReportUndefinedVariable(syntax.IdentifierToken.Span.Line, syntax.IdentifierToken.Span.Column, identifierText));
@@ -231,11 +248,10 @@ namespace InterpreterLib.Binding {
 			if (syntax.Initialiser != null) {
 				var initialiserBind = Bind(syntax.Initialiser);
 
-				if (!(initialiserBind is BoundExpression))
-					return Error(Diagnostic.ReportFailedBind(syntax.KeywordToken.Span.Line, syntax.KeywordToken.Span.Column, syntax.KeywordToken.ToString()));
+				if (!(initialiserBind is BoundExpression init))
+					return initialiserBind;
 
-				initialiser = (BoundExpression)initialiserBind;
-				type = initialiser.ValueType;
+				initialiser = init;
 			}
 
 			if (syntax.Definition != null) {
@@ -270,11 +286,11 @@ namespace InterpreterLib.Binding {
 			var boundLeftVisit = Bind(syntax.LeftSyntax);
 			var boundRightVisit = Bind(syntax.RightSyntax);
 
-			if (!(boundLeftVisit is BoundExpression && boundRightVisit is BoundExpression))
-				return Error(Diagnostic.ReportFailedBind(syntax.LeftSyntax.Span.Line, syntax.LeftSyntax.Span.Column, syntax.ToString()));
+			if (!(boundLeftVisit is BoundExpression left))
+				return boundLeftVisit;
+			if (!(boundRightVisit is BoundExpression right))
+				return boundRightVisit;
 
-			var left = (BoundExpression)boundLeftVisit;
-			var right = (BoundExpression)boundRightVisit;
 			var op = BinaryOperator.Bind(opText, left.ValueType, right.ValueType);
 
 			if (op == null)
@@ -288,10 +304,9 @@ namespace InterpreterLib.Binding {
 			var opText = opToken.Text;
 			var boundSubExpressionVisit = Bind(syntax.Expression);
 
-			if (!(boundSubExpressionVisit is BoundExpression))
-				return Error(Diagnostic.ReportFailedBind(opToken.Line, opToken.Column, syntax.Expression.ToString()));
+			if (!(boundSubExpressionVisit is BoundExpression boundSubExpression))
+				return boundSubExpressionVisit;
 
-			var boundSubExpression = (BoundExpression)boundSubExpressionVisit;
 			var op = UnaryOperator.Bind(opText, boundSubExpression.ValueType);
 
 			if (op == null)

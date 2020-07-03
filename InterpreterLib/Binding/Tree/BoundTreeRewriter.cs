@@ -92,22 +92,11 @@ namespace InterpreterLib.Binding.Tree {
 		}
 
 		private BoundStatement RewriteBranchStatement(BoundBranchStatement statement) {
-			var label = RewriteLabelStatement(statement.Label);
-
-			if (label == statement.Label)
-				return statement;
-
-			return new BoundBranchStatement(label);
+			return statement;
 		}
 
 		private BoundStatement RewriteConditionalBranchStatement(BoundConditionalBranchStatement statement) {
-			var label = RewriteLabelStatement(statement.Label);
-			var condition = RewriteExpression(statement.Condition);
-
-			if (label == statement.Label && condition == statement.Condition)
-				return statement;
-
-			return new BoundConditionalBranchStatement(label, condition, statement.Check);
+			return statement;
 		}
 
 		private BoundLabel RewriteLabelStatement(BoundLabel statement) {

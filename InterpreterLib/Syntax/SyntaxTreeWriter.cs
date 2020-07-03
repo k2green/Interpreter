@@ -45,15 +45,6 @@ namespace InterpreterLib.Syntax {
 			}
 
 			treeWriter.Write(astResult.Value, "  ", "  ");
-			var bindResult = Binder.BindGlobalScope(null, astResult.Value);
-
-			BoundTreeDisplayVisitor visitor = new BoundTreeDisplayVisitor();
-			var lines = visitor.GetText(bindResult.Value.Root);
-
-			writer.WriteLine("\n");
-
-			foreach (var line in lines)
-				writer.WriteLine(line);
 		}
 
 		private void WriteChildren(IEnumerable<SyntaxNode> children, string prefix) {

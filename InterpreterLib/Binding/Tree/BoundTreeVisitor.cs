@@ -36,10 +36,13 @@ namespace InterpreterLib.Binding.Tree {
 					return VisitConditionalBranch((BoundConditionalBranchStatement)node);
 				case NodeType.Branch:
 					return VisitBranch((BoundBranchStatement)node);
+				case NodeType.Label:
+					return VisitLabel((BoundLabel)node);
 				default: throw new Exception("Unimplemented node evaluator");
 			}
 		}
 
+		protected abstract T VisitLabel(BoundLabel node);
 		protected abstract T VisitBranch(BoundBranchStatement node);
 		protected abstract T VisitConditionalBranch(BoundConditionalBranchStatement node);
 		protected abstract T VisitExpressionStatement(BoundExpressionStatement statement);

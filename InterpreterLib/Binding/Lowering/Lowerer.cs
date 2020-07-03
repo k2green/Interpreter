@@ -1,5 +1,6 @@
 ﻿using InterpreterLib.Binding.Tree;
 using InterpreterLib.Binding.Tree.Statements;
+using InterpreterLib.Binding.Types;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,8 +14,8 @@ namespace InterpreterLib.Binding.Lowering {
 			counter = 0;
 		}
 
-		private BoundLabel CreateNextLabel() {
-			return new BoundLabel($"Label {counter++}");
+		private LabelSymbol CreateNextLabel() {
+			return new LabelSymbol($"Label {counter++}");
 		}
 
 		public static BoundBlock Lower(BoundStatement statement) {
@@ -67,13 +68,13 @@ namespace InterpreterLib.Binding.Lowering {
 				condBranch,
 				statement.TrueBranch,
 				endBranch,
-				falseLabel,
+				new BoundLabel(falseLabel),
 			});
 
 			if (statement.FalseBranch != null)
 				statements.Add(statement.FalseBranch);
 
-			statements.Add(endLabel);
+			statements.Add(new BoundLabel(endLabel));
 
 			return RewriteStatement(new BoundBlock(statements));
 		}
@@ -96,9 +97,9 @@ namespace InterpreterLib.Binding.Lowering {
 
 			var result = new BoundBlock(new BoundStatement[] {
 				firstBranch,
-				startLabel,
+				new BoundLabel(startLabel),
 				statement.Body,
-				conditionCheckLabel,
+				new BoundLabel(conditionCheckLabel),
 				condBranch
 			});
 

@@ -7,21 +7,17 @@ using InterpreterLib.Binding.Tree.Statements;
 using InterpreterLib.Binding.Tree.Expressions;
 
 namespace InterpreterLib {
-	internal class Evaluator : BoundTreeVisitor<object> {
+	internal class Evaluator {
 
 		private DiagnosticContainer diagnostics;
-		private BoundNode root;
 
 		private Dictionary<VariableSymbol, object> variables;
 
-		private int currentIndex;
-		private Dictionary<BoundLabel, int> labelConversions;
+		public BoundStatement[] Statements { get; }
 
-		internal Evaluator(BoundNode rootNode, Dictionary<VariableSymbol, object> variables) {
-			root = rootNode;
+		internal Evaluator(BoundStatement[] statements, Dictionary<VariableSymbol, object> variables) {
 			diagnostics = new DiagnosticContainer();
-			currentIndex = 0;
-			labelConversions = new Dictionary<BoundLabel, int>();
+			Statements = statements;
 			this.variables = variables;
 		}
 
@@ -29,8 +25,8 @@ namespace InterpreterLib {
 			object value = null;
 
 			try {
-				value = Visit(root);
-			} catch(ErrorEncounteredException exception) {
+				value = EvaluateStatements(Statements);
+			} catch (ErrorEncounteredException exception) {
 				diagnostics.AddDiagnostic(Diagnostic.ReportErrorEncounteredWhileEvaluating());
 			} // Allows the evaluator to exit if an error node is found.
 
@@ -38,74 +34,99 @@ namespace InterpreterLib {
 			return new DiagnosticResult<object>(diagnostics, value);
 		}
 
-		protected override object VisitForStatement(BoundForStatement statement) {
-			throw new NotImplementedException();
-		}
+		private object EvaluateStatements(BoundStatement[] statements) {
+			var labelConversions = new Dictionary<LabelSymbol, int>();
 
-		protected override object VisitVariableDeclaration(BoundVariableDeclarationStatement expression) {
-			throw new NotImplementedException();
-		}
-
-		protected override object VisitWhile(BoundWhileStatement expression) {
-			object outval = null;
-			if (expression.Condition.ValueType != TypeSymbol.Boolean)
-				throw new Exception("Invalid expr");
-
-			while ((bool)Visit(expression.Condition)) {
-				outval = Visit(expression.Body);
+			for (int index = 0; index < statements.Length; index++) {
+				if (statements[index] is BoundLabel label) {
+					labelConversions.Add(label.Label, index + 1);
+				}
 			}
 
-			return outval;
-		}
-
-		protected override object VisitIf(BoundIfStatement ifStat) {
-			if (ifStat.Condition.ValueType != TypeSymbol.Boolean)
-				throw new Exception("Invalid expr");
-
-			bool testCondition = (bool)Visit(ifStat.Condition);
-			if (testCondition)
-				return Visit(ifStat.TrueBranch);
-			else if (ifStat.FalseBranch != null)
-				return Visit(ifStat.FalseBranch);
-
-			return null;
-		}
-
-		protected override object VisitBlock(BoundBlock expression) {
+			var currentIndex = 0;
 			object val = null;
-			var subExpressions = expression.Statements;
+			while (currentIndex < statements.Length) {
+				var statement = statements[currentIndex];
 
-			for(currentIndex = 0; currentIndex < subExpressions.Count; currentIndex++) {
-				if (!(subExpressions[currentIndex] is BoundLabel))
-					val = Visit(subExpressions[currentIndex]);
+				switch (statement.Type) {
+					case NodeType.VariableDeclaration:
+						val = EvaluateVariableDeclaration((BoundVariableDeclarationStatement)statement);
+						currentIndex++;
+						break;
+					case NodeType.Expression:
+						val = EvaluateExpressionStatement((BoundExpressionStatement)statement);
+						currentIndex++;
+						break;
+					case NodeType.ConditionalBranch:
+						var cBranch = (BoundConditionalBranchStatement)statement;
+						if ((bool)EvaluateExpression(cBranch.Condition) == cBranch.BranchIfTrue)
+							currentIndex = labelConversions[cBranch.Label];
+						else
+							currentIndex++;
+
+						break;
+					case NodeType.Branch:
+						var branch = (BoundBranchStatement)statement;
+						currentIndex = labelConversions[branch.Label];
+						break;
+					case NodeType.Label:
+						currentIndex++;
+						break;
+
+					default: throw new NotImplementedException();
+				}
 			}
 
 			return val;
 		}
 
-		protected override object VisitAssignmentExpression(BoundAssignmentExpression assignment) {
-			object expression = Visit(assignment.Expression);
+		private object EvaluateExpression(BoundExpression expression) {
+			switch (expression.Type) {
+				case NodeType.Literal:
+					return EvaluateLiteral((BoundLiteral)expression);
+				case NodeType.Variable:
+					return EvaluateVariable((BoundVariableExpression)expression);
+				case NodeType.UnaryExpression:
+					return EvaluateUnaryExpression((BoundUnaryExpression)expression);
+				case NodeType.BinaryExpression:
+					return EvaluateBinaryExpression((BoundBinaryExpression)expression);
+				case NodeType.AssignmentExpression:
+					return EvaluateAssignmentExpression((BoundAssignmentExpression)expression);
 
-			if (expression == null) 
+				default: throw new NotImplementedException();
+			}
+		}
+
+		private object EvaluateVariableDeclaration(BoundVariableDeclarationStatement expression) {
+			var exprVal = expression.Initialiser == null ? null : EvaluateExpression(expression.Initialiser);
+
+			variables[expression.Variable] = exprVal;
+			return exprVal;
+		}
+
+		private object EvaluateAssignmentExpression(BoundAssignmentExpression assignment) {
+			object expression = EvaluateExpression(assignment.Expression);
+
+			if (expression == null)
 				return null;
 
 			variables[assignment.Identifier] = expression;
 			return expression;
 		}
 
-		protected override object VisitVariable(BoundVariableExpression expression) {
+		private object EvaluateVariable(BoundVariableExpression expression) {
 			return variables[expression.Variable];
 		}
 
-		protected override object VisitBinaryExpression(BoundBinaryExpression expression) {
-			object left = Visit(expression.LeftExpression);
-			object right = Visit(expression.RightExpression);
+		private object EvaluateBinaryExpression(BoundBinaryExpression expression) {
+			object left = EvaluateExpression(expression.LeftExpression);
+			object right = EvaluateExpression(expression.RightExpression);
 
 			return GetOperatorEvaluator(expression.Op)(left, right);
 		}
 
-		protected override object VisitUnaryExpression(BoundUnaryExpression expression) {
-			object operandValue = Visit(expression.Operand);
+		private object EvaluateUnaryExpression(BoundUnaryExpression expression) {
+			object operandValue = EvaluateExpression(expression.Operand);
 
 			switch (expression.Op.OperatorType) {
 				case UnaryOperatorType.Identity:
@@ -118,7 +139,7 @@ namespace InterpreterLib {
 			}
 		}
 
-		private bool VisitEqualityOperation(object left, object right, BinaryOperator op) {
+		private bool EvaluateEqualityOperation(object left, object right, BinaryOperator op) {
 			if (op.LeftType == TypeSymbol.Integer && op.RightType == TypeSymbol.Integer)
 				return ((int)left) == ((int)right);
 
@@ -143,7 +164,7 @@ namespace InterpreterLib {
 				case BinaryOperatorType.Modulus:
 					return (left, right) => (int)left % (int)right;
 				case BinaryOperatorType.Equality:
-					return (left, right) => VisitEqualityOperation(left, right, op);
+					return (left, right) => EvaluateEqualityOperation(left, right, op);
 				case BinaryOperatorType.LogicalAnd:
 					return (left, right) => (bool)left && (bool)right;
 				case BinaryOperatorType.LogicalOr:
@@ -151,44 +172,31 @@ namespace InterpreterLib {
 				case BinaryOperatorType.LogicalXOr:
 					return (left, right) => (bool)left ^ (bool)right;
 				case BinaryOperatorType.GreaterThan:
-					return (left, right) => (int)left >= (int)right; 
+					return (left, right) => (int)left >= (int)right;
 				case BinaryOperatorType.LesserThan:
 					return (left, right) => (int)left <= (int)right;
 				case BinaryOperatorType.StrictGreaterThan:
 					return (left, right) => (int)left > (int)right;
 				case BinaryOperatorType.StrinLesserThan:
 					return (left, right) => (int)left < (int)right;
+				case BinaryOperatorType.Concatonate:
+					return (left, right) => (string)left + (string)right;
 				default:
 					throw new Exception("Invalid operator");
 			}
 		}
 
-		protected override object VisitLiteral(BoundLiteral literal) {
+		private object EvaluateLiteral(BoundLiteral literal) {
 			return literal.Value;
 		}
 
-		protected override object VisitError(BoundError error) {
+		private object EvaluateError(BoundError error) {
 			// If there is an error in the binding, we use an exception to bail out of the evaluation
 			throw new ErrorEncounteredException();
 		}
 
-		protected override object VisitExpressionStatement(BoundExpressionStatement statement) {
-			throw new NotImplementedException();
-		}
-
-		protected override object VisitBranch(BoundBranchStatement node) {
-			var label = node.Label;
-
-			if (!labelConversions.ContainsKey(label))
-				throw new Exception($"Missing label {label.Name}");
-
-			currentIndex = labelConversions[label];
-
-			return null;
-		}
-
-		protected override object VisitConditionalBranch(BoundConditionalBranchStatement node) {
-			throw new NotImplementedException();
+		private object EvaluateExpressionStatement(BoundExpressionStatement statement) {
+			return EvaluateExpression(statement.Expression);
 		}
 	}
 }
