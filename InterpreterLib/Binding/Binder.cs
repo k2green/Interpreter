@@ -252,6 +252,7 @@ namespace InterpreterLib.Binding {
 					return initialiserBind;
 
 				initialiser = init;
+				type = initialiser.ValueType;
 			}
 
 			if (syntax.Definition != null) {

@@ -82,7 +82,7 @@ namespace InterpreterLib.Syntax {
 
 			if (hasExpression)
 				return Visit(context.binaryExpression());
-				
+
 
 			// Visit the binary expression
 			var visit = Visit(context.unaryExpression());
@@ -95,18 +95,21 @@ namespace InterpreterLib.Syntax {
 		}
 
 		public override SyntaxNode VisitBinaryExpression([NotNull] GLangParser.BinaryExpressionContext context) {
-			bool hasAtom = context.atom != null;
-			bool hasLeft = context.left != null;
-			bool hasOperator = context.op != null;
-			bool hasRight = context.right != null;
+			bool hasAtom = context.atom != null && !string.IsNullOrEmpty(context.atom.GetText());
+			bool hasLeft = context.left != null && !string.IsNullOrEmpty(context.left.GetText());
+			bool hasOperator = context.op != null && !string.IsNullOrEmpty(context.op.Text);
+			bool hasRight = context.right != null && !string.IsNullOrEmpty(context.right.GetText());
 
 			// Ensures that either the context has both a left and right expression with an operator, or that it has an atom.
-			if ((!hasLeft || !hasOperator || !hasRight) && !hasAtom)
+			if (hasOperator && (!hasLeft || !hasRight || hasAtom))
+				return Error(Diagnostic.ReportInvalidBinaryExpression(context.Start.Line, context.Start.Column, context.GetText()));
+
+			if(hasAtom && (hasOperator || hasLeft || hasRight))
 				return Error(Diagnostic.ReportInvalidBinaryExpression(context.Start.Line, context.Start.Column, context.GetText()));
 
 			// Visit the atom if it exists
 			if (hasAtom)
-				return Visit(context.atom);
+				return Visit(context.unaryExpression());
 
 			// Visit the sub-expression
 			var visitLeft = Visit(context.left);

@@ -17,18 +17,20 @@ namespace InterpreterLib.Runtime {
 	public sealed class BindingEnvironment {
 		private DiagnosticContainer diagnostics;
 		private readonly bool chainDiagnostics;
-
 		private BindingEnvironment previous;
-
 		private SyntaxNode SyntaxRoot;
 
 		public IEnumerable<Diagnostic> Diagnostics => diagnostics;
 
-		public BindingEnvironment(string input, bool chainDiagnostics) : this(input, chainDiagnostics, null) {
+		public static BindingEnvironment CreateEnvironment(RuntimeParser input, bool chainDiagnostics) {
+			if (input.Diagnostics.Any())
+				return null;
+
+			return new BindingEnvironment(input.Node, chainDiagnostics, null);
 		}
 
-		public BindingEnvironment ContinueWith(string input) {
-			return new BindingEnvironment(input, chainDiagnostics, this);
+		public BindingEnvironment ContinueWith(RuntimeParser input) {
+			return new BindingEnvironment(input.Node, chainDiagnostics, this);
 		}
 
 
@@ -46,28 +48,16 @@ namespace InterpreterLib.Runtime {
 			}
 		}
 
-		private BindingEnvironment(string input, bool chainDiagnostics, BindingEnvironment previous) {
+		private BindingEnvironment(SyntaxNode input, bool chainDiagnostics, BindingEnvironment previous) {
 			this.chainDiagnostics = chainDiagnostics;
 			this.previous = previous;
 			diagnostics = new DiagnosticContainer();
-			AntlrInputStream stream = new AntlrInputStream(input);
-
-			GLangLexer lexer = new GLangLexer(stream);
-			lexer.RemoveErrorListeners();
-
-			CommonTokenStream tokens = new CommonTokenStream(lexer);
-			GLangParser parser = new GLangParser(tokens);
-			parser.RemoveErrorListeners();
 
 			if (previous != null && chainDiagnostics) {
 				diagnostics.AddDiagnostics(previous.diagnostics);
 			}
 
-			var parserRoot = parser.statement();
-			var astResult = ASTProducer.CreateAST(parserRoot);
-
-			diagnostics.AddDiagnostics(astResult.Diagnostics);
-			SyntaxRoot = astResult.Value;
+			SyntaxRoot = input;
 		}
 
 		public DiagnosticResult<object> Evaluate(Dictionary<VariableSymbol, object> variables) {

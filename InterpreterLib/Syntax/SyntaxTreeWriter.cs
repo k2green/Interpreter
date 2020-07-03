@@ -1,6 +1,7 @@
 ﻿using Antlr4.Runtime;
 using InterpreterLib.Binding;
 using InterpreterLib.Diagnostics;
+using InterpreterLib.Runtime;
 using InterpreterLib.Syntax.Tree;
 using InterpreterLib.Syntax.Tree.Expressions;
 using InterpreterLib.Syntax.Tree.Statements;
@@ -19,32 +20,14 @@ namespace InterpreterLib.Syntax {
 
 		public TextWriter Writer { get; }
 
-		private SyntaxTreeWriter(TextWriter writer) {
+		public SyntaxTreeWriter(TextWriter writer) {
 			Writer = writer;
 		}
 
-		public static void ParseAndWriteTree(TextWriter writer, string input) {
-			AntlrInputStream stream = new AntlrInputStream(input);
+		public static void Write(RuntimeParser parser, TextWriter writer) {
+			var treeWriter = new SyntaxTreeWriter(writer);
 
-			GLangLexer lexer = new GLangLexer(stream);
-			lexer.RemoveErrorListeners();
-
-			CommonTokenStream tokens = new CommonTokenStream(lexer);
-			GLangParser parser = new GLangParser(tokens);
-			parser.RemoveErrorListeners();
-
-			SyntaxTreeWriter treeWriter = new SyntaxTreeWriter(writer);
-
-			var astResult = ASTProducer.CreateAST(parser.statement());
-
-			if (astResult.Diagnostics.Any()) {
-				foreach (var diagnostic in astResult.Diagnostics)
-					writer.WriteLine(diagnostic);
-
-				return;
-			}
-
-			treeWriter.Write(astResult.Value, "  ", "  ");
+			treeWriter.Write(parser.Node, "└─", "  ");
 		}
 
 		private void WriteChildren(IEnumerable<SyntaxNode> children, string prefix) {

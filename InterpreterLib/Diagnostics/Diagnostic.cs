@@ -94,11 +94,16 @@ namespace InterpreterLib {
 		}
 
 		internal static Diagnostic ReportInvalidOperator(int line, int column, string opText, TypeSymbol leftType, TypeSymbol rightType) {
-			return new Diagnostic(line, column, $"Operator {opText} is invalid for types {leftType} and {rightType}");
+			var leftTypeString = leftType == null ? "<Null>" : leftType.ToString();
+			var rightTypeString = rightType == null ? "<Null>" : rightType.ToString();
+
+			return new Diagnostic(line, column, $"Operator {opText} is invalid for types {leftTypeString} and {rightTypeString}");
 		}
 
 		internal static Diagnostic ReportInvalidOperator(int line, int column, string opText, TypeSymbol valueType) {
-			return new Diagnostic(line, column, $"Operator {opText} is invalid for type {valueType}");
+			var valueTypeString = valueType == null ? "<Null>" : valueType.ToString();
+
+			return new Diagnostic(line, column, $"Operator {opText} is invalid for type {valueTypeString}");
 		}
 
 		internal static Diagnostic ReportAssingmentTypeDef(int line, int column, string v) {
