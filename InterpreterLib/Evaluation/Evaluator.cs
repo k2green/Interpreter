@@ -14,9 +14,14 @@ namespace InterpreterLib {
 
 		private Dictionary<VariableSymbol, object> variables;
 
+		private int currentIndex;
+		private Dictionary<BoundLabel, int> labelConversions;
+
 		internal Evaluator(BoundNode rootNode, Dictionary<VariableSymbol, object> variables) {
 			root = rootNode;
 			diagnostics = new DiagnosticContainer();
+			currentIndex = 0;
+			labelConversions = new Dictionary<BoundLabel, int>();
 			this.variables = variables;
 		}
 
@@ -25,7 +30,9 @@ namespace InterpreterLib {
 
 			try {
 				value = Visit(root);
-			} catch(ErrorEncounteredException exception) {  } // Allows the evaluator to exit if an error node is found.
+			} catch(ErrorEncounteredException exception) {
+				diagnostics.AddDiagnostic(Diagnostic.ReportErrorEncounteredWhileEvaluating());
+			} // Allows the evaluator to exit if an error node is found.
 
 
 			return new DiagnosticResult<object>(diagnostics, value);
@@ -66,9 +73,12 @@ namespace InterpreterLib {
 
 		protected override object VisitBlock(BoundBlock expression) {
 			object val = null;
+			var subExpressions = expression.Statements;
 
-			foreach (var stat in expression.Statements)
-				val = Visit(stat);
+			for(currentIndex = 0; currentIndex < subExpressions.Count; currentIndex++) {
+				if (!(subExpressions[currentIndex] is BoundLabel))
+					val = Visit(subExpressions[currentIndex]);
+			}
 
 			return val;
 		}
@@ -163,6 +173,21 @@ namespace InterpreterLib {
 		}
 
 		protected override object VisitExpressionStatement(BoundExpressionStatement statement) {
+			throw new NotImplementedException();
+		}
+
+		protected override object VisitBranch(BoundBranchStatement node) {
+			var label = node.Label;
+
+			if (!labelConversions.ContainsKey(label))
+				throw new Exception($"Missing label {label.Name}");
+
+			currentIndex = labelConversions[label];
+
+			return null;
+		}
+
+		protected override object VisitConditionalBranch(BoundConditionalBranchStatement node) {
 			throw new NotImplementedException();
 		}
 	}

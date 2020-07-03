@@ -30,10 +30,18 @@ namespace InterpreterLib.Binding.Tree {
 					return VisitForStatement((BoundForStatement)node);
 				case NodeType.Error:
 					return VisitError((BoundError)node);
+				case NodeType.Expression:
+					return VisitExpressionStatement((BoundExpressionStatement)node);
+				case NodeType.ConditionalBranch:
+					return VisitConditionalBranch((BoundConditionalBranchStatement)node);
+				case NodeType.Branch:
+					return VisitBranch((BoundBranchStatement)node);
 				default: throw new Exception("Unimplemented node evaluator");
 			}
 		}
 
+		protected abstract T VisitBranch(BoundBranchStatement node);
+		protected abstract T VisitConditionalBranch(BoundConditionalBranchStatement node);
 		protected abstract T VisitExpressionStatement(BoundExpressionStatement statement);
 		protected abstract T VisitLiteral(BoundLiteral literal);
 		protected abstract T VisitUnaryExpression(BoundUnaryExpression expression);

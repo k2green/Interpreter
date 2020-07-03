@@ -12,7 +12,7 @@ typeDefinition: TYPE_DELIMETER TYPE_NAME;
 	/*
 	 * Statements
 	 */
-		 
+	
 statement : forStatement | whileStatement | ifStatement | block| variableDeclarationStatement | expressionStatement;
 
 definedIdentifier: IDENTIFIER typeDefinition;
@@ -68,7 +68,7 @@ fragment VAL: 'val';
 
 fragment INT: 'int';
 fragment BOOL: 'bool';
-fragment STRING_TYPE: 'bool';
+fragment STRING_TYPE: 'string';
 
 fragment EQUALITY_OPERATOR: '==';
 fragment GREATER: '>=';

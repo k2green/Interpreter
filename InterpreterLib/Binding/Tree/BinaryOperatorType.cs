@@ -9,6 +9,7 @@ namespace InterpreterLib.Binding.Tree {
 		GreaterThan,
 		LesserThan,
 		StrictGreaterThan,
-		StrinLesserThan
+		StrinLesserThan,
+		Concatonate
 	}
 }

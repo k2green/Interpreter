@@ -7,9 +7,13 @@ namespace InterpreterLib.Binding.Types {
 
 		public override SymbolType Type => SymbolType.Function;
 		public override string Name { get; }
+		public IReadOnlyList<ParameterSymbol> Parameters { get; }
+		public TypeSymbol ReturnType { get; }
 
 		public FunctionSymbol(string name, IReadOnlyList<ParameterSymbol> parameters, TypeSymbol returnType) {
 			Name = name;
+			Parameters = parameters;
+			ReturnType = returnType;
 		}
 
 		public override bool Equals(object obj) {

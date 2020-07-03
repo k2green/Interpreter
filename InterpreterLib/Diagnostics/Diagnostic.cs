@@ -29,6 +29,10 @@ namespace InterpreterLib {
 			return new Diagnostic(line, column, $"Syntax error: Missing type delimeter in {v}");
 		}
 
+		internal static Diagnostic ReportErrorEncounteredWhileEvaluating() {
+			throw new NotImplementedException();
+		}
+
 		internal static Diagnostic ReportMissingTypeName(int line, int column, string v) {
 			return new Diagnostic(line, column, $"Syntax error: Missing type name in {v}");
 		}

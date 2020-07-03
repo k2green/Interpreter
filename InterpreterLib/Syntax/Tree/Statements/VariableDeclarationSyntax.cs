@@ -33,7 +33,10 @@ namespace InterpreterLib.Syntax.Tree.Statements {
 			OperatorToken = operatorToken;
 			Initialiser = initialiser;
 
+			if(initialiser != null)
 			Span = CreateNewSpan(keywordToken.Span, initialiser.Span);
+			else
+				Span = CreateNewSpan(keywordToken.Span, definition.Span);
 		}
 
 		public override string ToString() {

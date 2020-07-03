@@ -11,6 +11,8 @@ namespace InterpreterLib.Binding.Tree {
 		public BinaryOperatorContainor() {
 			operators = new HashSet<BinaryOperator>();
 
+			operators.Add(new BinaryOperator("+", BinaryOperatorType.Concatonate, TypeSymbol.String, TypeSymbol.String));
+
 			AddBinaryOperator("+", BinaryOperatorType.Addition, NumericDefinitions);
 			AddBinaryOperator("-", BinaryOperatorType.Subtraction, NumericDefinitions);
 			AddBinaryOperator("*", BinaryOperatorType.Multiplication, NumericDefinitions);
@@ -31,7 +33,7 @@ namespace InterpreterLib.Binding.Tree {
 		}
 
 		private void AddBinaryOperator(string token, BinaryOperatorType type, IEnumerable<Tuple<TypeSymbol, TypeSymbol, TypeSymbol>> typeDefinitions) {
-			foreach(var tuple in typeDefinitions) {
+			foreach (var tuple in typeDefinitions) {
 				operators.Add(new BinaryOperator(token, type, tuple.Item1, tuple.Item2, tuple.Item3));
 			}
 		}

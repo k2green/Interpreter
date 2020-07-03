@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 using InterpreterLib.Binding.Types;
 using InterpreterLib.Runtime;
@@ -25,10 +26,22 @@ namespace Interpreter {
 					builder.Append(input);
 				}*/
 
-				if (input.ToLower().Equals("clear"))
+				if (input.ToLower().Equals("clear")) {
 					Console.Clear();
-				else
-					SyntaxTreeWriter.ParseAndWriteTree(Console.Out, input);
+				} else {
+					if (env == null)
+						env = new BindingEnvironment(input, false);
+					else
+						env = env.ContinueWith(input);
+
+					var res = env.ToText();
+
+					foreach (var diagnostic in res.Diagnostics)
+						Console.WriteLine(diagnostic);
+
+					foreach (var line in res.Value)
+						Console.WriteLine(line);
+				}
 			}
 		}
 	}

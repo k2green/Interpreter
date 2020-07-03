@@ -16,9 +16,10 @@ using System.Threading;
 namespace InterpreterLib.Runtime {
 	public sealed class BindingEnvironment {
 		private DiagnosticContainer diagnostics;
-		private BoundGlobalScope globalScope;
 		private readonly bool chainDiagnostics;
+
 		private BindingEnvironment previous;
+
 		private SyntaxNode SyntaxRoot;
 
 		public IEnumerable<Diagnostic> Diagnostics => diagnostics;
@@ -30,6 +31,8 @@ namespace InterpreterLib.Runtime {
 			return new BindingEnvironment(input, chainDiagnostics, this);
 		}
 
+
+		private BoundGlobalScope globalScope;
 		internal BoundGlobalScope GlobalScope {
 			get {
 				if (globalScope == null) {
@@ -56,17 +59,14 @@ namespace InterpreterLib.Runtime {
 			GLangParser parser = new GLangParser(tokens);
 			parser.RemoveErrorListeners();
 
-			if (previous != null) {
-				if (chainDiagnostics) {
-					diagnostics.AddDiagnostics(previous.diagnostics);
-				}
+			if (previous != null && chainDiagnostics) {
+				diagnostics.AddDiagnostics(previous.diagnostics);
 			}
 
 			var parserRoot = parser.statement();
 			var astResult = ASTProducer.CreateAST(parserRoot);
 
 			diagnostics.AddDiagnostics(astResult.Diagnostics);
-
 			SyntaxRoot = astResult.Value;
 		}
 
@@ -81,17 +81,17 @@ namespace InterpreterLib.Runtime {
 			return new DiagnosticResult<object>(diagnostics, evalResult.Value);
 		}
 
-		public IEnumerable<string> ToText() {
+		public DiagnosticResult<IEnumerable<string>> ToText() {
 			BoundTreeDisplayVisitor display = new BoundTreeDisplayVisitor();
-			var lines = display.GetText(GlobalScope.Root);
-			lines = lines.Concat(new string[] { "", "", "" });
+			var lines = display.GetText(GlobalScope.Root)
+							.Concat(new string[] { "", "", "" });
 
 			if (!diagnostics.Any() && GlobalScope.Root is BoundStatement) {
 				display = new BoundTreeDisplayVisitor();
 				lines = lines.Concat(display.GetText(Lowerer.Lower((BoundStatement)GlobalScope.Root)));
 			}
 
-			return lines;
+			return new DiagnosticResult<IEnumerable<string>>(diagnostics, lines);
 		}
 	}
 }

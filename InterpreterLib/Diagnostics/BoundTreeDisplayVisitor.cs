@@ -9,18 +9,18 @@ using System.Text;
 namespace InterpreterLib.Diagnostics {
 	internal class BoundTreeDisplayVisitor : BoundTreeVisitor<IEnumerable<string>, string, string> {
 		public const string NEXT_CHILD = "  ├─";
-		public const string NO_CHILD   = "  │ ";
+		public const string NO_CHILD = "  │ ";
 		public const string LAST_CHILD = "  └─";
-		public const string SPACING    = "    ";
+		public const string SPACING = "    ";
 
 		public IEnumerable<string> GetText(BoundNode node) {
-			return Visit(node, SPACING, SPACING);
+			return Visit(node, "", "");
 		}
 
 		protected override IEnumerable<string> VisitAssignmentExpression(BoundAssignmentExpression expression, string prefix1, string prefix2) {
 			var line = new string[] {
 				$"{prefix1}Assignment Expression: {expression.Identifier}",
-				$"{prefix2 + NEXT_CHILD}Variable: {expression.Identifier}"
+				$"{prefix2}{NEXT_CHILD}Variable: {expression.Identifier}"
 			};
 
 			return line.Concat(Visit(expression.Expression, prefix2 + LAST_CHILD, prefix2 + SPACING));
@@ -28,9 +28,12 @@ namespace InterpreterLib.Diagnostics {
 
 		protected override IEnumerable<string> VisitBinaryExpression(BoundBinaryExpression expression, string prefix1, string prefix2) {
 			var op = expression.Op;
-			var baseLine = new string[] { $"{prefix1}BinaryExpression {op.TokenText} : ({op.LeftType}, {op.RightType}) => {op.OutputType}" };
+			var startText = new string[] { $"{prefix1}BinaryExpression" };
+			var operatorText = new string[] { $"{prefix2}{NEXT_CHILD}{op.TokenText} : ({op.LeftType}, {op.RightType}) => {op.OutputType}" };
 
-			return baseLine.Concat(Visit(expression.LeftExpression, prefix2 + NEXT_CHILD, prefix2 + NO_CHILD))
+			return startText
+				.Concat(Visit(expression.LeftExpression, prefix2 + NEXT_CHILD, prefix2 + NO_CHILD))
+				.Concat(operatorText)
 				.Concat(Visit(expression.RightExpression, prefix2 + LAST_CHILD, prefix2 + SPACING));
 		}
 
@@ -48,7 +51,7 @@ namespace InterpreterLib.Diagnostics {
 		}
 
 		protected override IEnumerable<string> VisitError(BoundError error, string prefix1, string prefix2) {
-			IEnumerable<string> line = new string[] { $"{prefix1}{error.Error}"};
+			IEnumerable<string> line = new string[] { $"{prefix1}{error.Error}" };
 
 			return line;
 		}
@@ -62,9 +65,9 @@ namespace InterpreterLib.Diagnostics {
 		protected override IEnumerable<string> VisitForStatement(BoundForStatement statement, string prefix1, string prefix2) {
 			IEnumerable<string> lines = new string[] { $"{prefix1}For Statement" };
 
-			lines = lines.Concat(Visit(statement.Assignment, prefix2 + NEXT_CHILD + "assignment=", prefix2 + NO_CHILD));
-			lines = lines.Concat(Visit(statement.Condition, prefix2 + NEXT_CHILD + "condition=", prefix2 + NO_CHILD));
-			lines = lines.Concat(Visit(statement.Step, prefix2 + NEXT_CHILD + "step=", prefix2 + NO_CHILD));
+			lines = lines.Concat(Visit(statement.Assignment, prefix2 + NEXT_CHILD + "a: ", prefix2 + NO_CHILD));
+			lines = lines.Concat(Visit(statement.Condition, prefix2 + NEXT_CHILD + "c: ", prefix2 + NO_CHILD));
+			lines = lines.Concat(Visit(statement.Step, prefix2 + NEXT_CHILD + "s:", prefix2 + NO_CHILD));
 			return lines.Concat(Visit(statement.Body, prefix2 + LAST_CHILD, prefix2 + SPACING));
 		}
 
@@ -84,12 +87,18 @@ namespace InterpreterLib.Diagnostics {
 		}
 
 		protected override IEnumerable<string> VisitLiteral(BoundLiteral literal, string prefix1, string prefix2) {
-			return new string[] { $"{prefix1}Literal {literal.Value} : {literal.ValueType}" };
+			return new string[] {
+				$"{prefix1}Literal",
+				$"{prefix2}{LAST_CHILD}{literal.Value} : {literal.ValueType}"
+			};
 		}
 
 		protected override IEnumerable<string> VisitUnaryExpression(BoundUnaryExpression expression, string prefix1, string prefix2) {
 			var op = expression.Op;
-			var baseLine = new string[] { $"{prefix1}Unary expression {op.TokenText} : {op.OperandType} => {op.OutputType}" };
+			var baseLine = new string[] {
+				$"{prefix1}Unary expression",
+				$"{prefix2}{NEXT_CHILD}{op.TokenText} : {op.OperandType} => {op.OutputType}"
+			};
 
 			return baseLine.Concat(Visit(expression.Operand, prefix2 + LAST_CHILD, prefix2 + SPACING));
 		}
@@ -99,9 +108,12 @@ namespace InterpreterLib.Diagnostics {
 		}
 
 		protected override IEnumerable<string> VisitVariableDeclaration(BoundVariableDeclarationStatement statement, string prefix1, string prefix2) {
-			IEnumerable<string> baseLine = new string[] { $"{prefix1}Variable Declaration: {statement.Variable}" };
+			IEnumerable<string> baseLine = new string[] {
+				$"{prefix1}Variable Declaration",
+				$"{prefix2}{NEXT_CHILD}Variable Name: {statement.Variable}"
+			};
 
-			if(statement.Initialiser != null)
+			if (statement.Initialiser != null)
 				baseLine = baseLine.Concat(Visit(statement.Initialiser, prefix2 + LAST_CHILD, prefix2 + SPACING));
 
 			return baseLine;
@@ -116,7 +128,10 @@ namespace InterpreterLib.Diagnostics {
 		}
 
 		protected override IEnumerable<string> VisitConditionalBranchStatement(BoundConditionalBranchStatement statement, string prefix1, string prefix2) {
-			IEnumerable<string> lines = new string[] { $"{prefix1}Conditional branch statement: conditional check = {statement.Check}" };
+			IEnumerable<string> lines = new string[] {
+				$"{prefix1}Conditional branch statement",
+				$"{prefix2}{NEXT_CHILD}conditional check = {statement.Check}"
+			};
 
 			lines = lines.Concat(Visit(statement.Label, prefix2 + NEXT_CHILD, prefix2 + NO_CHILD));
 
