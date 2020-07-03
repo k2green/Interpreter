@@ -116,19 +116,19 @@ namespace InterpreterLib.Binding.Tree {
 			List<BoundStatement> rewrittenStatements = new List<BoundStatement>();
 			bool isSame = true;
 
-			foreach (var stat in block.Statements) {
-				var rewritten = RewriteStatement(stat);
+			foreach (var statement in block.Statements) {
+				var newStatement = RewriteStatement(statement);
+				rewrittenStatements.Add(newStatement);
 
-				if (rewritten != stat)
+				if (newStatement != statement) {
 					isSame = false;
-
-				rewrittenStatements.Add(rewritten);
+				}
 			}
 
 			if (isSame)
 				return block;
-
-			return new BoundBlock(rewrittenStatements);
+			else
+				return new BoundBlock(rewrittenStatements);
 		}
 
 		protected virtual BoundNode RewriteError(BoundError error) {

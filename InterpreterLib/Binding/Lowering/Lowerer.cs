@@ -31,7 +31,7 @@ namespace InterpreterLib.Binding.Lowering {
 
 			stack.Push(statement);
 
-			while(stack.Count > 0) {
+			while (stack.Count > 0) {
 				var current = stack.Pop();
 
 				if (current is BoundBlock)
@@ -116,21 +116,19 @@ namespace InterpreterLib.Binding.Lowering {
 			 *  }
 			 */
 
-			List<BoundStatement> whileStatements = new List<BoundStatement>();
+			var whileBlock = new BoundBlock(new BoundStatement[] {
+				statement.Body,
+				new BoundExpressionStatement(statement.Step)
+			});
 
-			if (statement.Body is BoundBlock)
-				whileStatements.AddRange(((BoundBlock)statement.Body).Statements);
-			else
-				whileStatements.Add(statement.Body );
-
-			whileStatements.Add(new BoundExpressionStatement(statement.Step));
+			var whileStatement = new BoundWhileStatement(statement.Condition, whileBlock);
 
 			var result = new BoundBlock(new BoundStatement[] {
 				statement.Assignment,
-				new BoundWhileStatement(statement.Condition, new BoundBlock(whileStatements))
+				whileStatement
 			});
 
 			return RewriteStatement(result);
-		}
 	}
+}
 }

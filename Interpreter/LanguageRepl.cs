@@ -16,21 +16,23 @@ namespace Interpreter {
 			else
 				environment = environment.ContinueWith(parser);
 
-			if (environment.Diagnostics.Any()) {
-				Console.ForegroundColor = ConsoleColor.Red;
-				foreach (var diagnostic in environment.Diagnostics)
-					Console.WriteLine(diagnostic);
+			if(environment != null) {
+				if (environment.Diagnostics.Any()) {
+					Console.ForegroundColor = ConsoleColor.Red;
+					foreach (var diagnostic in environment.Diagnostics)
+						Console.WriteLine(diagnostic);
 
-				Console.ForegroundColor = ConsoleColor.White;
-			} else {
-				Evaluate(environment, variables);
+					Console.ForegroundColor = ConsoleColor.White;
+				} else {
+					if (!environment.Diagnostics.Any()) {
+						if (showTree)
+							SyntaxTreeWriter.Write(parser, Console.Out);
 
-				if (!environment.Diagnostics.Any()) {
-					if (showTree)
-						SyntaxTreeWriter.Write(parser, Console.Out);
+						if (showProgram)
+							environment.PrintText();
+					}
 
-					if (showProgram)
-						environment.PrintText();
+					Evaluate(environment, variables);
 				}
 			}
 		}

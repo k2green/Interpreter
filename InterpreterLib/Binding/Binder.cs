@@ -31,12 +31,12 @@ namespace InterpreterLib.Binding {
 			}
 
 			if (res.Diagnostics.Any()) {
-				globScope = new BoundGlobalScope(prev, binder.scope.GetVariables(), new BoundStatement[] { statement });
+				globScope = new BoundGlobalScope(prev, binder.scope.GetVariables(), statement, new BoundStatement[] { statement });
 				return new DiagnosticResult<BoundGlobalScope>(res.Diagnostics, globScope);
 			}
 
 			var lowered = Lowerer.Lower(statement);
-			globScope = new BoundGlobalScope(prev, binder.scope.GetVariables(), lowered.Statements.ToArray());
+			globScope = new BoundGlobalScope(prev, binder.scope.GetVariables(), statement, lowered.Statements.ToArray());
 			return new DiagnosticResult<BoundGlobalScope>(res.Diagnostics, globScope);
 		}
 
@@ -134,14 +134,14 @@ namespace InterpreterLib.Binding {
 			if (!(assignVisit is BoundStatement assignment))
 				return assignVisit;
 
-			if (!(bodyVisit is BoundExpression condition))
-				return bodyVisit;
-
-			if (!(conditionVisit is BoundExpression step))
+			if (!(conditionVisit is BoundExpression condition))
 				return conditionVisit;
 
-			if (!(stepVisit is BoundStatement body))
+			if (!(stepVisit is BoundExpression step))
 				return stepVisit;
+
+			if (!(bodyVisit is BoundStatement body))
+				return bodyVisit;
 
 			if (condition.ValueType != TypeSymbol.Boolean)
 				return Error(Diagnostic.ReportInvalidType(syntax.Condition.Span.Line, syntax.Condition.Span.Column, syntax.Condition.ToString(), TypeSymbol.Boolean));
