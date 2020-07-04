@@ -21,6 +21,7 @@ namespace InterpreterLib.Diagnostics {
 		public const ConsoleColor VARAIBLE_COLOR = ConsoleColor.Cyan;
 		public const ConsoleColor LABEL_COLOR = ConsoleColor.Gray;
 		public const ConsoleColor BRANCH_COLOR = ConsoleColor.DarkMagenta;
+		public const ConsoleColor CONVERSION_COLOR = ConsoleColor.DarkCyan;
 
 		public void GetText(BoundStatement[] statements) {
 			Console.ForegroundColor = DEFAULT_COLOR;
@@ -79,8 +80,19 @@ namespace InterpreterLib.Diagnostics {
 					VisitBranchStatement((BoundBranchStatement)node, prefix1, prefix2); break;
 				case NodeType.Label:
 					VisitLabelStatement((BoundLabel)node, prefix1, prefix2); break;
+				case NodeType.InternalTypeConversion:
+					VisitLabelInternalTypeConversion((BoundInternalTypeConversion)node, prefix1, prefix2); break;
 				default: throw new Exception("Unimplemented node evaluator");
 			}
+		}
+
+		private void VisitLabelInternalTypeConversion(BoundInternalTypeConversion node, string prefix1, string prefix2) {
+			Console.Write(prefix1);
+
+			Console.ForegroundColor = CONVERSION_COLOR;
+			Console.WriteLine($"Type Converstion: {node.ConversionSymbol}");
+
+			Visit(node.Expression, prefix2 + LAST_CHILD, prefix2 + NO_CHILD);
 		}
 
 		private void VisitAssignmentExpression(BoundAssignmentExpression expression, string prefix1, string prefix2) {

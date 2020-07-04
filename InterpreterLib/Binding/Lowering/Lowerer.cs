@@ -1,4 +1,5 @@
 ﻿using InterpreterLib.Binding.Tree;
+using InterpreterLib.Binding.Tree.Expressions;
 using InterpreterLib.Binding.Tree.Statements;
 using InterpreterLib.Binding.Types;
 using System;
@@ -129,6 +130,31 @@ namespace InterpreterLib.Binding.Lowering {
 			});
 
 			return RewriteStatement(result);
+		}
+
+		protected override BoundExpression RewriteBinaryExpression(BoundBinaryExpression expression) {
+			var op = expression.Op;
+
+			BoundExpression newLeft = RewriteExpression(expression.LeftExpression);
+			if (newLeft.ValueType != op.OutputType) {
+				var leftConversion = TypeConversionSymbol.Find(newLeft.ValueType, op.OutputType);
+
+				if (leftConversion != null)
+					newLeft = new BoundInternalTypeConversion(leftConversion, newLeft);
+			}
+
+			BoundExpression newRight = RewriteExpression(expression.RightExpression);
+			if (newRight.ValueType != op.OutputType) {
+				var rightConversion = TypeConversionSymbol.Find(newRight.ValueType, op.OutputType);
+
+				if (rightConversion != null)
+					newRight = new BoundInternalTypeConversion(rightConversion, newRight);
+			}
+
+			if (newLeft == expression.LeftExpression && newRight == expression.RightExpression)
+				return expression;
+
+			return new BoundBinaryExpression(newLeft, op, newRight);
+		}
 	}
-}
 }

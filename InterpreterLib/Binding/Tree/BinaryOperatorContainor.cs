@@ -11,7 +11,7 @@ namespace InterpreterLib.Binding.Tree {
 		public BinaryOperatorContainor() {
 			operators = new HashSet<BinaryOperator>();
 
-			operators.Add(new BinaryOperator("+", BinaryOperatorType.Concatonate, TypeSymbol.String, TypeSymbol.String));
+			AddBinaryOperator("+", BinaryOperatorType.Concatonate, ConcatonationDefinitions);
 
 			AddBinaryOperator("+", BinaryOperatorType.Addition, NumericDefinitions);
 			AddBinaryOperator("-", BinaryOperatorType.Subtraction, NumericDefinitions);
@@ -54,6 +54,18 @@ namespace InterpreterLib.Binding.Tree {
 			Tuple.Create(TypeSymbol.Byte, TypeSymbol.Integer, TypeSymbol.Integer),
 			Tuple.Create(TypeSymbol.Byte, TypeSymbol.Double, TypeSymbol.Double),
 			Tuple.Create(TypeSymbol.Byte, TypeSymbol.Byte, TypeSymbol.Byte)
+		};
+
+		private static Tuple<TypeSymbol, TypeSymbol, TypeSymbol>[] ConcatonationDefinitions = {
+			Tuple.Create(TypeSymbol.String, TypeSymbol.String, TypeSymbol.String),
+			Tuple.Create(TypeSymbol.Integer, TypeSymbol.String, TypeSymbol.String),
+			Tuple.Create(TypeSymbol.Double, TypeSymbol.String, TypeSymbol.String),
+			Tuple.Create(TypeSymbol.Byte, TypeSymbol.String, TypeSymbol.String),
+			Tuple.Create(TypeSymbol.Boolean, TypeSymbol.String, TypeSymbol.String),
+			Tuple.Create(TypeSymbol.String, TypeSymbol.Integer, TypeSymbol.String),
+			Tuple.Create(TypeSymbol.String, TypeSymbol.Double, TypeSymbol.String),
+			Tuple.Create(TypeSymbol.String, TypeSymbol.Byte, TypeSymbol.String),
+			Tuple.Create(TypeSymbol.String, TypeSymbol.Boolean, TypeSymbol.String)
 		};
 
 		private static Tuple<TypeSymbol, TypeSymbol, TypeSymbol>[] ComparisonDefinitions = {

@@ -13,6 +13,7 @@
 		ConditionalBranch,
 		Branch,
 		TypeDefinition,
-		FunctionCall
+		FunctionCall,
+		InternalTypeConversion
 	}
 }

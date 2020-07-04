@@ -7,6 +7,7 @@ namespace InterpreterLib.Binding.Types {
 		Variable, Type,
 		Function,
 		Parameter,
-		Label
+		Label,
+		TypeConversion
 	}
 }

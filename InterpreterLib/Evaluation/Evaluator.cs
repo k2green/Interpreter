@@ -93,8 +93,24 @@ namespace InterpreterLib {
 				case NodeType.AssignmentExpression:
 					return EvaluateAssignmentExpression((BoundAssignmentExpression)expression);
 
+				case NodeType.InternalTypeConversion:
+					return EvaluateInternalTypeConversion((BoundInternalTypeConversion) expression);
 				default: throw new NotImplementedException();
 			}
+		}
+
+		private object EvaluateInternalTypeConversion(BoundInternalTypeConversion expression) {
+			if(expression.ConversionSymbol.ToType == TypeSymbol.String) {
+				return EvaluateExpression(expression.Expression).ToString();
+			}
+
+			if (expression.ConversionSymbol.ToType == TypeSymbol.Double)
+				return Convert.ToDouble(EvaluateExpression(expression.Expression));
+
+			if (expression.ConversionSymbol.ToType == TypeSymbol.Integer)
+				return Convert.ToInt32(EvaluateExpression(expression.Expression));
+
+			throw new Exception($"Unhandled type conversion {expression.ConversionSymbol}");
 		}
 
 		private object EvaluateVariableDeclaration(BoundVariableDeclarationStatement expression) {
@@ -121,8 +137,107 @@ namespace InterpreterLib {
 		private object EvaluateBinaryExpression(BoundBinaryExpression expression) {
 			object left = EvaluateExpression(expression.LeftExpression);
 			object right = EvaluateExpression(expression.RightExpression);
+			var op = expression.Op;
 
-			return GetOperatorEvaluator(expression.Op)(left, right);
+			switch (op.OperatorType) {
+				case BinaryOperatorType.Addition:
+					return EvaluateAddition(left, right, op);
+				case BinaryOperatorType.Subtraction:
+					return EvaluateSubtraction(left, right, op);
+				case BinaryOperatorType.Multiplication:
+					return EvaluateMultiplication(left, right, op);
+				case BinaryOperatorType.Division:
+					return EvaluateDivision(left, right, op);
+				case BinaryOperatorType.Power:
+					return EvaluatePower(left, right, op);
+				case BinaryOperatorType.Modulus:
+					return (int)left % (int)right;
+				case BinaryOperatorType.Equality:
+					return EvaluateEqualityOperation(left, right, op);
+				case BinaryOperatorType.LogicalAnd:
+					return (bool)left && (bool)right;
+				case BinaryOperatorType.LogicalOr:
+					return (bool)left || (bool)right;
+				case BinaryOperatorType.LogicalXOr:
+					return (bool)left ^ (bool)right;
+				case BinaryOperatorType.GreaterThan:
+					return (int)left >= (int)right;
+				case BinaryOperatorType.LesserThan:
+					return (int)left <= (int)right;
+				case BinaryOperatorType.StrictGreaterThan:
+					return (int)left > (int)right;
+				case BinaryOperatorType.StrinLesserThan:
+					return (int)left < (int)right;
+				case BinaryOperatorType.Concatonate:
+					return (string)left + (string)right;
+				default:
+					throw new Exception("Invalid operator");
+			}
+		}
+
+		private object EvaluateAddition(object left, object right, BinaryOperator op) {
+			if (op.OutputType == TypeSymbol.Double)
+				return (double)left + (double)right;
+
+			if (op.OutputType == TypeSymbol.Integer)
+				return (int)left + (int)right;
+
+			if (op.OutputType == TypeSymbol.Byte)
+				return (byte)left + (byte)right;
+
+			throw new Exception("Unhandled bonary operation case");
+		}
+
+		private object EvaluateSubtraction(object left, object right, BinaryOperator op) {
+			if (op.OutputType == TypeSymbol.Double)
+				return (double)left - (double)right;
+
+			if (op.OutputType == TypeSymbol.Integer)
+				return (int)left - (int)right;
+
+			if (op.OutputType == TypeSymbol.Byte)
+				return (byte)left - (byte)right;
+
+			throw new Exception("Unhandled bonary operation case");
+		}
+
+		private object EvaluateMultiplication(object left, object right, BinaryOperator op) {
+			if (op.OutputType == TypeSymbol.Double)
+				return (double)left * (double)right;
+
+			if (op.OutputType == TypeSymbol.Integer)
+				return (int)left * (int)right;
+
+			if (op.OutputType == TypeSymbol.Byte)
+				return (byte)left * (byte)right;
+
+			throw new Exception("Unhandled bonary operation case");
+		}
+
+		private object EvaluateDivision(object left, object right, BinaryOperator op) {
+			if (op.OutputType == TypeSymbol.Double)
+				return (double)left / (double)right;
+
+			if (op.OutputType == TypeSymbol.Integer)
+				return (int)left / (int)right;
+
+			if (op.OutputType == TypeSymbol.Byte)
+				return (byte)left / (byte)right;
+
+			throw new Exception("Unhandled bonary operation case");
+		}
+
+		private object EvaluatePower(object left, object right, BinaryOperator op) {
+			if (op.OutputType == TypeSymbol.Double)
+				return Math.Pow((double)left, (double)right);
+
+			if (op.OutputType == TypeSymbol.Integer)
+				return (int)Math.Pow((int)left, (int)right);
+
+			if (op.OutputType == TypeSymbol.Byte)
+				return (byte)Math.Pow((byte)left, (byte)right);
+
+			throw new Exception("Unhandled bonary operation case");
 		}
 
 		private object EvaluateUnaryExpression(BoundUnaryExpression expression) {
@@ -147,43 +262,6 @@ namespace InterpreterLib {
 				return ((bool)left) == ((bool)right);
 
 			return false;
-		}
-
-		private Func<object, object, object> GetOperatorEvaluator(BinaryOperator op) {
-			switch (op.OperatorType) {
-				case BinaryOperatorType.Addition:
-					return (left, right) => (int)left + (int)right;
-				case BinaryOperatorType.Subtraction:
-					return (left, right) => (int)left - (int)right;
-				case BinaryOperatorType.Multiplication:
-					return (left, right) => (int)left * (int)right;
-				case BinaryOperatorType.Division:
-					return (left, right) => (int)left / (int)right;
-				case BinaryOperatorType.Power:
-					return (left, right) => (int)Math.Pow((int)left, (int)right);
-				case BinaryOperatorType.Modulus:
-					return (left, right) => (int)left % (int)right;
-				case BinaryOperatorType.Equality:
-					return (left, right) => EvaluateEqualityOperation(left, right, op);
-				case BinaryOperatorType.LogicalAnd:
-					return (left, right) => (bool)left && (bool)right;
-				case BinaryOperatorType.LogicalOr:
-					return (left, right) => (bool)left || (bool)right;
-				case BinaryOperatorType.LogicalXOr:
-					return (left, right) => (bool)left ^ (bool)right;
-				case BinaryOperatorType.GreaterThan:
-					return (left, right) => (int)left >= (int)right;
-				case BinaryOperatorType.LesserThan:
-					return (left, right) => (int)left <= (int)right;
-				case BinaryOperatorType.StrictGreaterThan:
-					return (left, right) => (int)left > (int)right;
-				case BinaryOperatorType.StrinLesserThan:
-					return (left, right) => (int)left < (int)right;
-				case BinaryOperatorType.Concatonate:
-					return (left, right) => (string)left + (string)right;
-				default:
-					throw new Exception("Invalid operator");
-			}
 		}
 
 		private object EvaluateLiteral(BoundLiteral literal) {
