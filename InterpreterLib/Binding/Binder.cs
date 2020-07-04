@@ -209,8 +209,12 @@ namespace InterpreterLib.Binding {
 			if (!scope.TryLookup(identifierText, out var variable))
 				return Error(Diagnostic.ReportUndefinedVariable(syntax.IdentifierToken.Span.Line, syntax.IdentifierToken.Span.Column, identifierText));
 
-			if (variable.ValueType != expression.ValueType)
-				return Error(Diagnostic.ReportVariableTypeMismatch(syntax.IdentifierToken.Span.Line, syntax.IdentifierToken.Span.Column, identifierText, variable.ValueType, expression.ValueType));
+			if (variable.ValueType != expression.ValueType) {
+				var converter = TypeConversionSymbol.Find(expression.ValueType, variable.ValueType);
+
+				if (converter == null)
+					return Error(Diagnostic.ReportVariableTypeMismatch(syntax.IdentifierToken.Span.Line, syntax.IdentifierToken.Span.Column, identifierText, variable.ValueType, expression.ValueType));
+			}
 
 
 			return new BoundAssignmentExpression(variable, expression);
@@ -252,26 +256,23 @@ namespace InterpreterLib.Binding {
 					return initialiserBind;
 
 				initialiser = init;
-				type = initialiser.ValueType;
 			}
 
 			if (syntax.Definition != null) {
-				switch (syntax.Definition.NameToken.Token.Text) {
-					case "int":
-						type = TypeSymbol.Integer;
-						break;
-					case "bool":
-						type = TypeSymbol.Boolean;
-						break;
+				type = TypeSymbol.FromString(syntax.Definition.NameToken.Token.Text);
 
-					default:
-						return Error(Diagnostic.ReportUnknownTypeKeyword(syntax.KeywordToken.Span.Line, syntax.KeywordToken.Span.Column, syntax.KeywordToken.ToString()));
-				}
+				if (type == null)
+					return Error(Diagnostic.ReportUnknownTypeKeyword(syntax.KeywordToken.Span.Line, syntax.KeywordToken.Span.Column, syntax.KeywordToken.ToString()));
 			}
 
-			if (type != null && initialiser != null && initialiser.ValueType != type)
-				return Error(Diagnostic.ReportCannotCast(syntax.Definition.Span.Line, syntax.Definition.Span.Column, initialiser.ValueType, type));
+			if (type != null && initialiser != null && initialiser.ValueType != type) {
+				var conversion = TypeConversionSymbol.Find(initialiser.ValueType, type);
 
+				if (conversion == null)
+					return Error(Diagnostic.ReportCannotCast(syntax.Definition.Span.Line, syntax.Definition.Span.Column, initialiser.ValueType, type));
+			}
+
+			type = type ?? initialiser.ValueType;
 			var variable = new VariableSymbol(identifierText, isreadOnly, type);
 
 			if (!scope.TryDefine(variable))
@@ -321,6 +322,9 @@ namespace InterpreterLib.Binding {
 
 			if (int.TryParse(literalText, out int intVal))
 				return new BoundLiteral(intVal, TypeSymbol.Integer);
+
+			if (double.TryParse(literalText, out double doubleVal))
+				return new BoundLiteral(doubleVal, TypeSymbol.Double);
 
 			if (bool.TryParse(literalText, out bool boolVal))
 				return new BoundLiteral(boolVal, TypeSymbol.Boolean);

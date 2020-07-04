@@ -57,6 +57,12 @@ public interface IGLangVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitDefinedIdentifier([NotNull] GLangParser.DefinedIdentifierContext context);
 	/// <summary>
+	/// Visit a parse tree produced by <see cref="GLangParser.seperatedDefinedIdentifier"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitSeperatedDefinedIdentifier([NotNull] GLangParser.SeperatedDefinedIdentifierContext context);
+	/// <summary>
 	/// Visit a parse tree produced by <see cref="GLangParser.parametersDefinition"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
@@ -68,6 +74,12 @@ public interface IGLangVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
 	Result VisitFunctionDefinition([NotNull] GLangParser.FunctionDefinitionContext context);
+	/// <summary>
+	/// Visit a parse tree produced by <see cref="GLangParser.seperatedExpression"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitSeperatedExpression([NotNull] GLangParser.SeperatedExpressionContext context);
 	/// <summary>
 	/// Visit a parse tree produced by <see cref="GLangParser.functionCall"/>.
 	/// </summary>

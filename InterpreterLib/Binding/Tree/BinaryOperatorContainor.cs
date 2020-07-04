@@ -69,7 +69,15 @@ namespace InterpreterLib.Binding.Tree {
 		};
 
 		private static Tuple<TypeSymbol, TypeSymbol, TypeSymbol>[] ComparisonDefinitions = {
-			Tuple.Create(TypeSymbol.Integer, TypeSymbol.Integer, TypeSymbol.Boolean)
+			Tuple.Create(TypeSymbol.Integer, TypeSymbol.Integer, TypeSymbol.Boolean),
+			Tuple.Create(TypeSymbol.Integer, TypeSymbol.Double, TypeSymbol.Boolean),
+			Tuple.Create(TypeSymbol.Integer, TypeSymbol.Byte, TypeSymbol.Boolean),
+			Tuple.Create(TypeSymbol.Double, TypeSymbol.Integer, TypeSymbol.Boolean),
+			Tuple.Create(TypeSymbol.Double, TypeSymbol.Double, TypeSymbol.Boolean),
+			Tuple.Create(TypeSymbol.Double, TypeSymbol.Byte, TypeSymbol.Boolean),
+			Tuple.Create(TypeSymbol.Byte, TypeSymbol.Integer, TypeSymbol.Boolean),
+			Tuple.Create(TypeSymbol.Byte, TypeSymbol.Double, TypeSymbol.Boolean),
+			Tuple.Create(TypeSymbol.Byte, TypeSymbol.Byte, TypeSymbol.Boolean)
 		};
 
 		private static Tuple<TypeSymbol, TypeSymbol, TypeSymbol>[] EqualityDifinitions = {

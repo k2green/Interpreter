@@ -141,15 +141,15 @@ namespace InterpreterLib {
 
 			switch (op.OperatorType) {
 				case BinaryOperatorType.Addition:
-					return EvaluateAddition(left, right, op);
+					return OperatorEvaluator.EvaluateAddition(left, right, op);
 				case BinaryOperatorType.Subtraction:
-					return EvaluateSubtraction(left, right, op);
+					return OperatorEvaluator.EvaluateSubtraction(left, right, op);
 				case BinaryOperatorType.Multiplication:
-					return EvaluateMultiplication(left, right, op);
+					return OperatorEvaluator.EvaluateMultiplication(left, right, op);
 				case BinaryOperatorType.Division:
-					return EvaluateDivision(left, right, op);
+					return OperatorEvaluator.EvaluateDivision(left, right, op);
 				case BinaryOperatorType.Power:
-					return EvaluatePower(left, right, op);
+					return OperatorEvaluator.EvaluatePower(left, right, op);
 				case BinaryOperatorType.Modulus:
 					return (int)left % (int)right;
 				case BinaryOperatorType.Equality:
@@ -161,83 +161,18 @@ namespace InterpreterLib {
 				case BinaryOperatorType.LogicalXOr:
 					return (bool)left ^ (bool)right;
 				case BinaryOperatorType.GreaterThan:
-					return (int)left >= (int)right;
+					return OperatorEvaluator.EvaluateGreaterThan(left, right, op);
 				case BinaryOperatorType.LesserThan:
-					return (int)left <= (int)right;
+					return OperatorEvaluator.EvaluateLesserThan(left, right, op);
 				case BinaryOperatorType.StrictGreaterThan:
-					return (int)left > (int)right;
+					return OperatorEvaluator.EvaluateStrictGreaterThan(left, right, op);
 				case BinaryOperatorType.StrinLesserThan:
-					return (int)left < (int)right;
+					return OperatorEvaluator.EvaluateStrictLesserThan(left, right, op);
 				case BinaryOperatorType.Concatonate:
 					return (string)left + (string)right;
 				default:
 					throw new Exception("Invalid operator");
 			}
-		}
-
-		private object EvaluateAddition(object left, object right, BinaryOperator op) {
-			if (op.OutputType == TypeSymbol.Double)
-				return (double)left + (double)right;
-
-			if (op.OutputType == TypeSymbol.Integer)
-				return (int)left + (int)right;
-
-			if (op.OutputType == TypeSymbol.Byte)
-				return (byte)left + (byte)right;
-
-			throw new Exception("Unhandled bonary operation case");
-		}
-
-		private object EvaluateSubtraction(object left, object right, BinaryOperator op) {
-			if (op.OutputType == TypeSymbol.Double)
-				return (double)left - (double)right;
-
-			if (op.OutputType == TypeSymbol.Integer)
-				return (int)left - (int)right;
-
-			if (op.OutputType == TypeSymbol.Byte)
-				return (byte)left - (byte)right;
-
-			throw new Exception("Unhandled bonary operation case");
-		}
-
-		private object EvaluateMultiplication(object left, object right, BinaryOperator op) {
-			if (op.OutputType == TypeSymbol.Double)
-				return (double)left * (double)right;
-
-			if (op.OutputType == TypeSymbol.Integer)
-				return (int)left * (int)right;
-
-			if (op.OutputType == TypeSymbol.Byte)
-				return (byte)left * (byte)right;
-
-			throw new Exception("Unhandled bonary operation case");
-		}
-
-		private object EvaluateDivision(object left, object right, BinaryOperator op) {
-			if (op.OutputType == TypeSymbol.Double)
-				return (double)left / (double)right;
-
-			if (op.OutputType == TypeSymbol.Integer)
-				return (int)left / (int)right;
-
-			if (op.OutputType == TypeSymbol.Byte)
-				return (byte)left / (byte)right;
-
-			throw new Exception("Unhandled bonary operation case");
-		}
-
-		private object EvaluatePower(object left, object right, BinaryOperator op) {
-			if (op.OutputType == TypeSymbol.Double)
-				return Math.Pow((double)left, (double)right);
-
-			if (op.OutputType == TypeSymbol.Integer)
-				return (int)Math.Pow((int)left, (int)right);
-
-			if (op.OutputType == TypeSymbol.Byte)
-				return (byte)Math.Pow((byte)left, (byte)right);
-
-			throw new Exception("Unhandled bonary operation case");
 		}
 
 		private object EvaluateUnaryExpression(BoundUnaryExpression expression) {
@@ -246,11 +181,20 @@ namespace InterpreterLib {
 			switch (expression.Op.OperatorType) {
 				case UnaryOperatorType.Identity:
 					return operandValue;
-				case UnaryOperatorType.Negation:
-					return -((int)operandValue);
 				case UnaryOperatorType.LogicalNot:
 					return !((bool)operandValue);
-				default: throw new Exception("Unimplemented unary operation");
+				case UnaryOperatorType.Negation:
+					if (expression.Op.OutputType == TypeSymbol.Integer)
+						return -((int)operandValue);
+
+					if (expression.Op.OutputType == TypeSymbol.Double)
+						return -((double)operandValue);
+
+					if (expression.Op.OutputType == TypeSymbol.Byte)
+						return -((byte)operandValue);
+					throw new Exception("Unimplemented unary operation");
+				default:
+					throw new Exception("Unimplemented unary operation");
 			}
 		}
 

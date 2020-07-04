@@ -10,21 +10,29 @@ namespace Interpreter {
 	public abstract class Repl {
 
 		protected RuntimeParser parser;
-		protected bool showTree;
-		protected bool showProgram;
 		protected bool done;
 		protected bool running;
+
+		protected bool showTree;
+		protected bool showProgram;
 		protected bool multiLine;
+		protected bool evaluate;
 
 		protected Dictionary<VariableSymbol, object> variables;
 		protected BindingEnvironment environment;
 
+		public Repl() : this(false, false, false, true) { }
+
+		public Repl(bool showTree, bool showProgram, bool multiLine, bool evaluate) {
+			this.showTree = showTree;
+			this.showProgram = showProgram;
+			this.multiLine = multiLine;
+			this.evaluate = evaluate;
+		}
+
 		public void Run() {
 			variables = new Dictionary<VariableSymbol, object>();
 			running = true;
-			multiLine = false;
-			showTree = false;
-			showProgram = false;
 
 			while (running) {
 				string input = EditSubmission();
@@ -189,6 +197,8 @@ namespace Interpreter {
 		}
 
 		protected bool EvaluateCommand(string command) {
+			string outputString;
+
 			switch (command.ToLower()) {
 				case "clear":
 					Console.Clear();
@@ -199,18 +209,23 @@ namespace Interpreter {
 					return true;
 				case "showtree":
 					showTree = !showTree;
-					Console.WriteLine($"Showing tree: {showTree}");
+					outputString = $"{(showTree ? "S" : "Not s")}howing syntax tree";
+					Console.WriteLine(outputString);
 					return true;
 				case "multiline":
 					multiLine = !multiLine;
-					Console.WriteLine($"Is in multi-line mode: {multiLine}");
-
-					if (multiLine)
-						Console.WriteLine("Press Ctrl+Enter to evaluate");
+					outputString = $"Mode: {(multiLine ? "Multiple lines\nPress Ctrl+Enter to evaluate" : "SingleLine")}";
+					Console.WriteLine(outputString);
 					return true;
 				case "showprogram":
 					showProgram = !showProgram;
-					Console.WriteLine($"Showing program: {showProgram}");
+					outputString = $"{(showProgram ? "S" : "Not s")}howing bound tree";
+					Console.WriteLine(outputString);
+					return true;
+				case "evaluate":
+					evaluate = !evaluate;
+					outputString = $"{(evaluate ? "E" : "Not e")}valuating bound tree";
+					Console.WriteLine(outputString);
 					return true;
 				case "exit":
 					running = false;

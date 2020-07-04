@@ -13,13 +13,21 @@ typeDefinition: TYPE_DELIMETER TYPE_NAME;
 	 * Statements
 	 */
 	
-statement : forStatement | whileStatement | ifStatement | block| variableDeclarationStatement | expressionStatement;
+statement : functionDefinition | functionCall | forStatement | whileStatement | ifStatement | block| variableDeclarationStatement | expressionStatement;
 
 definedIdentifier: IDENTIFIER typeDefinition;
-parametersDefinition: L_PARENTHESIS (definedIdentifier (COMMA definedIdentifier)*)? R_PARENTHESIS;
+seperatedDefinedIdentifier: definedIdentifier COMMA;
+
+parametersDefinition: L_PARENTHESIS seperatedDefinedIdentifier+ last=definedIdentifier R_PARENTHESIS
+					| L_PARENTHESIS last=definedIdentifier R_PARENTHESIS
+					| L_PARENTHESIS R_PARENTHESIS;
+
 functionDefinition: FUNCTION IDENTIFIER? parametersDefinition typeDefinition statement;
 
-functionCall: funcName=IDENTIFIER L_PARENTHESIS (binaryExpression (COMMA binaryExpression)*)? R_PARENTHESIS;
+seperatedExpression: binaryExpression COMMA;
+functionCall: funcName=IDENTIFIER L_PARENTHESIS seperatedExpression+ last=binaryExpression R_PARENTHESIS
+			| funcName=IDENTIFIER L_PARENTHESIS last=binaryExpression R_PARENTHESIS
+			| funcName=IDENTIFIER L_PARENTHESIS R_PARENTHESIS;
 
 block : L_BRACE statement* R_BRACE;
 
@@ -40,7 +48,7 @@ assignmentExpression : IDENTIFIER typeDefinition? ASSIGNMENT_OPERATOR binaryExpr
 	 * Expressions
 	 */
 
-literal : INTEGER | BOOLEAN | IDENTIFIER | STRING;
+literal : DOUBLE | INTEGER | BOOLEAN | IDENTIFIER | STRING;
 
 unaryExpression : L_PARENTHESIS binaryExpression R_PARENTHESIS
 				| op=(ADDITIVE_OP | BANG) unaryExpression
@@ -66,8 +74,9 @@ fragment CHARACTER : 'a'..'z'|'A'..'Z';
 fragment VAR: 'var';
 fragment VAL: 'val';
 
-fragment INT: 'int';
-fragment BOOL: 'bool';
+fragment INTEGER_TYPE: 'int';
+fragment DOUBLE_TYPE: 'double';
+fragment BOOLEAN_TYPE: 'bool';
 fragment STRING_TYPE: 'string';
 
 fragment EQUALITY_OPERATOR: '==';
@@ -85,9 +94,10 @@ WHITESPACE : [ \t\r\n]+ -> channel(HIDDEN);
 COMMA : ',';
 
 TYPE_DELIMETER : ':';
-TYPE_NAME : INT | BOOL | STRING_TYPE;
+TYPE_NAME : INTEGER_TYPE | DOUBLE_TYPE | BOOLEAN_TYPE | STRING_TYPE;
 
 BOOLEAN: TRUE | FALSE;
+DOUBLE: '.' DIGIT+ | DIGIT+ '.' DIGIT+;
 INTEGER: DIGIT+;
 
 DECL_VARIABLE : VAL | VAR;

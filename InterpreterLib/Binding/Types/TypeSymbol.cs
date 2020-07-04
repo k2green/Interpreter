@@ -12,8 +12,15 @@ namespace InterpreterLib.Binding.Types {
 
 		private static TypeSymbol[] types = new TypeSymbol[] {
 			Integer, Byte, Double, Boolean, String
-
 		};
+
+		public static TypeSymbol FromString(string input) {
+			foreach (var symbol in types)
+				if (symbol.Name.Equals(input))
+					return symbol;
+
+			return null;
+		}
 
 		public static bool GetType(string typeStr, out TypeSymbol symbol) {
 			foreach (var type in types) {

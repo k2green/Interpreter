@@ -72,6 +72,16 @@ public interface IGLangListener : IParseTreeListener {
 	/// <param name="context">The parse tree.</param>
 	void ExitDefinedIdentifier([NotNull] GLangParser.DefinedIdentifierContext context);
 	/// <summary>
+	/// Enter a parse tree produced by <see cref="GLangParser.seperatedDefinedIdentifier"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterSeperatedDefinedIdentifier([NotNull] GLangParser.SeperatedDefinedIdentifierContext context);
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="GLangParser.seperatedDefinedIdentifier"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitSeperatedDefinedIdentifier([NotNull] GLangParser.SeperatedDefinedIdentifierContext context);
+	/// <summary>
 	/// Enter a parse tree produced by <see cref="GLangParser.parametersDefinition"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
@@ -91,6 +101,16 @@ public interface IGLangListener : IParseTreeListener {
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	void ExitFunctionDefinition([NotNull] GLangParser.FunctionDefinitionContext context);
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="GLangParser.seperatedExpression"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterSeperatedExpression([NotNull] GLangParser.SeperatedExpressionContext context);
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="GLangParser.seperatedExpression"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitSeperatedExpression([NotNull] GLangParser.SeperatedExpressionContext context);
 	/// <summary>
 	/// Enter a parse tree produced by <see cref="GLangParser.functionCall"/>.
 	/// </summary>

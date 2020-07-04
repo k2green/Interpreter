@@ -84,6 +84,18 @@ public partial class GLangBaseListener : IGLangListener {
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitDefinedIdentifier([NotNull] GLangParser.DefinedIdentifierContext context) { }
 	/// <summary>
+	/// Enter a parse tree produced by <see cref="GLangParser.seperatedDefinedIdentifier"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterSeperatedDefinedIdentifier([NotNull] GLangParser.SeperatedDefinedIdentifierContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="GLangParser.seperatedDefinedIdentifier"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitSeperatedDefinedIdentifier([NotNull] GLangParser.SeperatedDefinedIdentifierContext context) { }
+	/// <summary>
 	/// Enter a parse tree produced by <see cref="GLangParser.parametersDefinition"/>.
 	/// <para>The default implementation does nothing.</para>
 	/// </summary>
@@ -107,6 +119,18 @@ public partial class GLangBaseListener : IGLangListener {
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitFunctionDefinition([NotNull] GLangParser.FunctionDefinitionContext context) { }
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="GLangParser.seperatedExpression"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterSeperatedExpression([NotNull] GLangParser.SeperatedExpressionContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="GLangParser.seperatedExpression"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitSeperatedExpression([NotNull] GLangParser.SeperatedExpressionContext context) { }
 	/// <summary>
 	/// Enter a parse tree produced by <see cref="GLangParser.functionCall"/>.
 	/// <para>The default implementation does nothing.</para>

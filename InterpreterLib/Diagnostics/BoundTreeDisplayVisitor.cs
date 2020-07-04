@@ -92,7 +92,7 @@ namespace InterpreterLib.Diagnostics {
 			Console.ForegroundColor = CONVERSION_COLOR;
 			Console.WriteLine($"Type Converstion: {node.ConversionSymbol}");
 
-			Visit(node.Expression, prefix2 + LAST_CHILD, prefix2 + NO_CHILD);
+			Visit(node.Expression, prefix2 + LAST_CHILD, prefix2 + SPACING);
 		}
 
 		private void VisitAssignmentExpression(BoundAssignmentExpression expression, string prefix1, string prefix2) {

@@ -42,15 +42,19 @@ namespace InterpreterLib.Syntax {
 		public override SyntaxNode VisitLiteral([NotNull] GLangParser.LiteralContext context) {
 			// Check for each token type in a literal
 			bool hasInt = context.INTEGER() != null;
+			bool hasDouble = context.DOUBLE() != null;
 			bool hasBool = context.BOOLEAN() != null;
 			bool hasIdentifier = context.IDENTIFIER() != null;
 			bool hasString = context.STRING() != null;
 
 			// Returns an error if there isn'n exactly one token
-			if (!(OnlyOne(hasInt, hasIdentifier, hasBool, hasString)))
+			if (!(OnlyOne(hasInt, hasIdentifier, hasBool, hasString, hasDouble)))
 				return Error(Diagnostic.ReportInvalidLiteral(context.Start.Line, context.Start.Column, context.GetText()));
 
 			// Return a literal of variable Syntax depending on which token exists
+			if (hasDouble)
+				return new LiteralSyntax(new TokenSyntax(context.DOUBLE().Symbol));
+
 			if (hasInt)
 				return new LiteralSyntax(new TokenSyntax(context.INTEGER().Symbol));
 
@@ -104,7 +108,7 @@ namespace InterpreterLib.Syntax {
 			if (hasOperator && (!hasLeft || !hasRight || hasAtom))
 				return Error(Diagnostic.ReportInvalidBinaryExpression(context.Start.Line, context.Start.Column, context.GetText()));
 
-			if(hasAtom && (hasOperator || hasLeft || hasRight))
+			if (hasAtom && (hasOperator || hasLeft || hasRight))
 				return Error(Diagnostic.ReportInvalidBinaryExpression(context.Start.Line, context.Start.Column, context.GetText()));
 
 			// Visit the atom if it exists
@@ -136,7 +140,6 @@ namespace InterpreterLib.Syntax {
 		}
 
 		public override SyntaxNode VisitAssignmentExpression([NotNull] GLangParser.AssignmentExpressionContext context) {
-			// 
 			var identifierCtx = context.IDENTIFIER();
 			var typeDefCtx = context.typeDefinition();
 			var operatorCtx = context.ASSIGNMENT_OPERATOR();
@@ -367,45 +370,45 @@ namespace InterpreterLib.Syntax {
 			var leftParenCtx = context.L_PARENTHESIS();
 			var rightParenCtx = context.R_PARENTHESIS();
 
-			var expressionCtx = context.binaryExpression();
-			var commasCtx = context.COMMA();
-
-			if (funcIdentifierCtx == null || leftParenCtx == null || rightParenCtx == null)
+			if (funcIdentifierCtx == null || leftParenCtx == null || rightParenCtx == null || !leftParenCtx.GetText().Equals("(") || !rightParenCtx.GetText().Equals(")"))
 				return Error(Diagnostic.ReportInvalidFunctionCall(context.Start.Line, context.Start.Column, context.GetText()));
 
-			if (expressionCtx != null && commasCtx != null && expressionCtx.Length > 0 && commasCtx.Length > 0) {
-				if (expressionCtx.Length < 2 || commasCtx.Length != expressionCtx.Length - 1)
-					return Error(Diagnostic.ReportInvalidParameters(context.Start.Line, context.Start.Column, $"{context.GetText()} {expressionCtx.Length} {commasCtx.Length}"));
-			}
+			var firstCtx = context.seperatedExpression();
+			var lastCtx = context.last;
 
-			if (expressionCtx != null && commasCtx == null && expressionCtx.Length > 0) {
-				if (expressionCtx.Length != 1)
-					return Error(Diagnostic.ReportInvalidParameters(expressionCtx[0].Start.Line, expressionCtx[0].Start.Column, $"{context.GetText()} {expressionCtx.Length} {commasCtx.Length}"));
-			}
+			if (firstCtx != null && firstCtx.Length > 0 && lastCtx == null)
+				return Error(Diagnostic.ReportInvalidCallParameters(context.Start.Line, context.Start.Column, context.GetText()));
 
-			var seperatedList = new List<SyntaxNode>();
-			if (expressionCtx != null && expressionCtx.Length > 0) {
-				for (int i = 0; i < expressionCtx.Length - 1; i++) {
-					var exprVisit = Visit(expressionCtx[i]);
-					var commaToken = Token(commasCtx[i].Symbol);
+			List<SyntaxNode> nodes = new List<SyntaxNode>();
 
-					if (!(exprVisit is ExpressionSyntax))
-						return Error(Diagnostic.ReportInvalidParameter(expressionCtx[i].Start.Line, expressionCtx[i].Start.Column, expressionCtx[i].GetText()));
+			if (firstCtx != null && firstCtx.Length > 0 && lastCtx != null) {
+				foreach (var ctx in firstCtx) {
+					var expressionCtx = ctx.binaryExpression();
+					var commaCtx = ctx.COMMA();
 
-					seperatedList.Add(exprVisit);
-					seperatedList.Add(commaToken);
+					if (commaCtx == null || !commaCtx.GetText().Equals(","))
+						return Error(Diagnostic.ReportMissingComma(expressionCtx.Start.Line, expressionCtx.Start.Column, expressionCtx.GetText()));
+
+					var visit = Visit(expressionCtx);
+
+					if (!(visit is ExpressionSyntax expressionSyntax))
+						return Error(Diagnostic.ReportInvalidCallParameter(expressionCtx.Start.Line, expressionCtx.Start.Column, expressionCtx.GetText()));
+
+					nodes.Add(expressionSyntax);
+					nodes.Add(Token(commaCtx.Symbol));
 				}
-
-				var lastCtx = expressionCtx[expressionCtx.Length - 1];
-				var lastExprVisit = Visit(lastCtx);
-
-				if (!(lastExprVisit is ExpressionSyntax))
-					return Error(Diagnostic.ReportInvalidParameter(lastCtx.Start.Line, lastCtx.Start.Column, lastCtx.GetText()));
-
-				seperatedList.Add(lastExprVisit);
 			}
 
-			return new FunctionCallSyntax(Token(funcIdentifierCtx), Token(leftParenCtx.Symbol), new SeperatedSyntaxList<ExpressionSyntax>(seperatedList), Token(rightParenCtx.Symbol));
+			if (lastCtx != null) {
+				var lastVisit = Visit(lastCtx);
+
+				if (!(lastVisit is ExpressionSyntax lastExpressionSyntax))
+					return Error(Diagnostic.ReportInvalidCallParameter(lastCtx.Start.Line, lastCtx.Start.Column, lastCtx.GetText()));
+
+				nodes.Add(lastExpressionSyntax);
+			}
+
+			return new FunctionCallSyntax(Token(funcIdentifierCtx), Token(leftParenCtx.Symbol), new SeperatedSyntaxList<ExpressionSyntax>(nodes), Token(rightParenCtx.Symbol));
 		}
 
 		public override SyntaxNode VisitErrorNode(IErrorNode node) {
@@ -413,11 +416,11 @@ namespace InterpreterLib.Syntax {
 		}
 
 		public override SyntaxNode VisitStatement([NotNull] GLangParser.StatementContext context) {
-			/*if (context.functionDefinition() != null)
+			if (context.functionDefinition() != null)
 				return Visit(context.functionDefinition());
 
 			if (context.functionCall() != null)
-				return Visit(context.functionCall());*/
+				return Visit(context.functionCall());
 
 			if (context.forStatement() != null)
 				return Visit(context.forStatement());
@@ -459,42 +462,45 @@ namespace InterpreterLib.Syntax {
 			var leftParenCtx = context.L_PARENTHESIS();
 			var rightParenCtx = context.R_PARENTHESIS();
 
-			var paramsCtx = context.definedIdentifier();
-			var commasCtx = context.COMMA();
+			var firstCtx = context.seperatedDefinedIdentifier();
+			var lastCtx = context.last;
 
 			if (leftParenCtx == null || rightParenCtx == null || !leftParenCtx.GetText().Equals("(") || !rightParenCtx.GetText().Equals(")"))
 				return Error(Diagnostic.ReportInvalidParameterDefinition(context.Start.Line, context.Start.Column, context.GetText()));
 
-			if (paramsCtx != null && paramsCtx.Length > 0 && (commasCtx == null || commasCtx.Length <= 0) && paramsCtx.Length != 1)
+			if (firstCtx != null && firstCtx.Length > 0 && lastCtx == null)
 				return Error(Diagnostic.ReportInvalidParameterDefinition(context.Start.Line, context.Start.Column, context.GetText()));
 
-			if (paramsCtx != null && commasCtx != null && paramsCtx.Length > 0 && commasCtx.Length > 0 && (paramsCtx.Length < 2 || commasCtx.Length != paramsCtx.Length - 1))
-				return Error(Diagnostic.ReportInvalidParameterDefinition(context.Start.Line, context.Start.Column, context.GetText()));
+			List<SyntaxNode> parameters = new List<SyntaxNode>();
 
-			var paramsList = new List<SyntaxNode>();
+			if (firstCtx != null && firstCtx.Length > 0) {
+				foreach (var ctx in firstCtx) {
+					if (ctx.definedIdentifier() == null || ctx.COMMA() == null || !ctx.COMMA().GetText().Equals(","))
+						return Error(Diagnostic.ReportInvalidParameterDefinition(context.Start.Line, context.Start.Column, context.GetText()));
 
-			if (paramsCtx != null && paramsCtx.Length > 0) {
-				for (int i = 0; i < paramsCtx.Length - 1; i++) {
-					var current = paramsCtx[i];
-					var currentVisit = Visit(current);
+					var visit = Visit(ctx.definedIdentifier());
 
-					if (!(currentVisit is TypedIdentifierSyntax))
-						return Error(Diagnostic.ReportInvalidParameterDefinition(current.Start.Line, current.Start.Column, current.GetText()));
+					if (!(visit is TypedIdentifierSyntax identSyntax))
+						return Error(Diagnostic.ReportInvalidParameterDefinition(context.Start.Line, context.Start.Column, context.GetText()));
 
-					paramsList.Add((TypedIdentifierSyntax)currentVisit);
-					paramsList.Add(Token(commasCtx[i].Symbol));
+					parameters.Add(identSyntax);
+					parameters.Add(Token(ctx.COMMA().Symbol));
 				}
-
-				var lastParam = paramsCtx[paramsCtx.Length - 1];
-				var lastVisit = Visit(lastParam);
-
-				if (!(lastVisit is TypedIdentifierSyntax))
-					return Error(Diagnostic.ReportInvalidParameterDefinition(lastParam.Start.Line, lastParam.Start.Column, lastParam.GetText()));
-
-				paramsList.Add((TypedIdentifierSyntax)lastVisit);
 			}
 
-			return new ParameterDefinitionSyntax(Token(leftParenCtx.Symbol), new SeperatedSyntaxList<TypedIdentifierSyntax>(paramsList), Token(rightParenCtx.Symbol));
+			if (lastCtx != null) { 
+
+				var lastVisit = Visit(lastCtx);
+
+				if (!(lastVisit is TypedIdentifierSyntax lastIdentSyntax))
+					return Error(Diagnostic.ReportInvalidParameterDefinition(context.Start.Line, context.Start.Column, context.GetText()));
+
+				parameters.Add(lastIdentSyntax);
+
+				return new ParameterDefinitionSyntax(Token(leftParenCtx.Symbol), new SeperatedSyntaxList<TypedIdentifierSyntax>(parameters), Token(rightParenCtx.Symbol));
+			}
+
+			return new ParameterDefinitionSyntax(Token(leftParenCtx.Symbol), new SeperatedSyntaxList<TypedIdentifierSyntax>(parameters), Token(rightParenCtx.Symbol));
 		}
 
 		public override SyntaxNode VisitFunctionDefinition([NotNull] GLangParser.FunctionDefinitionContext context) {

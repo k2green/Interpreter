@@ -17,80 +17,80 @@ namespace InterpreterLib {
 
 		public override string ToString() => Message;
 
-		internal static Diagnostic ReportInvalidLiteral(int line, int column, string v) {
-			return new Diagnostic(line, column, $"Syntax error: Invalid literal syntax {v}");
+		internal static Diagnostic ReportInvalidLiteral(int line, int column, string text) {
+			return new Diagnostic(line, column, $"Syntax error: Invalid literal syntax {text}");
 		}
 
-		internal static Diagnostic ReportInvalidUnaryExpression(int line, int column, string v) {
-			return new Diagnostic(line, column, $"Syntax error: Invalid binary expression syntax {v}");
+		internal static Diagnostic ReportInvalidUnaryExpression(int line, int column, string text) {
+			return new Diagnostic(line, column, $"Syntax error: Invalid binary expression syntax {text}");
 		}
 
-		internal static Diagnostic ReportMissingTypeDelimeter(int line, int column, string v) {
-			return new Diagnostic(line, column, $"Syntax error: Missing type delimeter in {v}");
+		internal static Diagnostic ReportMissingTypeDelimeter(int line, int column, string text) {
+			return new Diagnostic(line, column, $"Syntax error: Missing type delimeter in {text}");
 		}
 
 		internal static Diagnostic ReportErrorEncounteredWhileEvaluating() {
 			throw new NotImplementedException();
 		}
 
-		internal static Diagnostic ReportMissingTypeName(int line, int column, string v) {
-			return new Diagnostic(line, column, $"Syntax error: Missing type name in {v}");
+		internal static Diagnostic ReportMissingTypeName(int line, int column, string text) {
+			return new Diagnostic(line, column, $"Syntax error: Missing type name in {text}");
 		}
 
-		internal static Diagnostic ReportMissingExpression(int line, int column, string v) {
-			return new Diagnostic(line, column, $"Syntax error: Missing expression in {v}");
+		internal static Diagnostic ReportMissingExpression(int line, int column, string text) {
+			return new Diagnostic(line, column, $"Syntax error: Missing expression in {text}");
 		}
 
-		internal static Diagnostic ReportMissingOperator(int line, int column, string v) {
-			return new Diagnostic(line, column, $"Syntax error: Missing operator in {v}");
+		internal static Diagnostic ReportMissingOperator(int line, int column, string text) {
+			return new Diagnostic(line, column, $"Syntax error: Missing operator in {text}");
 		}
 
-		internal static Diagnostic ReportMissingIdentifier(int line, int column, string v) {
-			return new Diagnostic(line, column, $"Syntax error: Missing identifier in {v}");
+		internal static Diagnostic ReportMissingIdentifier(int line, int column, string text) {
+			return new Diagnostic(line, column, $"Syntax error: Missing identifier in {text}");
 		}
 
-		internal static Diagnostic ReportInvalidTypeDefinition(int line, int column, string v) {
-			return new Diagnostic(line, column, $"Syntax error: Invalid type definition syntax {v}");
+		internal static Diagnostic ReportInvalidTypeDefinition(int line, int column, string text) {
+			return new Diagnostic(line, column, $"Syntax error: Invalid type definition syntax {text}");
 		}
 
-		internal static Diagnostic ReportInvalidAssignmentOperand(int line, int column, string v) {
-			return new Diagnostic(line, column, $"Syntax error: Invalid type operand {v}");
+		internal static Diagnostic ReportInvalidAssignmentOperand(int line, int column, string text) {
+			return new Diagnostic(line, column, $"Syntax error: Invalid type operand {text}");
 		}
 
-		internal static Diagnostic ReportInvalidDeclarationKeyword(int line, int column, string v) {
-			return new Diagnostic(line, column, $"Syntax error: Invalid keyword {v}. Variable declarations must begin with 'var' or 'val'");
+		internal static Diagnostic ReportInvalidDeclarationKeyword(int line, int column, string text) {
+			return new Diagnostic(line, column, $"Syntax error: Invalid keyword {text}. Variable declarations must begin with 'var' or 'val'");
 		}
 
-		internal static Diagnostic ReportMalformedDeclaration(int line, int column, string v) {
-			return new Diagnostic(line, column, $"Syntax error: Invalid declaration syntax {v}");
+		internal static Diagnostic ReportMalformedDeclaration(int line, int column, string text) {
+			return new Diagnostic(line, column, $"Syntax error: Invalid declaration syntax {text}");
 		}
 
-		internal static Diagnostic ReportInvalidBinaryExpression(int line, int column, string v) {
-			return new Diagnostic(line, column, $"Syntax error: Invalid binary expression {v}");
+		internal static Diagnostic ReportInvalidBinaryExpression(int line, int column, string text) {
+			return new Diagnostic(line, column, $"Syntax error: Invalid binary expression {text}");
 		}
 
-		internal static Diagnostic ReportInvalidExpressionStatement(int line, int column, string v) {
-			return new Diagnostic(line, column, $"Syntax error: Invalid expression statement {v}");
+		internal static Diagnostic ReportInvalidExpressionStatement(int line, int column, string text) {
+			return new Diagnostic(line, column, $"Syntax error: Invalid expression statement {text}");
 		}
 
-		internal static Diagnostic ReportInvalidElseClase(int line, int column, string v) {
-			return new Diagnostic(line, column, $"Syntax error: Invalid else clause {v}");
+		internal static Diagnostic ReportInvalidElseClase(int line, int column, string text) {
+			return new Diagnostic(line, column, $"Syntax error: Invalid else clause {text}");
 		}
 
-		internal static Diagnostic ReportInvalidIfStatement(int line, int column, string v) {
-			return new Diagnostic(line, column, $"Syntax error: Invalid if statement {v}");
+		internal static Diagnostic ReportInvalidIfStatement(int line, int column, string text) {
+			return new Diagnostic(line, column, $"Syntax error: Invalid if statement {text}");
 		}
 
-		internal static Diagnostic ReportInvalidForStatement(int line, int column, string v) {
-			return new Diagnostic(line, column, $"Syntax error: Invalid for statement {v}");
+		internal static Diagnostic ReportInvalidForStatement(int line, int column, string text) {
+			return new Diagnostic(line, column, $"Syntax error: Invalid for statement {text}");
 		}
 
-		internal static Diagnostic ReportInvalidForAssignment(int line, int column, string v) {
-			return new Diagnostic(line, column, $"Syntax error: Invalid for statement assignment {v}");
+		internal static Diagnostic ReportInvalidForAssignment(int line, int column, string text) {
+			return new Diagnostic(line, column, $"Syntax error: Invalid for statement assignment {text}");
 		}
 
-		internal static Diagnostic ReportUnknownDeclKeyword(int line, int column, string v) {
-			return new Diagnostic(line, column, $"Syntax error: Invalid declaration keword {v}. Variable declarations must start with 'var' or 'val'");
+		internal static Diagnostic ReportUnknownDeclKeyword(int line, int column, string text) {
+			return new Diagnostic(line, column, $"Syntax error: Invalid declaration keword {text}. Variable declarations must start with 'var' or 'val'");
 		}
 
 		internal static Diagnostic ReportInvalidOperator(int line, int column, string opText, TypeSymbol leftType, TypeSymbol rightType) {
@@ -106,24 +106,24 @@ namespace InterpreterLib {
 			return new Diagnostic(line, column, $"Operator {opText} is invalid for type {valueTypeString}");
 		}
 
-		internal static Diagnostic ReportAssingmentTypeDef(int line, int column, string v) {
-			return new Diagnostic(line, column, $"Assignment operations cannot have a type definition {v}");
+		internal static Diagnostic ReportAssingmentTypeDef(int line, int column, string text) {
+			return new Diagnostic(line, column, $"Assignment operations cannot have a type definition {text}");
 		}
 
 		internal static Diagnostic ReportUndefinedVariable(int line, int column, string varaibleName) {
 			return new Diagnostic(line, column, $"The variable {varaibleName} does not exist");
 		}
 
-		internal static Diagnostic ReportInvalidType(int line, int column, string v, TypeSymbol expected) {
-			return new Diagnostic(line, column, $"The expression {v} is not of type {expected}");
+		internal static Diagnostic ReportInvalidType(int line, int column, string text, TypeSymbol expected) {
+			return new Diagnostic(line, column, $"The expression {text} is not of type {expected}");
 		}
 
-		internal static Diagnostic ReportFailedBind(int line, int column, string v) {
-			return new Diagnostic(line, column, $"Failed to bind {v}");
+		internal static Diagnostic ReportFailedBind(int line, int column, string text) {
+			return new Diagnostic(line, column, $"Failed to bind {text}");
 		}
 
-		internal static Diagnostic ReportUnknownTypeKeyword(int line, int column, string v) {
-			return new Diagnostic(line, column, $"Unknown type {v}");
+		internal static Diagnostic ReportUnknownTypeKeyword(int line, int column, string text) {
+			return new Diagnostic(line, column, $"Unknown type {text}");
 		}
 
 		internal static Diagnostic ReportCannotCast(int line, int column, TypeSymbol actual, TypeSymbol expected) {
@@ -138,40 +138,52 @@ namespace InterpreterLib {
 			return new Diagnostic(line, column, $"The variable {identifierText} already exits");
 		}
 
-		internal static Diagnostic ReportInvalidBody(int line, int column, string v) {
-			return new Diagnostic(line, column, $"Syntax Error: Invalid body {v}");
+		internal static Diagnostic ReportInvalidBody(int line, int column, string text) {
+			return new Diagnostic(line, column, $"Syntax Error: Invalid body {text}");
 		}
 
-		internal static Diagnostic ReportFailedVisit(int line, int column, string v) {
-			return new Diagnostic(line, column, $"Syntax Error: Invalid Statement {v}");
+		internal static Diagnostic ReportFailedVisit(int line, int column, string text) {
+			return new Diagnostic(line, column, $"Syntax Error: Invalid Statement {text}");
 		}
 
-		internal static Diagnostic ReportInvalidFunctionCall(int line, int column, string v) {
-			return new Diagnostic(line, column, $"Syntax Error: Invalid function call {v}");
+		internal static Diagnostic ReportInvalidFunctionCall(int line, int column, string text) {
+			return new Diagnostic(line, column, $"Syntax Error: Invalid function call {text}");
 		}
 
-		internal static Diagnostic ReportInvalidParameters(int line, int column, string v) {
-			return new Diagnostic(line, column, $"Syntax Error: Invalid paremeter list {v}");
+		internal static Diagnostic ReportInvalidParameters(int line, int column, string text) {
+			return new Diagnostic(line, column, $"Syntax Error: Invalid paremeter list {text}");
 		}
 
-		internal static Diagnostic ReportInvalidParameter(int line, int column, string v) {
-			return new Diagnostic(line, column, $"Syntax Error: Invalid paremeter {v}");
+		internal static Diagnostic ReportInvalidParameter(int line, int column, string text) {
+			return new Diagnostic(line, column, $"Syntax Error: Invalid paremeter {text}");
 		}
 
-		internal static Diagnostic ReportSyntaxError(int line, int column, string v) {
-			return new Diagnostic(line, column, $"Syntax Error: {v}");
+		internal static Diagnostic ReportSyntaxError(int line, int column, string text) {
+			return new Diagnostic(line, column, $"Syntax Error: {text}");
 		}
 
-		internal static Diagnostic ReportInvalidTypedIdentifier(int line, int column, string v) {
-			throw new NotImplementedException();
+		internal static Diagnostic ReportInvalidTypedIdentifier(int line, int column, string text) {
+			return new Diagnostic(line, column, $"Syntax Error: Invalid function declaration {text}");
 		}
 
-		internal static Diagnostic ReportInvalidParameterDefinition(int line, int column, string v) {
-			throw new NotImplementedException();
+		internal static Diagnostic ReportInvalidParameterDefinition(int line, int column, string text) {
+			return new Diagnostic(line, column, $"Syntax Error: Invalid parameter declaration {text}");
 		}
 
-		internal static Diagnostic ReportInvalidFunctionDef(int line, int column, string v) {
-			throw new NotImplementedException();
+		internal static Diagnostic ReportInvalidFunctionDef(int line, int column, string text) {
+			return new Diagnostic(line, column, $"Syntax Error: Invalid function declaration {text}");
+		}
+
+		internal static Diagnostic ReportInvalidCallParameters(int line, int column, string text) {
+			return new Diagnostic(line, column, $"Syntax Error: Parameter list \"{text}\" is invalid. Are you missing a comma?");
+		}
+
+		internal static Diagnostic ReportMissingComma(int line, int column, string text) {
+			return new Diagnostic(line, column, $"Syntax Error: Missing comma at {text}");
+		}
+
+		internal static Diagnostic ReportInvalidCallParameter(int line, int column, string text) {
+			return new Diagnostic(line, column, $"Syntax Error: {text}");
 		}
 	}
 }

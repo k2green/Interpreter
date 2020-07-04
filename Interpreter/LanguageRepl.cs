@@ -8,6 +8,10 @@ using System.Linq;
 namespace Interpreter {
 	public sealed class LanguageRepl : Repl {
 
+		public LanguageRepl() : base() { }
+
+		public LanguageRepl(bool showTree, bool showProgram, bool multiLine, bool evaluate) : base(showTree, showProgram, multiLine, evaluate) { }
+
 		protected override void EvaluateInput(string input) {
 			var parser = new RuntimeParser(input);
 
@@ -16,24 +20,28 @@ namespace Interpreter {
 			else
 				environment = environment.ContinueWith(parser);
 
-			if(environment != null) {
-				if (environment.Diagnostics.Any()) {
-					Console.ForegroundColor = ConsoleColor.Red;
-					foreach (var diagnostic in environment.Diagnostics)
-						Console.WriteLine(diagnostic);
+			if (environment != null && environment.Diagnostics.Any()) {
+				Console.ForegroundColor = ConsoleColor.Red;
+				foreach (var diagnostic in environment.Diagnostics)
+					Console.WriteLine(diagnostic);
 
-					Console.ForegroundColor = ConsoleColor.White;
-				} else {
-					if (!environment.Diagnostics.Any()) {
-						if (showTree)
-							SyntaxTreeWriter.Write(parser, Console.Out);
+				Console.ForegroundColor = ConsoleColor.White;
+			} else if (parser.Diagnostics.Any()) {
 
-						if (showProgram)
-							environment.PrintText();
-					}
+				Console.ForegroundColor = ConsoleColor.Red;
+				foreach (var diagnostic in parser.Diagnostics)
+					Console.WriteLine(diagnostic);
 
+				Console.ForegroundColor = ConsoleColor.White;
+			} else {
+				if (showTree)
+					SyntaxTreeWriter.Write(parser, Console.Out);
+
+				if (environment != null && showProgram)
+					environment.PrintText();
+
+				if (evaluate)
 					Evaluate(environment, variables);
-				}
 			}
 		}
 
