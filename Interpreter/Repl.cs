@@ -9,6 +9,9 @@ using System.Text;
 namespace Interpreter {
 	public abstract class Repl {
 
+		protected const int TAB_SPACES = 4;
+		protected static readonly string TAB_STRING = new string(' ', TAB_SPACES);
+
 		protected RuntimeParser parser;
 		protected bool done;
 		protected bool running;
@@ -82,6 +85,9 @@ namespace Interpreter {
 					case ConsoleKey.Enter:
 						HandleEnter(observable, view);
 						break;
+					case ConsoleKey.Tab:
+						HandleTab(observable, view);
+						break;
 					case ConsoleKey.Backspace:
 						HandleBackspace(observable, view);
 						break;
@@ -99,6 +105,17 @@ namespace Interpreter {
 			}
 		}
 
+		private void HandleTab(ObservableCollection<string> observable, SubmissionView view) {
+			int line = view.TextLine;
+			int start = view.CursorCharacter;
+
+			int spaceCount = TAB_SPACES - (start % TAB_SPACES);
+			var spaceStr = new string(' ', spaceCount);
+
+			observable[line] = observable[line].Insert(start, spaceStr);
+			view.CursorCharacter += spaceStr.Length;
+		}
+
 		private void HandleCtrlEnter(ObservableCollection<string> observable, SubmissionView view) {
 			done = true;
 		}
@@ -108,11 +125,16 @@ namespace Interpreter {
 			int column = view.CursorCharacter;
 
 			if (column > 0) {
-				string text = observable[line].Remove(column - 1, 1);
-				observable[line] = text;
-				view.CursorCharacter--;
+				if (column % TAB_SPACES == 0 && observable[line].Substring(column - TAB_SPACES, TAB_SPACES).Equals(TAB_STRING)) {
+					observable[line] = observable[line].Remove(column - TAB_SPACES, TAB_SPACES);
+					view.CursorCharacter -= TAB_SPACES;
+				} else {
+					string text = observable[line].Remove(column - 1, 1);
+					observable[line] = text;
+					view.CursorCharacter--;
+				}
 			} else {
-				if(string.IsNullOrEmpty(observable[line]) && observable.Count > 1) {
+				if (string.IsNullOrEmpty(observable[line]) && observable.Count > 1) {
 					observable.RemoveAt(line);
 					view.CursorLine--;
 					view.CursorCharacter = observable[view.TextLine].Length;
@@ -135,18 +157,27 @@ namespace Interpreter {
 			} else {
 				int line = view.TextLine;
 				var lineText = observable[line];
+				int spaceCount = 0;
+
+				foreach(var character in lineText) {
+					if (character != ' ')
+						break;
+
+					spaceCount++;
+				}
+				int tabCount = spaceCount / TAB_SPACES;
 
 				if (view.CursorCharacter == lineText.Length) {
-					observable.Insert(line + 1, string.Empty);
+					observable.Insert(line + 1, new string(' ', tabCount * TAB_SPACES));
 				} else {
 					string start = lineText.Substring(0, view.CursorCharacter);
 					string end = lineText.Substring(view.CursorCharacter, lineText.Length - view.CursorCharacter);
 					observable[line] = start;
-					observable.Insert(line + 1, end);
+					observable.Insert(line + 1, new string(' ', tabCount * TAB_SPACES) + end);
 				}
 
-				view.CursorCharacter = 0;
 				view.CursorLine++;
+				view.CursorCharacter = observable[view.TextLine].Length ;
 			}
 		}
 
@@ -181,7 +212,7 @@ namespace Interpreter {
 		private void HandleLeftArrow(ObservableCollection<string> observable, SubmissionView view) {
 			if (view.CursorCharacter > 0) {
 				view.CursorCharacter--;
-			} else if(view.TextLine > 0) {
+			} else if (view.TextLine > 0) {
 				view.CursorLine--;
 				view.CursorCharacter = observable[view.TextLine].Length;
 			}

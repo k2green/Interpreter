@@ -60,7 +60,7 @@ namespace Interpreter {
 					Console.WriteLine(diagnostic);
 
 				Console.ForegroundColor = ConsoleColor.White;
-			} else if (evaluate) {
+			} else if (evaluate && res.Value != null) {
 				Console.WriteLine(res.Value);
 			}
 		}
