@@ -72,9 +72,12 @@ namespace InterpreterLib.Runtime {
 		}
 
 		public void PrintText() {
-			if (!diagnostics.Any()) {
+			if (GlobalScope != null) {
 				BoundTreeDisplayVisitor display = new BoundTreeDisplayVisitor();
-				display.GetText(GlobalScope.Root);
+
+				if (!diagnostics.Any() && GlobalScope.Root != null) {
+					display.GetText(GlobalScope.Root);
+				}
 			}
 		}
 	}

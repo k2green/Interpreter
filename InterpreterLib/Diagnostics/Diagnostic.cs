@@ -100,6 +100,10 @@ namespace InterpreterLib {
 			return new Diagnostic(line, column, $"Operator {opText} is invalid for types {leftTypeString} and {rightTypeString}");
 		}
 
+		internal static Diagnostic ReportUndefinedFunction(int line, int column, string callName) {
+			return new Diagnostic(line, column, $"Function {callName} is undefined");
+		}
+
 		internal static Diagnostic ReportInvalidOperator(int line, int column, string opText, TypeSymbol valueType) {
 			var valueTypeString = valueType == null ? "<Null>" : valueType.ToString();
 

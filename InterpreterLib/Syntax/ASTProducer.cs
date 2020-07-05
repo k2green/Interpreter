@@ -46,9 +46,10 @@ namespace InterpreterLib.Syntax {
 			bool hasBool = context.BOOLEAN() != null;
 			bool hasIdentifier = context.IDENTIFIER() != null;
 			bool hasString = context.STRING() != null;
+			bool hasFunctionCall = context.functionCall() != null;
 
 			// Returns an error if there isn'n exactly one token
-			if (!(OnlyOne(hasInt, hasIdentifier, hasBool, hasString, hasDouble)))
+			if (!(OnlyOne(hasInt, hasIdentifier, hasBool, hasString, hasDouble, hasFunctionCall)))
 				return Error(Diagnostic.ReportInvalidLiteral(context.Start.Line, context.Start.Column, context.GetText()));
 
 			// Return a literal of variable Syntax depending on which token exists
@@ -57,6 +58,9 @@ namespace InterpreterLib.Syntax {
 
 			if (hasInt)
 				return new LiteralSyntax(new TokenSyntax(context.INTEGER().Symbol));
+
+			if (hasFunctionCall)
+				return Visit(context.functionCall());
 
 			if (hasBool)
 				return new LiteralSyntax(new TokenSyntax(context.BOOLEAN().Symbol));
@@ -419,9 +423,6 @@ namespace InterpreterLib.Syntax {
 			if (context.functionDefinition() != null)
 				return Visit(context.functionDefinition());
 
-			if (context.functionCall() != null)
-				return Visit(context.functionCall());
-
 			if (context.forStatement() != null)
 				return Visit(context.forStatement());
 
@@ -488,7 +489,7 @@ namespace InterpreterLib.Syntax {
 				}
 			}
 
-			if (lastCtx != null) { 
+			if (lastCtx != null) {
 
 				var lastVisit = Visit(lastCtx);
 

@@ -102,8 +102,30 @@ namespace InterpreterLib.Binding {
 					return BindError((ErrorSyntax)syntax);
 				case SyntaxType.Block:
 					return BindBlock((BlockSyntax)syntax);
+				case SyntaxType.FunctionCall:
+					return BindFunctionCall((FunctionCallSyntax)syntax);
 				default: throw new Exception($"Encountered unhandled syntax {syntax.Type}");
 			}
+		}
+
+		private BoundNode BindFunctionCall(FunctionCallSyntax syntax) {
+			string callName = syntax.Identifier.Token.Text;
+			List<BoundExpression> expressions = new List<BoundExpression>();
+
+			if (syntax.Parameters.Count > 0)
+				foreach (var paramSyntax in syntax.Parameters) {
+					var paramVisit = Bind(paramSyntax);
+
+					if (!(paramVisit is BoundExpression parameter))
+						return paramVisit;
+
+					expressions.Add(parameter);
+				}
+
+			if (!BaseFunction.TryBind(callName, expressions, out var symbol))
+				return Error(Diagnostic.ReportUndefinedFunction(syntax.Identifier.Span.Start, syntax.Identifier.Span.Column, callName));
+
+			return new BoundFunctionCall(symbol, expressions);
 		}
 
 		private BoundNode BindBlock(BlockSyntax syntax) {
@@ -209,13 +231,8 @@ namespace InterpreterLib.Binding {
 			if (!scope.TryLookup(identifierText, out var variable))
 				return Error(Diagnostic.ReportUndefinedVariable(syntax.IdentifierToken.Span.Line, syntax.IdentifierToken.Span.Column, identifierText));
 
-			if (variable.ValueType != expression.ValueType) {
-				var converter = TypeConversionSymbol.Find(expression.ValueType, variable.ValueType);
-
-				if (converter == null)
-					return Error(Diagnostic.ReportVariableTypeMismatch(syntax.IdentifierToken.Span.Line, syntax.IdentifierToken.Span.Column, identifierText, variable.ValueType, expression.ValueType));
-			}
-
+			if (variable.ValueType != expression.ValueType && !TypeConversionSymbol.TryFind(expression.ValueType, variable.ValueType, out _))
+				return Error(Diagnostic.ReportVariableTypeMismatch(syntax.IdentifierToken.Span.Line, syntax.IdentifierToken.Span.Column, identifierText, variable.ValueType, expression.ValueType));
 
 			return new BoundAssignmentExpression(variable, expression);
 		}
@@ -265,12 +282,9 @@ namespace InterpreterLib.Binding {
 					return Error(Diagnostic.ReportUnknownTypeKeyword(syntax.KeywordToken.Span.Line, syntax.KeywordToken.Span.Column, syntax.KeywordToken.ToString()));
 			}
 
-			if (type != null && initialiser != null && initialiser.ValueType != type) {
-				var conversion = TypeConversionSymbol.Find(initialiser.ValueType, type);
+			if (type != null && initialiser != null && initialiser.ValueType != type && !TypeConversionSymbol.TryFind(initialiser.ValueType, type, out _))
+				return Error(Diagnostic.ReportCannotCast(syntax.Definition.Span.Line, syntax.Definition.Span.Column, initialiser.ValueType, type));
 
-				if (conversion == null)
-					return Error(Diagnostic.ReportCannotCast(syntax.Definition.Span.Line, syntax.Definition.Span.Column, initialiser.ValueType, type));
-			}
 
 			type = type ?? initialiser.ValueType;
 			var variable = new VariableSymbol(identifierText, isreadOnly, type);

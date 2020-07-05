@@ -17,7 +17,20 @@ namespace InterpreterLib.Binding.Types {
 		}
 
 		public override bool Equals(object obj) {
-			throw new NotImplementedException();
+			if (!(obj is FunctionSymbol symbol)) return false;
+
+			if (!Name.Equals(symbol.Name) || ReturnType != symbol.ReturnType)
+				return false;
+
+			if (Parameters.Count != symbol.Parameters.Count)
+				return false;
+
+			for (int index = 0; index < Parameters.Count; index++) {
+				if (!Parameters[index].Equals(symbol.Parameters[index]))
+					return false;
+			}
+
+			return true;
 		}
 
 		public override int GetHashCode() {

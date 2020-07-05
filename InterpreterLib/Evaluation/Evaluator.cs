@@ -92,11 +92,24 @@ namespace InterpreterLib {
 					return EvaluateBinaryExpression((BoundBinaryExpression)expression);
 				case NodeType.AssignmentExpression:
 					return EvaluateAssignmentExpression((BoundAssignmentExpression)expression);
-
+				case NodeType.FunctionCall:
+					return EvaluateFunctionCall((BoundFunctionCall)expression);
 				case NodeType.InternalTypeConversion:
 					return EvaluateInternalTypeConversion((BoundInternalTypeConversion) expression);
 				default: throw new NotImplementedException();
 			}
+		}
+
+		private object EvaluateFunctionCall(BoundFunctionCall statement) {
+			if (statement.Function == BaseFunction.Print) {
+				string text = (string)EvaluateExpression(statement.Parameters[0]);
+				Console.WriteLine(text);
+			} else if (statement.Function == BaseFunction.Input) {
+				string input = Console.ReadLine();
+				return input;
+			}
+
+			return null;
 		}
 
 		private object EvaluateInternalTypeConversion(BoundInternalTypeConversion expression) {

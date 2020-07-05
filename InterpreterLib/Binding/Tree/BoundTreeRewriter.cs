@@ -28,6 +28,8 @@ namespace InterpreterLib.Binding.Tree {
 					return RewriteBinaryExpression((BoundBinaryExpression)expression);
 				case NodeType.Variable:
 					return RewriteVariableExpression((BoundVariableExpression)expression);
+				case NodeType.FunctionCall:
+					return RewriteFunctionCall((BoundFunctionCall)expression);
 				default: throw new Exception($"Unexpected expression {expression.Type}");
 			}
 		}
@@ -59,12 +61,30 @@ namespace InterpreterLib.Binding.Tree {
 			return new BoundBinaryExpression(rewritenLeftExpresson, expression.Op, rewritenRightExpresson);
 		}
 
-		protected virtual BoundExpression RewriteAssignmentExpression(BoundAssignmentExpression statement) {
-			var expression = RewriteExpression(statement.Expression);
-			if (expression == statement.Expression)
-				return statement;
+		protected virtual BoundExpression RewriteAssignmentExpression(BoundAssignmentExpression assignment) {
+			var expression = RewriteExpression(assignment.Expression);
+			if (expression == assignment.Expression)
+				return assignment;
 
-			return new BoundAssignmentExpression(statement.Identifier, expression);
+			return new BoundAssignmentExpression(assignment.Identifier, expression);
+		}
+
+		protected virtual BoundExpression RewriteFunctionCall(BoundFunctionCall expression) {
+			List<BoundExpression> newExpressions = new List<BoundExpression>();
+			bool isSame = true;
+
+			foreach (var parameter in expression.Parameters) {
+				var newParameter = RewriteExpression(parameter);
+				newExpressions.Add(newParameter);
+
+				if (newParameter != parameter)
+					isSame = false;
+			}
+
+			if (isSame)
+				return expression;
+
+			return new BoundFunctionCall(expression.Function, newExpressions);
 		}
 
 		protected virtual BoundStatement RewriteStatement(BoundStatement statement) {

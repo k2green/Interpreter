@@ -17,12 +17,17 @@ namespace InterpreterLib.Binding.Types {
 			new TypeConversionSymbol(TypeSymbol.Boolean, TypeSymbol.String)
 		};
 
-		public static TypeConversionSymbol Find(TypeSymbol fromType, TypeSymbol toType) {
-			foreach (var symbol in conversions)
-				if (symbol.FromType == fromType && symbol.ToType == toType)
-					return symbol;
+		public static bool TryFind(TypeSymbol fromType, TypeSymbol toType, out TypeConversionSymbol outputSymbol) {
+			outputSymbol = null;
 
-			return null;
+			foreach (var symbol in conversions) {
+				if (symbol.FromType == fromType && symbol.ToType == toType) {
+					outputSymbol = symbol;
+					return true;
+				}
+			}
+
+			return false;
 		}
 
 		public override string Name { get; }

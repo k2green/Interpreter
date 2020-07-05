@@ -102,26 +102,6 @@ public interface IGLangListener : IParseTreeListener {
 	/// <param name="context">The parse tree.</param>
 	void ExitFunctionDefinition([NotNull] GLangParser.FunctionDefinitionContext context);
 	/// <summary>
-	/// Enter a parse tree produced by <see cref="GLangParser.seperatedExpression"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	void EnterSeperatedExpression([NotNull] GLangParser.SeperatedExpressionContext context);
-	/// <summary>
-	/// Exit a parse tree produced by <see cref="GLangParser.seperatedExpression"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	void ExitSeperatedExpression([NotNull] GLangParser.SeperatedExpressionContext context);
-	/// <summary>
-	/// Enter a parse tree produced by <see cref="GLangParser.functionCall"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	void EnterFunctionCall([NotNull] GLangParser.FunctionCallContext context);
-	/// <summary>
-	/// Exit a parse tree produced by <see cref="GLangParser.functionCall"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	void ExitFunctionCall([NotNull] GLangParser.FunctionCallContext context);
-	/// <summary>
 	/// Enter a parse tree produced by <see cref="GLangParser.block"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
@@ -221,5 +201,25 @@ public interface IGLangListener : IParseTreeListener {
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	void ExitBinaryExpression([NotNull] GLangParser.BinaryExpressionContext context);
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="GLangParser.seperatedExpression"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterSeperatedExpression([NotNull] GLangParser.SeperatedExpressionContext context);
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="GLangParser.seperatedExpression"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitSeperatedExpression([NotNull] GLangParser.SeperatedExpressionContext context);
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="GLangParser.functionCall"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterFunctionCall([NotNull] GLangParser.FunctionCallContext context);
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="GLangParser.functionCall"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitFunctionCall([NotNull] GLangParser.FunctionCallContext context);
 }
 } // namespace InterpreterLib

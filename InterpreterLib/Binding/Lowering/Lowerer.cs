@@ -139,12 +139,9 @@ namespace InterpreterLib.Binding.Lowering {
 			BoundExpression newRight = RewriteExpression(expression.RightExpression);
 
 			if (newLeft.ValueType != newRight.ValueType) {
-				var leftConversion = TypeConversionSymbol.Find(newLeft.ValueType, newRight.ValueType);
-				var rightConversion = TypeConversionSymbol.Find(newRight.ValueType, newLeft.ValueType);
-
-				if (leftConversion != null)
+				if (TypeConversionSymbol.TryFind(newLeft.ValueType, newRight.ValueType, out var leftConversion))
 					newLeft = new BoundInternalTypeConversion(leftConversion, newLeft);
-				else if (rightConversion != null)
+				else if (TypeConversionSymbol.TryFind(newRight.ValueType, newLeft.ValueType, out var rightConversion))
 					newRight = new BoundInternalTypeConversion(rightConversion, newRight);
 			}
 
@@ -157,12 +154,8 @@ namespace InterpreterLib.Binding.Lowering {
 		protected override BoundExpression RewriteAssignmentExpression(BoundAssignmentExpression assignment) {
 			BoundExpression expression = RewriteExpression(assignment.Expression);
 
-			if (expression.ValueType != assignment.Identifier.ValueType) {
-				var symbol = TypeConversionSymbol.Find(expression.ValueType, assignment.Identifier.ValueType);
-
-				if (symbol != null) {
-					expression = new BoundInternalTypeConversion(symbol, expression);
-				}
+			if (expression.ValueType != assignment.Identifier.ValueType && TypeConversionSymbol.TryFind(expression.ValueType, assignment.Identifier.ValueType, out var symbol)) {
+				expression = new BoundInternalTypeConversion(symbol, expression);
 			}
 
 			if (expression == assignment.Expression)
@@ -176,18 +169,40 @@ namespace InterpreterLib.Binding.Lowering {
 				return statement;
 
 			BoundExpression initialiser = RewriteExpression(statement.Initialiser);
-			if(initialiser.ValueType != statement.Variable.ValueType) {
-				var symbol = TypeConversionSymbol.Find(initialiser.ValueType, statement.Variable.ValueType);
-
-				if (symbol != null) {
-					initialiser = new BoundInternalTypeConversion(symbol, initialiser);
-				}
+			if (initialiser.ValueType != statement.Variable.ValueType && TypeConversionSymbol.TryFind(initialiser.ValueType, statement.Variable.ValueType, out var symbol)) {
+				initialiser = new BoundInternalTypeConversion(symbol, initialiser);
 			}
 
 			if (initialiser == statement.Initialiser)
 				return statement;
 
 			return new BoundVariableDeclarationStatement(statement.Variable, initialiser);
+		}
+
+		protected override BoundExpression RewriteFunctionCall(BoundFunctionCall expression) {
+			List<BoundExpression> newExpressions = new List<BoundExpression>();
+			bool isSame = true;
+
+			for (int index = 0; index < expression.Parameters.Count; index++) {
+				var parameter = expression.Parameters[index];
+				var newParameter = RewriteExpression(parameter);
+
+				if (newParameter.ValueType != expression.Function.Parameters[index].ValueType
+					&& TypeConversionSymbol.TryFind(newParameter.ValueType, expression.Function.Parameters[index].ValueType, out var symbol)) {
+
+					newParameter = new BoundInternalTypeConversion(symbol, parameter);
+				}
+
+				newExpressions.Add(newParameter);
+
+				if (newParameter != parameter)
+					isSame = false;
+			}
+
+			if (isSame)
+				return expression;
+
+			return new BoundFunctionCall(expression.Function, newExpressions);
 		}
 	}
 }

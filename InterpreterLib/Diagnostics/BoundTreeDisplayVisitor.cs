@@ -22,6 +22,7 @@ namespace InterpreterLib.Diagnostics {
 		public const ConsoleColor LABEL_COLOR = ConsoleColor.Gray;
 		public const ConsoleColor BRANCH_COLOR = ConsoleColor.DarkMagenta;
 		public const ConsoleColor CONVERSION_COLOR = ConsoleColor.DarkCyan;
+		public const ConsoleColor FUNCTION = ConsoleColor.DarkCyan;
 
 		public void GetText(BoundStatement[] statements) {
 			Console.ForegroundColor = DEFAULT_COLOR;
@@ -82,7 +83,24 @@ namespace InterpreterLib.Diagnostics {
 					VisitLabelStatement((BoundLabel)node, prefix1, prefix2); break;
 				case NodeType.InternalTypeConversion:
 					VisitLabelInternalTypeConversion((BoundInternalTypeConversion)node, prefix1, prefix2); break;
+				case NodeType.FunctionCall:
+					VisitFunctionCall((BoundFunctionCall)node, prefix1, prefix2);break;
 				default: throw new Exception("Unimplemented node evaluator");
+			}
+		}
+
+		private void VisitFunctionCall(BoundFunctionCall node, string prefix1, string prefix2) {
+			Console.Write(prefix1);
+
+			Console.ForegroundColor = FUNCTION;
+			Console.WriteLine($"Function call: {node.Function.Name} => {node.Function.ReturnType}");
+
+			List<BoundExpression> parameters = new List<BoundExpression>(node.Parameters);
+			if(parameters.Count > 0) {
+				for (int index = 0; index < parameters.Count - 1; index++)
+					Visit(parameters[index], prefix2 + NEXT_CHILD, prefix2 + NO_CHILD);
+
+				Visit(parameters[parameters.Count - 1], prefix2 + LAST_CHILD, prefix2 + SPACING);
 			}
 		}
 

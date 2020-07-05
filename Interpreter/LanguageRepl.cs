@@ -20,28 +20,22 @@ namespace Interpreter {
 			else
 				environment = environment.ContinueWith(parser);
 
-			if (environment != null && environment.Diagnostics.Any()) {
-				Console.ForegroundColor = ConsoleColor.Red;
-				foreach (var diagnostic in environment.Diagnostics)
-					Console.WriteLine(diagnostic);
-
-				Console.ForegroundColor = ConsoleColor.White;
-			} else if (parser.Diagnostics.Any()) {
-
+			if (parser.Diagnostics.Any()) {
 				Console.ForegroundColor = ConsoleColor.Red;
 				foreach (var diagnostic in parser.Diagnostics)
 					Console.WriteLine(diagnostic);
 
 				Console.ForegroundColor = ConsoleColor.White;
-			} else {
-				if (showTree)
-					SyntaxTreeWriter.Write(parser, Console.Out);
+			} else if (showTree) {
+				SyntaxTreeWriter.Write(parser, Console.Out);
+			}
 
+			if (environment != null) {
 				if (environment != null && showProgram)
 					environment.PrintText();
 
-				if (evaluate)
-					Evaluate(environment, variables);
+				Console.ForegroundColor = ConsoleColor.White;
+				Evaluate(environment, variables);
 			}
 		}
 
@@ -66,7 +60,7 @@ namespace Interpreter {
 					Console.WriteLine(diagnostic);
 
 				Console.ForegroundColor = ConsoleColor.White;
-			} else {
+			} else if (evaluate) {
 				Console.WriteLine(res.Value);
 			}
 		}

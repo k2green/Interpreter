@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Text;
 
 namespace InterpreterLib.Syntax.Tree.Statements {
-	internal sealed class FunctionCallSyntax : StatementSyntax {
+	internal sealed class FunctionCallSyntax : ExpressionSyntax {
 		public override SyntaxType Type => SyntaxType.FunctionCall;
 
 		public override IEnumerable<SyntaxNode> Children {

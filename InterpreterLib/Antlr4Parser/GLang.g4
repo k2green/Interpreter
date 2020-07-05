@@ -13,7 +13,7 @@ typeDefinition: TYPE_DELIMETER TYPE_NAME;
 	 * Statements
 	 */
 	
-statement : functionDefinition | functionCall | forStatement | whileStatement | ifStatement | block| variableDeclarationStatement | expressionStatement;
+statement : functionDefinition | forStatement | whileStatement | ifStatement | block| variableDeclarationStatement | expressionStatement;
 
 definedIdentifier: IDENTIFIER typeDefinition;
 seperatedDefinedIdentifier: definedIdentifier COMMA;
@@ -23,11 +23,6 @@ parametersDefinition: L_PARENTHESIS seperatedDefinedIdentifier+ last=definedIden
 					| L_PARENTHESIS R_PARENTHESIS;
 
 functionDefinition: FUNCTION IDENTIFIER? parametersDefinition typeDefinition statement;
-
-seperatedExpression: binaryExpression COMMA;
-functionCall: funcName=IDENTIFIER L_PARENTHESIS seperatedExpression+ last=binaryExpression R_PARENTHESIS
-			| funcName=IDENTIFIER L_PARENTHESIS last=binaryExpression R_PARENTHESIS
-			| funcName=IDENTIFIER L_PARENTHESIS R_PARENTHESIS;
 
 block : L_BRACE statement* R_BRACE;
 
@@ -48,7 +43,7 @@ assignmentExpression : IDENTIFIER typeDefinition? ASSIGNMENT_OPERATOR binaryExpr
 	 * Expressions
 	 */
 
-literal : DOUBLE | INTEGER | BOOLEAN | IDENTIFIER | STRING;
+literal : DOUBLE | INTEGER | BOOLEAN | functionCall | IDENTIFIER | STRING;
 
 unaryExpression : L_PARENTHESIS binaryExpression R_PARENTHESIS
 				| op=(ADDITIVE_OP | BANG) unaryExpression
@@ -62,6 +57,11 @@ binaryExpression: left=binaryExpression op=CARAT right=binaryExpression
 				| left=binaryExpression op=LOGICAL_OP right=binaryExpression
 				| atom=unaryExpression;
 				
+
+seperatedExpression: binaryExpression COMMA;
+functionCall: funcName=IDENTIFIER L_PARENTHESIS seperatedExpression+ last=binaryExpression R_PARENTHESIS
+			| funcName=IDENTIFIER L_PARENTHESIS last=binaryExpression R_PARENTHESIS
+			| funcName=IDENTIFIER L_PARENTHESIS R_PARENTHESIS;
 /*
  * Lexer Rules
  */
