@@ -24,9 +24,5 @@ namespace InterpreterLib.Syntax.Tree {
 
 			Span = CreateNewSpan(delimeterToken.Span, NameToken.Span);
 		}
-
-		public override string ToString() {
-			return DelimeterToken.ToString() + " " + NameToken.ToString();
-		}
 	}
 }

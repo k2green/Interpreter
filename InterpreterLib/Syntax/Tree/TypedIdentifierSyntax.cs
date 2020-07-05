@@ -25,9 +25,5 @@ namespace InterpreterLib.Syntax.Tree {
 
 			Span = CreateNewSpan(identifier.Span, definition.Span);
 		}
-
-		public override string ToString() {
-			throw new NotImplementedException();
-		}
 	}
 }

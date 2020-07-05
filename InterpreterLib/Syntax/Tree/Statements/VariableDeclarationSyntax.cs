@@ -33,22 +33,10 @@ namespace InterpreterLib.Syntax.Tree.Statements {
 			OperatorToken = operatorToken;
 			Initialiser = initialiser;
 
-			if(initialiser != null)
-			Span = CreateNewSpan(keywordToken.Span, initialiser.Span);
+			if (initialiser != null)
+				Span = CreateNewSpan(keywordToken.Span, initialiser.Span);
 			else
 				Span = CreateNewSpan(keywordToken.Span, definition.Span);
-		}
-
-		public override string ToString() {
-			var builder = new StringBuilder();
-
-			builder.Append(KeywordToken).Append(" ");
-			builder.Append(IdentifierToken).Append(" ");
-			builder.Append(Definition).Append(" ");
-			builder.Append(OperatorToken).Append(" ");
-			builder.Append(Initialiser);
-
-			return builder.ToString();
 		}
 	}
 }

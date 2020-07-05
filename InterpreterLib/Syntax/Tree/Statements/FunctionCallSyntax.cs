@@ -35,7 +35,14 @@ namespace InterpreterLib.Syntax.Tree.Statements {
 		}
 
 		public override string ToString() {
-			throw new NotImplementedException();
+			var builder = new StringBuilder();
+
+			builder.Append(Identifier.ToString());
+			builder.Append(LeftParen.ToString());
+			builder.Append(Parameters.ToString());
+			builder.Append(RightParen.ToString());
+
+			return builder.ToString();
 		}
 	}
 }

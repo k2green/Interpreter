@@ -24,28 +24,6 @@ namespace InterpreterLib.Binding {
 			}
 		}
 
-		public static bool TryBind(string name, IReadOnlyList<BoundExpression> parameters, out FunctionSymbol symbol) {
-			if (!Symbols.TryGetValue(name, out symbol))
-				return false;
-
-			if (parameters.Count != symbol.Parameters.Count) {
-				symbol = null;
-				return false;
-			}
-
-			if (parameters.Count > 0) {
-				for (int index = 0; index < parameters.Count; index++) {
-					var expressionType = parameters[index].ValueType;
-					var parameterType = symbol.Parameters[index].ValueType;
-
-					if (expressionType != parameterType && !TypeConversionSymbol.TryFind(expressionType, parameterType, out _)) {
-						symbol = null;
-						return false;
-					}
-				}
-			}
-
-			return true;
-		}
+		public static bool TryFindSymbol(string name, out FunctionSymbol symbol) => Symbols.TryGetValue(name, out symbol);
 	}
 }

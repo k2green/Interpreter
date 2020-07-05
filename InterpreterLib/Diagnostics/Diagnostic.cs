@@ -100,6 +100,10 @@ namespace InterpreterLib {
 			return new Diagnostic(line, column, $"Operator {opText} is invalid for types {leftTypeString} and {rightTypeString}");
 		}
 
+		internal static Diagnostic ReportFunctionCountMismatch(int line, int column, string callName, int givenCount, int requiredCount) {
+			return new Diagnostic(line, column, $"Function {callName} is requires {requiredCount} parameters but was given {givenCount}");
+		}
+
 		internal static Diagnostic ReportUndefinedFunction(int line, int column, string callName) {
 			return new Diagnostic(line, column, $"Function {callName} is undefined");
 		}
@@ -108,6 +112,10 @@ namespace InterpreterLib {
 			var valueTypeString = valueType == null ? "<Null>" : valueType.ToString();
 
 			return new Diagnostic(line, column, $"Operator {opText} is invalid for type {valueTypeString}");
+		}
+
+		internal static Diagnostic ReportInvalidParameterType(int line, int column, string paramName, TypeSymbol valueType, TypeSymbol requiredType) {
+			return new Diagnostic(line, column, $"Parameter {paramName} requires type {requiredType} but was given type {valueType}");
 		}
 
 		internal static Diagnostic ReportAssingmentTypeDef(int line, int column, string text) {

@@ -34,9 +34,5 @@ namespace InterpreterLib.Syntax.Tree.Statements {
 
 			Span = CreateNewSpan(keywToken.Span, body.Span);
 		}
-
-		public override string ToString() {
-			throw new NotImplementedException();
-		}
 	}
 }

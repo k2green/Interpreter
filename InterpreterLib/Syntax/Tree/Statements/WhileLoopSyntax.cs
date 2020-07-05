@@ -33,17 +33,5 @@ namespace InterpreterLib.Syntax.Tree.Statements {
 
 			Span = CreateNewSpan(whileToken.Span, body.Span);
 		}
-
-		public override string ToString() {
-			var builder = new StringBuilder();
-
-			builder.Append(WhileToken).Append(" ");
-			builder.Append(LeftParenToken);
-			builder.Append(Condition);
-			builder.Append(RightParenToken).Append(" ");
-			builder.Append(Body);
-
-			return builder.ToString();
-		}
 	}
 }

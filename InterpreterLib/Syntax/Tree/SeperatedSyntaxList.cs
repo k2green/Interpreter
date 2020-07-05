@@ -26,5 +26,14 @@ namespace InterpreterLib.Syntax.Tree {
 		IEnumerator IEnumerable.GetEnumerator() {
 			throw new NotImplementedException();
 		}
+
+		public override string ToString() {
+			var builder = new StringBuilder();
+			foreach(var node in nodesAndSeperators) {
+				builder.Append(node.ToString());
+			}
+
+			return builder.ToString();
+		}
 	}
 }

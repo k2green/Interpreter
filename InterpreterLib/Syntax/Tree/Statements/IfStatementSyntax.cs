@@ -42,19 +42,5 @@ namespace InterpreterLib.Syntax.Tree.Statements {
 			else
 				Span = CreateNewSpan(ifToken.Span, trueBranch.Span);
 		}
-
-		public override string ToString() {
-			var builder = new StringBuilder();
-
-			builder.Append(IfToken).Append(" ");
-			builder.Append(LeftParenToken);
-			builder.Append(Condition);
-			builder.Append(RightParenToken).Append(" ");
-			builder.Append(TrueBranch).Append(" ");
-			builder.Append(ElseToken).Append(" ");
-			builder.Append(FalseBranch);
-
-			return builder.ToString();
-		}
 	}
 }

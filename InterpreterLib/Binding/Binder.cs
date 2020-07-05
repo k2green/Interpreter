@@ -57,7 +57,7 @@ namespace InterpreterLib.Binding {
 				current = new BoundScope(current);
 
 				foreach (var variable in previous.Variables)
-					current.TryDefine(variable);
+					current.TryDefineVariable(variable);
 			}
 
 			return current;
@@ -110,20 +110,30 @@ namespace InterpreterLib.Binding {
 
 		private BoundNode BindFunctionCall(FunctionCallSyntax syntax) {
 			string callName = syntax.Identifier.Token.Text;
+			
+			if(!BaseFunction.TryFindSymbol(callName, out var symbol))
+				return Error(Diagnostic.ReportUndefinedFunction(syntax.Identifier.Span.Start, syntax.Identifier.Span.Column, callName));
+
+			if(syntax.Parameters.Count != symbol.Parameters.Count)
+				return Error(Diagnostic.ReportFunctionCountMismatch(syntax.Identifier.Span.Start, syntax.Identifier.Span.Column, callName, syntax.Parameters.Count, symbol.Parameters.Count));
+
 			List<BoundExpression> expressions = new List<BoundExpression>();
 
-			if (syntax.Parameters.Count > 0)
-				foreach (var paramSyntax in syntax.Parameters) {
+			if (syntax.Parameters.Count > 0) {
+				for (int index = 0; index < syntax.Parameters.Count; index++) {
+					var paramSyntax = syntax.Parameters[index];
+					var requiredType = symbol.Parameters[index].ValueType;
 					var paramVisit = Bind(paramSyntax);
 
 					if (!(paramVisit is BoundExpression parameter))
 						return paramVisit;
 
+					if(parameter.ValueType != requiredType && !TypeConversionSymbol.TryFind(parameter.ValueType, requiredType, out _))
+						return Error(Diagnostic.ReportInvalidParameterType(paramSyntax.Span.Start, paramSyntax.Span.Column, symbol.Parameters[index].Name, parameter.ValueType, requiredType));
+
 					expressions.Add(parameter);
 				}
-
-			if (!BaseFunction.TryBind(callName, expressions, out var symbol))
-				return Error(Diagnostic.ReportUndefinedFunction(syntax.Identifier.Span.Start, syntax.Identifier.Span.Column, callName));
+			}
 
 			return new BoundFunctionCall(symbol, expressions);
 		}
@@ -228,7 +238,7 @@ namespace InterpreterLib.Binding {
 			if (!(boundExpression is BoundExpression expression))
 				return boundExpression;
 
-			if (!scope.TryLookup(identifierText, out var variable))
+			if (!scope.TryLookupVariable(identifierText, out var variable))
 				return Error(Diagnostic.ReportUndefinedVariable(syntax.IdentifierToken.Span.Line, syntax.IdentifierToken.Span.Column, identifierText));
 
 			if (variable.ValueType != expression.ValueType && !TypeConversionSymbol.TryFind(expression.ValueType, variable.ValueType, out _))
@@ -240,7 +250,7 @@ namespace InterpreterLib.Binding {
 		private BoundNode BindVariableExpression(VariableSyntax syntax) {
 			string varaibleName = syntax.IdentifierToken.Token.Text;
 
-			if (!scope.TryLookup(varaibleName, out var variable))
+			if (!scope.TryLookupVariable(varaibleName, out var variable))
 				return Error(Diagnostic.ReportUndefinedVariable(syntax.IdentifierToken.Span.Line, syntax.IdentifierToken.Span.Column, varaibleName));
 
 			return new BoundVariableExpression(variable);
@@ -276,7 +286,7 @@ namespace InterpreterLib.Binding {
 			}
 
 			if (syntax.Definition != null) {
-				type = TypeSymbol.FromString(syntax.Definition.NameToken.Token.Text);
+				type = TypeSymbol.FromString(syntax.Definition.NameToken.ToString());
 
 				if (type == null)
 					return Error(Diagnostic.ReportUnknownTypeKeyword(syntax.KeywordToken.Span.Line, syntax.KeywordToken.Span.Column, syntax.KeywordToken.ToString()));
@@ -289,7 +299,7 @@ namespace InterpreterLib.Binding {
 			type = type ?? initialiser.ValueType;
 			var variable = new VariableSymbol(identifierText, isreadOnly, type);
 
-			if (!scope.TryDefine(variable))
+			if (!scope.TryDefineVariable(variable))
 				return Error(Diagnostic.ReportCannotRedefine(syntax.IdentifierToken.Span.Line, syntax.IdentifierToken.Span.Column, identifierText));
 
 			return new BoundVariableDeclarationStatement(variable, initialiser);
