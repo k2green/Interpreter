@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using InterpreterLib.Binding.Types;
+using InterpreterLib.Types;
 
 namespace InterpreterLib.Binding.Tree.Expressions {
 	internal sealed class BoundInternalTypeConversion : BoundExpression {

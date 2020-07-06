@@ -1,4 +1,4 @@
-﻿using InterpreterLib.Binding.Types;
+﻿using InterpreterLib.Types;
 using InterpreterLib.Runtime;
 using InterpreterLib.Syntax;
 using System;

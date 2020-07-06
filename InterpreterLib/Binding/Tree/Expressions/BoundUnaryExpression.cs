@@ -1,4 +1,4 @@
-﻿using InterpreterLib.Binding.Types;
+﻿using InterpreterLib.Types;
 
 namespace InterpreterLib.Binding.Tree.Expressions {
 	internal sealed class BoundUnaryExpression : BoundExpression {

@@ -21,6 +21,8 @@ namespace InterpreterLib.Syntax.Tree {
 		FunctionCall,
 		TypedIdentifier,
 		ParameterDefinition,
-		FunctionDeclaration
+		FunctionDeclaration,
+		CompilationUnit,
+		GlobalStatement
 	}
 }

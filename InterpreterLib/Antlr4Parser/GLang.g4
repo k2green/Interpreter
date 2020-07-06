@@ -4,7 +4,7 @@ grammar GLang;
  * Parser Rules
  */
  
-
+compilationUnit : globalStatement+;
 
 declerationOrAssign: variableDeclarationStatement | assignmentExpression;
 typeDefinition: TYPE_DELIMETER TYPE_NAME;
@@ -12,8 +12,10 @@ typeDefinition: TYPE_DELIMETER TYPE_NAME;
 	/*
 	 * Statements
 	 */
+
 	
-statement : functionDefinition | forStatement | whileStatement | ifStatement | block| variableDeclarationStatement | expressionStatement;
+globalStatement: functionDefinition | statement;
+statement : forStatement | whileStatement | ifStatement | block| variableDeclarationStatement | expressionStatement;
 
 definedIdentifier: IDENTIFIER typeDefinition;
 seperatedDefinedIdentifier: definedIdentifier COMMA;
@@ -22,7 +24,7 @@ parametersDefinition: L_PARENTHESIS seperatedDefinedIdentifier+ last=definedIden
 					| L_PARENTHESIS last=definedIdentifier R_PARENTHESIS
 					| L_PARENTHESIS R_PARENTHESIS;
 
-functionDefinition: FUNCTION IDENTIFIER? parametersDefinition typeDefinition statement;
+functionDefinition: FUNCTION IDENTIFIER parametersDefinition typeDefinition statement;
 
 block : L_BRACE statement* R_BRACE;
 
@@ -78,6 +80,7 @@ fragment INTEGER_TYPE: 'int';
 fragment DOUBLE_TYPE: 'double';
 fragment BOOLEAN_TYPE: 'bool';
 fragment STRING_TYPE: 'string';
+fragment VOID_TYPE: 'void';
 
 fragment EQUALITY_OPERATOR: '==';
 fragment GREATER: '>=';
@@ -94,7 +97,7 @@ WHITESPACE : [ \t\r\n]+ -> channel(HIDDEN);
 COMMA : ',';
 
 TYPE_DELIMETER : ':';
-TYPE_NAME : INTEGER_TYPE | DOUBLE_TYPE | BOOLEAN_TYPE | STRING_TYPE;
+TYPE_NAME : INTEGER_TYPE | DOUBLE_TYPE | BOOLEAN_TYPE | STRING_TYPE | VOID_TYPE;
 
 BOOLEAN: TRUE | FALSE;
 DOUBLE: '.' DIGIT+ | DIGIT+ '.' DIGIT+;

@@ -3,6 +3,7 @@ using Antlr4.Runtime.Misc;
 using Antlr4.Runtime.Tree;
 using InterpreterLib.Syntax.Tree;
 using InterpreterLib.Syntax.Tree.Expressions;
+using InterpreterLib.Syntax.Tree.Global;
 using InterpreterLib.Syntax.Tree.Statements;
 using System;
 using System.Collections.Generic;
@@ -420,9 +421,6 @@ namespace InterpreterLib.Syntax {
 		}
 
 		public override SyntaxNode VisitStatement([NotNull] GLangParser.StatementContext context) {
-			if (context.functionDefinition() != null)
-				return Visit(context.functionDefinition());
-
 			if (context.forStatement() != null)
 				return Visit(context.forStatement());
 
@@ -440,6 +438,41 @@ namespace InterpreterLib.Syntax {
 
 			if (context.expressionStatement() != null)
 				return Visit(context.expressionStatement());
+
+			return Error(Diagnostic.ReportFailedVisit(context.Start.Line, context.Start.Column, context.GetText()));
+		}
+
+		public override SyntaxNode VisitCompilationUnit([NotNull] GLangParser.CompilationUnitContext context) {
+			var statementsCtx = context.globalStatement();
+			var statementsList = new List<GlobalSyntax>();
+
+			if (statementsCtx == null || statementsCtx.Length < 1)
+				return Error(Diagnostic.ReportInvalidCompilationUnit(context.Start.Line, context.Start.Column, context.GetText()));
+
+			foreach (var statementCtx in statementsCtx) {
+				var visitStatement = Visit(statementCtx);
+
+				if (!(visitStatement is GlobalSyntax globalSyntax))
+					return Error(Diagnostic.ReportInvalidGlobalStatement(statementCtx.Start.Line, statementCtx.Start.Column, statementCtx.GetText()));
+
+				statementsList.Add(globalSyntax);
+			}
+
+			return new CompilationUnitSyntax(statementsList);
+		}
+
+		public override SyntaxNode VisitGlobalStatement([NotNull] GLangParser.GlobalStatementContext context) {
+			if (context.functionDefinition() != null)
+				return Visit(context.functionDefinition());
+
+			if (context.statement() != null) {
+				var statementVisit = Visit(context.statement());
+
+				if (!(statementVisit is StatementSyntax statement))
+					return statementVisit;
+
+				return new GlobalStatementSyntax(statement);
+			}
 
 			return Error(Diagnostic.ReportFailedVisit(context.Start.Line, context.Start.Column, context.GetText()));
 		}
@@ -497,8 +530,6 @@ namespace InterpreterLib.Syntax {
 					return Error(Diagnostic.ReportInvalidParameterDefinition(context.Start.Line, context.Start.Column, context.GetText()));
 
 				parameters.Add(lastIdentSyntax);
-
-				return new ParameterDefinitionSyntax(Token(leftParenCtx.Symbol), new SeperatedSyntaxList<TypedIdentifierSyntax>(parameters), Token(rightParenCtx.Symbol));
 			}
 
 			return new ParameterDefinitionSyntax(Token(leftParenCtx.Symbol), new SeperatedSyntaxList<TypedIdentifierSyntax>(parameters), Token(rightParenCtx.Symbol));
@@ -511,21 +542,18 @@ namespace InterpreterLib.Syntax {
 			var typeDefCtx = context.typeDefinition();
 			var bodyCtx = context.statement();
 
-			if (keywCtx == null || paramCtx == null || typeDefCtx == null || bodyCtx == null || !keywCtx.GetText().Equals("function"))
+			if (keywCtx == null || identCtx == null || paramCtx == null || typeDefCtx == null || bodyCtx == null || !keywCtx.GetText().Equals("function"))
 				return Error(Diagnostic.ReportInvalidFunctionDef(context.Start.Line, context.Start.Column, context.GetText()));
 
 			var paramVisit = Visit(paramCtx);
 			var typeDefVisit = Visit(typeDefCtx);
 			var bodyVisit = Visit(bodyCtx);
 
-			if (!(paramVisit is ParameterDefinitionSyntax && typeDefVisit is TypeDefinitionSyntax && bodyVisit is StatementSyntax))
+			if (!(paramVisit is ParameterDefinitionSyntax parameters && typeDefVisit is TypeDefinitionSyntax typeDef && bodyVisit is StatementSyntax body))
 				return Error(Diagnostic.ReportInvalidFunctionDef(context.Start.Line, context.Start.Column, context.GetText()));
 
 			var keywToken = Token(keywCtx.Symbol);
-			var identToken = identCtx == null ? null : Token(identCtx.Symbol);
-			var parameters = (ParameterDefinitionSyntax)paramVisit;
-			var typeDef = (TypeDefinitionSyntax)typeDefVisit;
-			var body = (StatementSyntax)bodyVisit;
+			var identToken = Token(identCtx.Symbol);
 
 			var declSyntax = new FunctionDeclarationSyntax(keywToken, identToken, parameters, typeDef, body);
 

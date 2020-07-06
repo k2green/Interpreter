@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Collections.Generic;
-using InterpreterLib.Binding.Types;
+using InterpreterLib.Types;
 using InterpreterLib.Runtime;
 using InterpreterLib.Syntax;
 

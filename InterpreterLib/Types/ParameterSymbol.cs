@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace InterpreterLib.Binding.Types {
+namespace InterpreterLib.Types {
 	public sealed class ParameterSymbol : Symbol {
 
 		public override SymbolType Type => SymbolType.Parameter;

@@ -36,6 +36,18 @@ using ParserRuleContext = Antlr4.Runtime.ParserRuleContext;
 [System.CLSCompliant(false)]
 public partial class GLangBaseListener : IGLangListener {
 	/// <summary>
+	/// Enter a parse tree produced by <see cref="GLangParser.compilationUnit"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterCompilationUnit([NotNull] GLangParser.CompilationUnitContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="GLangParser.compilationUnit"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitCompilationUnit([NotNull] GLangParser.CompilationUnitContext context) { }
+	/// <summary>
 	/// Enter a parse tree produced by <see cref="GLangParser.declerationOrAssign"/>.
 	/// <para>The default implementation does nothing.</para>
 	/// </summary>
@@ -59,6 +71,18 @@ public partial class GLangBaseListener : IGLangListener {
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitTypeDefinition([NotNull] GLangParser.TypeDefinitionContext context) { }
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="GLangParser.globalStatement"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterGlobalStatement([NotNull] GLangParser.GlobalStatementContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="GLangParser.globalStatement"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitGlobalStatement([NotNull] GLangParser.GlobalStatementContext context) { }
 	/// <summary>
 	/// Enter a parse tree produced by <see cref="GLangParser.statement"/>.
 	/// <para>The default implementation does nothing.</para>

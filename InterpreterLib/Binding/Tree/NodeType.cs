@@ -14,6 +14,7 @@
 		Branch,
 		TypeDefinition,
 		FunctionCall,
-		InternalTypeConversion
+		InternalTypeConversion,
+		FunctionDefinition
 	}
 }

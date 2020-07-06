@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace InterpreterLib.Binding.Types {
+namespace InterpreterLib.Types {
 	internal class TypeConversionSymbol : Symbol {
 		public override SymbolType Type => SymbolType.TypeConversion;
 

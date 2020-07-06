@@ -1,5 +1,6 @@
 ﻿using InterpreterLib.Binding;
-using InterpreterLib.Binding.Types;
+using InterpreterLib.Binding.Tree;
+using InterpreterLib.Types;
 using System;
 
 namespace InterpreterLib {
@@ -190,12 +191,32 @@ namespace InterpreterLib {
 			return new Diagnostic(line, column, $"Syntax Error: Parameter list \"{text}\" is invalid. Are you missing a comma?");
 		}
 
+		internal static Diagnostic ReportVoidType(int line, int column, string text) {
+			return new Diagnostic(line, column, $"{text} Cannot be void type.");
+		}
+
 		internal static Diagnostic ReportMissingComma(int line, int column, string text) {
 			return new Diagnostic(line, column, $"Syntax Error: Missing comma at {text}");
 		}
 
 		internal static Diagnostic ReportInvalidCallParameter(int line, int column, string text) {
 			return new Diagnostic(line, column, $"Syntax Error: {text}");
+		}
+
+		internal static Diagnostic ReportInvalidReturnType(int line, int column, object parameterName) {
+			return new Diagnostic(line, column, $"Inavlid return type {parameterName}");
+		}
+
+		internal static Diagnostic ReportCannotRedefineFunction(int line, int column, string funcName) {
+			return new Diagnostic(line, column, $"Cannot redefine function {funcName}");
+		}
+
+		internal static Diagnostic ReportInvalidCompilationUnit(int line, int column, string text) {
+			return new Diagnostic(line, column, $"Syntax Error: Invalid compilation unit {text}");
+		}
+
+		internal static Diagnostic ReportInvalidGlobalStatement(int line, int column, string text) {
+			return new Diagnostic(line, column, $"Syntax Error: Invalid global statement {text}");
 		}
 	}
 }

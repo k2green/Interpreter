@@ -1,4 +1,4 @@
-﻿using InterpreterLib.Binding.Types;
+﻿using InterpreterLib.Types;
 using System.Collections.Generic;
 
 namespace InterpreterLib.Binding.Tree {

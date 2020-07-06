@@ -2,7 +2,7 @@
 using InterpreterLib.Binding.Tree;
 using System;
 using System.Collections.Generic;
-using InterpreterLib.Binding.Types;
+using InterpreterLib.Types;
 using InterpreterLib.Binding.Tree.Statements;
 using InterpreterLib.Binding.Tree.Expressions;
 
@@ -11,21 +11,23 @@ namespace InterpreterLib {
 
 		private DiagnosticContainer diagnostics;
 
-		private Dictionary<VariableSymbol, object> variables;
+		private Dictionary<VariableSymbol, object> globals;
+		private Stack<Dictionary<VariableSymbol, object>> locals;
 
-		public BoundStatement[] Statements { get; }
+		public BoundProgram Program { get; }
 
-		internal Evaluator(BoundStatement[] statements, Dictionary<VariableSymbol, object> variables) {
+		internal Evaluator(BoundProgram program, Dictionary<VariableSymbol, object> variables) {
 			diagnostics = new DiagnosticContainer();
-			Statements = statements;
-			this.variables = variables;
+			Program = program;
+			globals = variables;
+			locals = new Stack<Dictionary<VariableSymbol, object>>();
 		}
 
 		public DiagnosticResult<object> Evaluate() {
 			object value = null;
 
 			try {
-				value = EvaluateStatements(Statements);
+				value = EvaluateBlock(Program.Statement);
 			} catch (ErrorEncounteredException exception) {
 				diagnostics.AddDiagnostic(Diagnostic.ReportErrorEncounteredWhileEvaluating());
 			} // Allows the evaluator to exit if an error node is found.
@@ -34,19 +36,19 @@ namespace InterpreterLib {
 			return new DiagnosticResult<object>(diagnostics, value);
 		}
 
-		private object EvaluateStatements(BoundStatement[] statements) {
+		private object EvaluateBlock(BoundBlock block) {
 			var labelConversions = new Dictionary<LabelSymbol, int>();
 
-			for (int index = 0; index < statements.Length; index++) {
-				if (statements[index] is BoundLabel label) {
+			for (int index = 0; index < block.Statements.Count; index++) {
+				if (block.Statements[index] is BoundLabel label) {
 					labelConversions.Add(label.Label, index + 1);
 				}
 			}
 
 			var currentIndex = 0;
 			object val = null;
-			while (currentIndex < statements.Length) {
-				var statement = statements[currentIndex];
+			while (currentIndex < block.Statements.Count) {
+				var statement = block.Statements[currentIndex];
 
 				switch (statement.Type) {
 					case NodeType.VariableDeclaration:
@@ -95,25 +97,45 @@ namespace InterpreterLib {
 				case NodeType.FunctionCall:
 					return EvaluateFunctionCall((BoundFunctionCall)expression);
 				case NodeType.InternalTypeConversion:
-					return EvaluateInternalTypeConversion((BoundInternalTypeConversion) expression);
+					return EvaluateInternalTypeConversion((BoundInternalTypeConversion)expression);
 				default: throw new NotImplementedException();
 			}
 		}
 
 		private object EvaluateFunctionCall(BoundFunctionCall statement) {
-			if (statement.Function == BaseFunction.Print) {
+			if (statement.Function == BuiltInFunctions.Print) {
 				string text = (string)EvaluateExpression(statement.Parameters[0]);
 				Console.WriteLine(text);
-			} else if (statement.Function == BaseFunction.Input) {
+			} else if (statement.Function == BuiltInFunctions.Input) {
 				string input = Console.ReadLine();
 				return input;
+			} else if (Program.FunctionBodies.TryGetValue(statement.Function, out var boundBlock)) {
+				var newScope = new Dictionary<VariableSymbol, object>();
+				var parameters = new VariableSymbol[statement.Parameters.Count];
+				int index = 0;
+
+				foreach (var param in statement.Function.Parameters) {
+					parameters[index] = new VariableSymbol(param.Name, false, param.ValueType);
+					newScope.Add(parameters[index], null);
+					index++;
+				}
+
+				for(index = 0; index < parameters.Length; index++) {
+					newScope[parameters[index]] = EvaluateExpression(statement.Parameters[index]);
+				}
+
+				locals.Push(newScope);
+
+				EvaluateBlock(boundBlock);
+
+				locals.Pop();
 			}
 
 			return null;
 		}
 
 		private object EvaluateInternalTypeConversion(BoundInternalTypeConversion expression) {
-			if(expression.ConversionSymbol.ToType == TypeSymbol.String) {
+			if (expression.ConversionSymbol.ToType == TypeSymbol.String) {
 				return EvaluateExpression(expression.Expression).ToString();
 			}
 
@@ -129,7 +151,7 @@ namespace InterpreterLib {
 		private object EvaluateVariableDeclaration(BoundVariableDeclarationStatement expression) {
 			var exprVal = expression.Initialiser == null ? null : EvaluateExpression(expression.Initialiser);
 
-			variables[expression.Variable] = exprVal;
+			Assign(expression.Variable, exprVal);
 			return exprVal;
 		}
 
@@ -139,12 +161,35 @@ namespace InterpreterLib {
 			if (expression == null)
 				return null;
 
-			variables[assignment.Identifier] = expression;
+			Assign(assignment.Identifier, expression);
 			return expression;
 		}
 
 		private object EvaluateVariable(BoundVariableExpression expression) {
-			return variables[expression.Variable];
+			if (locals.Count > 0) {
+				if (locals.Peek().TryGetValue(expression.Variable, out var value))
+					return value;
+			}
+
+			return globals[expression.Variable];
+		}
+
+		private void Assign(VariableSymbol symbol, object value) {
+			if (locals.Count > 0) {
+				var localVars = locals.Peek();
+
+				if (localVars.ContainsKey(symbol))
+					localVars[symbol] = value;
+				else
+					localVars.Add(symbol, value);
+
+				return;
+			}
+
+			if (globals.ContainsKey(symbol))
+				globals[symbol] = value;
+			else
+				globals.Add(symbol, value);
 		}
 
 		private object EvaluateBinaryExpression(BoundBinaryExpression expression) {

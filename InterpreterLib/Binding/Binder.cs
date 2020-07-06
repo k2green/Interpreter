@@ -2,9 +2,10 @@
 using InterpreterLib.Binding.Tree;
 using InterpreterLib.Binding.Tree.Expressions;
 using InterpreterLib.Binding.Tree.Statements;
-using InterpreterLib.Binding.Types;
+using InterpreterLib.Types;
 using InterpreterLib.Syntax.Tree;
 using InterpreterLib.Syntax.Tree.Expressions;
+using InterpreterLib.Syntax.Tree.Global;
 using InterpreterLib.Syntax.Tree.Statements;
 using System;
 using System.Collections.Generic;
@@ -12,37 +13,47 @@ using System.Linq;
 
 namespace InterpreterLib.Binding {
 	internal sealed class Binder : GLangBaseVisitor<BoundNode> {
+		public DiagnosticContainer Diagnostics { get; }
 
 		private BoundScope scope;
-		private DiagnosticContainer diagnostics;
+		private FunctionSymbol Function;
+		private Dictionary<FunctionSymbol, FunctionDeclarationSyntax> functionBodies;
 
-		private Binder(BoundScope parent) {
+		private Binder(BoundScope parent, FunctionSymbol function = null) {
 			scope = new BoundScope(parent);
-			diagnostics = new DiagnosticContainer();
+			Diagnostics = new DiagnosticContainer();
+			Function = function;
+			functionBodies = new Dictionary<FunctionSymbol, FunctionDeclarationSyntax>();
+
+			if (function != null) {
+				foreach (var param in function.Parameters) {
+					scope.TryDefineVariable(new VariableSymbol(param.Name, false, param.ValueType));
+				}
+			}
 		}
 
-		public static DiagnosticResult<BoundGlobalScope> BindGlobalScope(BoundGlobalScope prev, SyntaxNode tree) {
+		public static DiagnosticResult<BoundGlobalScope> BindGlobalScope(BoundGlobalScope prev, CompilationUnitSyntax tree) {
 			var binder = new Binder(CreateParentScopes(prev));
-			var res = binder.BindRoot(tree);
+			var res = binder.BindCompilationUnit(tree);
 			BoundGlobalScope globScope;
 
-			if (!(res.Value is BoundStatement statement)) {
-				return new DiagnosticResult<BoundGlobalScope>(res.Diagnostics, prev);
+			if (!(res is BoundBlock block)) {
+				return new DiagnosticResult<BoundGlobalScope>(binder.Diagnostics, prev);
 			}
 
-			if (res.Diagnostics.Any()) {
-				globScope = new BoundGlobalScope(prev, binder.scope.GetVariables(), statement, new BoundStatement[] { statement });
-				return new DiagnosticResult<BoundGlobalScope>(res.Diagnostics, globScope);
+			if (binder.Diagnostics.Any()) {
+				globScope = new BoundGlobalScope(prev, binder.scope.GetVariables(), binder.scope.GetFunctions(), block, binder.functionBodies);
+				return new DiagnosticResult<BoundGlobalScope>(binder.Diagnostics, globScope);
 			}
 
-			var lowered = Lowerer.Lower(statement);
-			globScope = new BoundGlobalScope(prev, binder.scope.GetVariables(), statement, lowered.Statements.ToArray());
-			return new DiagnosticResult<BoundGlobalScope>(res.Diagnostics, globScope);
+			var lowered = Lowerer.Lower(block);
+			globScope = new BoundGlobalScope(prev, binder.scope.GetVariables(), binder.scope.GetFunctions(), lowered, binder.functionBodies);
+			return new DiagnosticResult<BoundGlobalScope>(binder.Diagnostics, globScope);
 		}
 
 		public static BoundScope CreateParentScopes(BoundGlobalScope previous) {
 			if (previous == null)
-				return null;
+				return CreateBaseScope();
 
 			var stack = new Stack<BoundGlobalScope>();
 			while (previous != null) {
@@ -50,7 +61,7 @@ namespace InterpreterLib.Binding {
 				previous = previous.Previous;
 			}
 
-			BoundScope current = null;
+			BoundScope current = CreateBaseScope();
 
 			while (stack.Count > 0) {
 				previous = stack.Pop();
@@ -63,17 +74,66 @@ namespace InterpreterLib.Binding {
 			return current;
 		}
 
-		public DiagnosticResult<BoundNode> BindRoot(SyntaxNode node) {
-			var boundNode = Bind(node);
+		private static BoundScope CreateBaseScope() {
+			var result = new BoundScope();
 
-			return new DiagnosticResult<BoundNode>(diagnostics, boundNode);
+			foreach (var function in BuiltInFunctions.GetAll()) {
+				result.TryDefineFunction(function);
+			}
+
+			return result;
+		}
+
+		public static DiagnosticResult<BoundProgram> BindProgram(BoundGlobalScope globalScope) {
+			var functionBodies = new Dictionary<FunctionSymbol, BoundBlock>();
+			var diagnostics = new DiagnosticContainer();
+			var parentScope = CreateParentScopes(globalScope);
+
+			foreach (var function in globalScope.Functions) {
+				if (globalScope.FunctionBodies.TryGetValue(function, out var functionDeclaration)) {
+					var functionBinder = new Binder(parentScope, function);
+					var bodyBind = functionBinder.Bind(functionDeclaration.Body);
+
+					if (functionBinder.Diagnostics.Any())
+						diagnostics.AddDiagnostics(functionBinder.Diagnostics);
+
+					if (!(bodyBind is BoundStatement body))
+						continue;
+
+					functionBodies.Add(function, Lowerer.Lower(body));
+				}
+			}
+
+			var program = new BoundProgram(functionBodies, globalScope.Root);
+			return new DiagnosticResult<BoundProgram>(diagnostics, program);
 		}
 
 		private BoundNode Error(Diagnostic diagnostic, bool addToDiagnostics = true) {
 			if (addToDiagnostics)
-				diagnostics.AddDiagnostic(diagnostic);
+				Diagnostics.AddDiagnostic(diagnostic);
 
 			return new BoundError(diagnostic);
+		}
+
+		private BoundBlock BindCompilationUnit(CompilationUnitSyntax compilationUnit) {
+			foreach (var functionDef in compilationUnit.Statements.OfType<FunctionDeclarationSyntax>()) {
+				BindFunctionDeclaration(functionDef);
+			}
+
+			var statements = new List<BoundStatement>();
+
+			foreach (var statementSyntax in compilationUnit.Statements) {
+				if (!(statementSyntax is FunctionDeclarationSyntax)) {
+					var statementBind = Bind(statementSyntax);
+
+					if (!(statementBind is BoundStatement statement))
+						continue;
+
+					statements.Add(statement);
+				}
+			}
+
+			return new BoundBlock(statements);
 		}
 
 		private BoundNode Bind(SyntaxNode syntax) {
@@ -104,18 +164,24 @@ namespace InterpreterLib.Binding {
 					return BindBlock((BlockSyntax)syntax);
 				case SyntaxType.FunctionCall:
 					return BindFunctionCall((FunctionCallSyntax)syntax);
+				case SyntaxType.GlobalStatement:
+					return BindGlobalStatement((GlobalStatementSyntax)syntax);
 				default: throw new Exception($"Encountered unhandled syntax {syntax.Type}");
 			}
 		}
 
+		private BoundNode BindGlobalStatement(GlobalStatementSyntax syntax) {
+			return Bind(syntax.Statement);
+		}
+
 		private BoundNode BindFunctionCall(FunctionCallSyntax syntax) {
 			string callName = syntax.Identifier.Token.Text;
-			
-			if(!BaseFunction.TryFindSymbol(callName, out var symbol))
-				return Error(Diagnostic.ReportUndefinedFunction(syntax.Identifier.Span.Start, syntax.Identifier.Span.Column, callName));
 
-			if(syntax.Parameters.Count != symbol.Parameters.Count)
-				return Error(Diagnostic.ReportFunctionCountMismatch(syntax.Identifier.Span.Start, syntax.Identifier.Span.Column, callName, syntax.Parameters.Count, symbol.Parameters.Count));
+			if (!scope.TryLookupFunction(callName, out var symbol))
+				return Error(Diagnostic.ReportUndefinedFunction(syntax.Identifier.Span.Line, syntax.Identifier.Span.Column, callName));
+
+			if (syntax.Parameters.Count != symbol.Parameters.Count)
+				return Error(Diagnostic.ReportFunctionCountMismatch(syntax.Identifier.Span.Line, syntax.Identifier.Span.Column, callName, syntax.Parameters.Count, symbol.Parameters.Count));
 
 			List<BoundExpression> expressions = new List<BoundExpression>();
 
@@ -128,8 +194,8 @@ namespace InterpreterLib.Binding {
 					if (!(paramVisit is BoundExpression parameter))
 						return paramVisit;
 
-					if(parameter.ValueType != requiredType && !TypeConversionSymbol.TryFind(parameter.ValueType, requiredType, out _))
-						return Error(Diagnostic.ReportInvalidParameterType(paramSyntax.Span.Start, paramSyntax.Span.Column, symbol.Parameters[index].Name, parameter.ValueType, requiredType));
+					if (parameter.ValueType != requiredType && !TypeConversionSymbol.TryFind(parameter.ValueType, requiredType, out _))
+						return Error(Diagnostic.ReportInvalidParameterType(paramSyntax.Span.Line, paramSyntax.Span.Column, symbol.Parameters[index].Name, parameter.ValueType, requiredType));
 
 					expressions.Add(parameter);
 				}
@@ -238,6 +304,9 @@ namespace InterpreterLib.Binding {
 			if (!(boundExpression is BoundExpression expression))
 				return boundExpression;
 
+			if (expression.ValueType == TypeSymbol.Void)
+				return Error(Diagnostic.ReportVoidType(syntax.Expression.Span.Line, syntax.Expression.Span.Column, syntax.Expression.ToString()));
+
 			if (!scope.TryLookupVariable(identifierText, out var variable))
 				return Error(Diagnostic.ReportUndefinedVariable(syntax.IdentifierToken.Span.Line, syntax.IdentifierToken.Span.Column, identifierText));
 
@@ -295,6 +364,11 @@ namespace InterpreterLib.Binding {
 			if (type != null && initialiser != null && initialiser.ValueType != type && !TypeConversionSymbol.TryFind(initialiser.ValueType, type, out _))
 				return Error(Diagnostic.ReportCannotCast(syntax.Definition.Span.Line, syntax.Definition.Span.Column, initialiser.ValueType, type));
 
+			if (type == TypeSymbol.Void)
+				return Error(Diagnostic.ReportVoidType(syntax.Definition.Span.Line, syntax.Definition.Span.Column, syntax.Definition.ToString()));
+
+			if (initialiser != null && initialiser.ValueType == TypeSymbol.Void)
+				return Error(Diagnostic.ReportVoidType(syntax.Initialiser.Span.Line, syntax.Initialiser.Span.Column, syntax.Initialiser.ToString()));
 
 			type = type ?? initialiser.ValueType;
 			var variable = new VariableSymbol(identifierText, isreadOnly, type);
@@ -356,6 +430,36 @@ namespace InterpreterLib.Binding {
 			var stringText = syntax.ToString();
 			var text = stringText.Substring(1, stringText.Length - 2);
 			return new BoundLiteral(text, TypeSymbol.String);
+		}
+
+		public BoundNode BindFunctionDeclaration(FunctionDeclarationSyntax syntax) {
+			string funcName = syntax.Identifier.ToString();
+			var parameterList = new List<ParameterSymbol>();
+			var returnType = TypeSymbol.FromString(syntax.ReturnType.NameToken.ToString());
+
+			foreach (var parameter in syntax.Parameters.Parameters) {
+				string parameterName = parameter.Identifier.ToString();
+				var typeBind = TypeSymbol.FromString(parameter.Definition.NameToken.ToString());
+
+				if (typeBind == null)
+					return Error(Diagnostic.ReportInvalidParameterDefinition(parameter.Span.Line, parameter.Span.Column, parameterName));
+
+				if (typeBind == TypeSymbol.Void)
+					return Error(Diagnostic.ReportVoidType(parameter.Span.Line, parameter.Span.Column, parameterName));
+
+				parameterList.Add(new ParameterSymbol(parameterName, typeBind));
+			}
+
+			if (returnType == null)
+				return Error(Diagnostic.ReportInvalidReturnType(syntax.ReturnType.Span.Line, syntax.ReturnType.Span.Column, syntax.ReturnType.ToString()));
+
+			var functionSymbol = new FunctionSymbol(funcName, parameterList, returnType);
+
+			if (!scope.TryDefineFunction(functionSymbol))
+				return Error(Diagnostic.ReportCannotRedefineFunction(syntax.Identifier.Span.Line, syntax.Identifier.Span.Column, funcName));
+
+			functionBodies.Add(functionSymbol, syntax);
+			return null;
 		}
 	}
 }

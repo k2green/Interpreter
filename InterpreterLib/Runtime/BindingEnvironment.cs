@@ -4,7 +4,7 @@ using InterpreterLib.Binding;
 using InterpreterLib.Binding.Lowering;
 using InterpreterLib.Binding.Tree;
 using InterpreterLib.Binding.Tree.Statements;
-using InterpreterLib.Binding.Types;
+using InterpreterLib.Types;
 using InterpreterLib.Diagnostics;
 using InterpreterLib.Syntax;
 using InterpreterLib.Syntax.Tree;
@@ -12,13 +12,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using InterpreterLib.Syntax.Tree.Global;
 
 namespace InterpreterLib.Runtime {
 	public sealed class BindingEnvironment {
 		private DiagnosticContainer diagnostics;
 		private readonly bool chainDiagnostics;
 		private BindingEnvironment previous;
-		private SyntaxNode SyntaxRoot;
+		private CompilationUnitSyntax SyntaxRoot;
 
 		public IEnumerable<Diagnostic> Diagnostics => diagnostics;
 
@@ -48,7 +49,7 @@ namespace InterpreterLib.Runtime {
 			}
 		}
 
-		private BindingEnvironment(SyntaxNode input, bool chainDiagnostics, BindingEnvironment previous) {
+		private BindingEnvironment(CompilationUnitSyntax input, bool chainDiagnostics, BindingEnvironment previous) {
 			this.chainDiagnostics = chainDiagnostics;
 			this.previous = previous;
 			diagnostics = new DiagnosticContainer();
@@ -64,7 +65,13 @@ namespace InterpreterLib.Runtime {
 			if (GlobalScope == null || GlobalScope.Root == null || diagnostics.Any())
 				return new DiagnosticResult<object>(diagnostics, null);
 
-			Evaluator evaluator = new Evaluator(GlobalScope.Root, variables);
+			var program = Binder.BindProgram(GlobalScope);
+			diagnostics.AddDiagnostics(program.Diagnostics);
+
+			if (program.Value == null)
+				return new DiagnosticResult<object>(diagnostics, null);
+
+			Evaluator evaluator = new Evaluator(program.Value, variables);
 
 			var evalResult = evaluator.Evaluate();
 			diagnostics.AddDiagnostics(evalResult.Diagnostics);

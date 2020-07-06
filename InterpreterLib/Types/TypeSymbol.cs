@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Reflection;
+using System.Linq;
 
-namespace InterpreterLib.Binding.Types {
+namespace InterpreterLib.Types {
 	public class TypeSymbol : Symbol {
 		public static readonly TypeSymbol Integer = new TypeSymbol("int");
 		public static readonly TypeSymbol Byte = new TypeSymbol("byte");
@@ -11,12 +12,14 @@ namespace InterpreterLib.Binding.Types {
 		public static readonly TypeSymbol String = new TypeSymbol("string");
 		public static readonly TypeSymbol Void = new TypeSymbol("void");
 
-		private static TypeSymbol[] types = new TypeSymbol[] {
-			Integer, Byte, Double, Boolean, String
-		};
+		public static IEnumerable<TypeSymbol> GetAll() {
+			return typeof(TypeSymbol).GetFields(BindingFlags.Public | BindingFlags.Static)
+				.Where(f => f.FieldType == typeof(TypeSymbol))
+				.Select(f => (TypeSymbol)f.GetValue(null));
+		}
 
 		public static TypeSymbol FromString(string input) {
-			foreach (var symbol in types)
+			foreach (var symbol in GetAll())
 				if (symbol.Name.Equals(input))
 					return symbol;
 
@@ -24,7 +27,7 @@ namespace InterpreterLib.Binding.Types {
 		}
 
 		public static bool GetType(string typeStr, out TypeSymbol symbol) {
-			foreach (var type in types) {
+			foreach (var type in GetAll()) {
 				if (type.Name.Equals(typeStr)) {
 					symbol = type;
 					return true;

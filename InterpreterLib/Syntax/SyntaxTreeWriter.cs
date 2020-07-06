@@ -4,6 +4,7 @@ using InterpreterLib.Diagnostics;
 using InterpreterLib.Runtime;
 using InterpreterLib.Syntax.Tree;
 using InterpreterLib.Syntax.Tree.Expressions;
+using InterpreterLib.Syntax.Tree.Global;
 using InterpreterLib.Syntax.Tree.Statements;
 using System;
 using System.Collections.Generic;
@@ -105,7 +106,25 @@ namespace InterpreterLib.Syntax {
 				case SyntaxType.FunctionDeclaration:
 					WriteFunctionDeclaration((FunctionDeclarationSyntax)node, prefix1, prefix2);
 					break;
+				case SyntaxType.CompilationUnit:
+					WriteCompilationUnit((CompilationUnitSyntax)node, prefix1, prefix2);
+					break;
+				case SyntaxType.GlobalStatement:
+					WriteGlobalStatement((GlobalStatementSyntax)node, prefix1, prefix2);
+					break;
 			}
+		}
+
+		private void WriteGlobalStatement(GlobalStatementSyntax node, string prefix1, string prefix2) {
+			Writer.WriteLine($"{prefix1}Global Statement:");
+
+			WriteChildren(node.Children, prefix2);
+		}
+
+		private void WriteCompilationUnit(CompilationUnitSyntax node, string prefix1, string prefix2) {
+			Writer.WriteLine($"{prefix1}Compilation Unit:");
+
+			WriteChildren(node.Children, prefix2);
 		}
 
 		private void WriteFunctionDeclaration(FunctionDeclarationSyntax node, string prefix1, string prefix2) {

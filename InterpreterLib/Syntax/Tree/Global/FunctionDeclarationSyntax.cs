@@ -1,10 +1,9 @@
 ﻿using InterpreterLib.Syntax.Tree.Expressions;
-using System;
+using InterpreterLib.Syntax.Tree.Statements;
 using System.Collections.Generic;
-using System.Text;
 
-namespace InterpreterLib.Syntax.Tree.Statements {
-	internal sealed class FunctionDeclarationSyntax : StatementSyntax {
+namespace InterpreterLib.Syntax.Tree.Global {
+	internal sealed class FunctionDeclarationSyntax : GlobalSyntax {
 		public override SyntaxType Type => SyntaxType.FunctionDeclaration;
 
 		public override IEnumerable<SyntaxNode> Children {

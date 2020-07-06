@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using InterpreterLib.Binding.Tree.Expressions;
-using InterpreterLib.Binding.Types;
+using InterpreterLib.Types;
 
 namespace InterpreterLib.Binding.Tree.Statements {
 	internal sealed class BoundExpressionStatement : BoundStatement {

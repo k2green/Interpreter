@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace InterpreterLib.Binding.Types {
+namespace InterpreterLib.Types {
 	public sealed class FunctionSymbol : Symbol {
 
 		public override SymbolType Type => SymbolType.Function;
@@ -34,7 +34,7 @@ namespace InterpreterLib.Binding.Types {
 		}
 
 		public override int GetHashCode() {
-			throw new NotImplementedException();
+			return HashCode.Combine(Name, ReturnType);
 		}
 	}
 }

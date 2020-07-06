@@ -33,6 +33,12 @@ using IToken = Antlr4.Runtime.IToken;
 [System.CLSCompliant(false)]
 public interface IGLangVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <summary>
+	/// Visit a parse tree produced by <see cref="GLangParser.compilationUnit"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitCompilationUnit([NotNull] GLangParser.CompilationUnitContext context);
+	/// <summary>
 	/// Visit a parse tree produced by <see cref="GLangParser.declerationOrAssign"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
@@ -44,6 +50,12 @@ public interface IGLangVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
 	Result VisitTypeDefinition([NotNull] GLangParser.TypeDefinitionContext context);
+	/// <summary>
+	/// Visit a parse tree produced by <see cref="GLangParser.globalStatement"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitGlobalStatement([NotNull] GLangParser.GlobalStatementContext context);
 	/// <summary>
 	/// Visit a parse tree produced by <see cref="GLangParser.statement"/>.
 	/// </summary>

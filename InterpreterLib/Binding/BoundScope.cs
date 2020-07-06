@@ -1,65 +1,60 @@
-﻿using InterpreterLib.Binding.Types;
+﻿using InterpreterLib.Types;
 using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Linq;
 
 namespace InterpreterLib.Binding {
 	internal sealed class BoundScope {
 
-		private Dictionary<string, VariableSymbol> variables;
-		private Dictionary<string, FunctionSymbol> functions;
+		private Dictionary<string, Symbol> symbols;
 		public BoundScope Parent;
 
 		internal BoundScope(BoundScope parent) {
 			Parent = parent;
-			variables = new Dictionary<string, VariableSymbol>();
-			functions = new Dictionary<string, FunctionSymbol>();
+			symbols = new Dictionary<string, Symbol>();
 		}
 
 		internal BoundScope() : this(null) { }
 
-		internal bool TryDefineVariable(VariableSymbol variable) {
-			if (variables.ContainsKey(variable.Name))
+		internal bool TryDefineVariable(VariableSymbol variable) => TryDefineSymbol(variable);
+
+		internal bool TryLookupVariable(string name, out VariableSymbol variable) => TryLookupSymbol(name, out variable);
+
+		internal bool TryDefineFunction(FunctionSymbol function) => TryDefineSymbol(function);
+
+		internal bool TryLookupFunction(string name, out FunctionSymbol function) => TryLookupSymbol(name, out function);
+
+		public bool TryDefineSymbol<T>(T symbol) where T : Symbol {
+			if (symbols.ContainsKey(symbol.Name))
 				return false;
 
-			variables.Add(variable.Name, variable);
+			symbols.Add(symbol.Name, symbol);
 			return true;
 		}
 
-		internal bool TryLookupVariable(string name, out VariableSymbol variable) {
-			if (variables.TryGetValue(name, out variable))
+		public bool TryLookupSymbol<T>(string name, out T symbol) where T : Symbol {
+			symbol = null;
+
+			if (symbols.TryGetValue(name, out var lookup)) {
+				if (!(lookup is T castedLookup))
+					return false;
+
+				symbol = castedLookup;
 				return true;
+			}
 
 			if (Parent == null)
 				return false;
 
-			return Parent.TryLookupVariable(name, out variable);
+			return Parent.TryLookupSymbol(name, out symbol);
 		}
-
-		internal bool TryDefineFunction(FunctionSymbol function) {
-			if (functions.ContainsKey(function.Name))
-				return false;
-
-			functions.Add(function.Name, function);
-			return true;
-		}
-
-		internal bool TryLookupFunction(string name, out FunctionSymbol function) {
-			if (functions.TryGetValue(name, out function))
-				return true;
-
-			if (Parent == null)
-				return false;
-
-			return Parent.TryLookupFunction(name, out function);
-		}
-
-
-		internal VariableSymbol this[string name] => variables[name];
-		internal bool TryDirectLookup(string name, out VariableSymbol variable) => variables.TryGetValue(name, out variable);
 
 		public IEnumerable<VariableSymbol> GetVariables() {
-			return variables.Values;
+			return symbols.Values.OfType<VariableSymbol>();
+		}
+
+		public IEnumerable<FunctionSymbol> GetFunctions() {
+			return symbols.Values.OfType<FunctionSymbol>();
 		}
 	}
 }

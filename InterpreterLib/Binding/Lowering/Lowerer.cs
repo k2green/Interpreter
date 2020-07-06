@@ -1,7 +1,7 @@
 ﻿using InterpreterLib.Binding.Tree;
 using InterpreterLib.Binding.Tree.Expressions;
 using InterpreterLib.Binding.Tree.Statements;
-using InterpreterLib.Binding.Types;
+using InterpreterLib.Types;
 using System;
 using System.Collections.Generic;
 using System.Linq;

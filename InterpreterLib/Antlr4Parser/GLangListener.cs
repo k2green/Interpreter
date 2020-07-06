@@ -32,6 +32,16 @@ using IToken = Antlr4.Runtime.IToken;
 [System.CLSCompliant(false)]
 public interface IGLangListener : IParseTreeListener {
 	/// <summary>
+	/// Enter a parse tree produced by <see cref="GLangParser.compilationUnit"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterCompilationUnit([NotNull] GLangParser.CompilationUnitContext context);
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="GLangParser.compilationUnit"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitCompilationUnit([NotNull] GLangParser.CompilationUnitContext context);
+	/// <summary>
 	/// Enter a parse tree produced by <see cref="GLangParser.declerationOrAssign"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
@@ -51,6 +61,16 @@ public interface IGLangListener : IParseTreeListener {
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	void ExitTypeDefinition([NotNull] GLangParser.TypeDefinitionContext context);
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="GLangParser.globalStatement"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterGlobalStatement([NotNull] GLangParser.GlobalStatementContext context);
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="GLangParser.globalStatement"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitGlobalStatement([NotNull] GLangParser.GlobalStatementContext context);
 	/// <summary>
 	/// Enter a parse tree produced by <see cref="GLangParser.statement"/>.
 	/// </summary>
