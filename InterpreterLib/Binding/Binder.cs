@@ -37,16 +37,12 @@ namespace InterpreterLib.Binding {
 			var res = binder.BindCompilationUnit(tree);
 			BoundGlobalScope globScope;
 
-			if (!(res is BoundBlock block)) {
-				return new DiagnosticResult<BoundGlobalScope>(binder.Diagnostics, prev);
-			}
-
-			if (binder.Diagnostics.Any()) {
-				globScope = new BoundGlobalScope(prev, binder.scope.GetVariables(), binder.scope.GetFunctions(), block, binder.functionBodies);
+			if (res.Diagnostics.Any()) {
+				globScope = new BoundGlobalScope(prev, binder.scope.GetVariables(), binder.scope.GetFunctions(), null, binder.functionBodies);
 				return new DiagnosticResult<BoundGlobalScope>(binder.Diagnostics, globScope);
 			}
 
-			var lowered = Lowerer.Lower(block);
+			var lowered = Lowerer.Lower(res.Value);
 			globScope = new BoundGlobalScope(prev, binder.scope.GetVariables(), binder.scope.GetFunctions(), lowered, binder.functionBodies);
 			return new DiagnosticResult<BoundGlobalScope>(binder.Diagnostics, globScope);
 		}
@@ -115,7 +111,10 @@ namespace InterpreterLib.Binding {
 			return new BoundError(diagnostic);
 		}
 
-		private BoundBlock BindCompilationUnit(CompilationUnitSyntax compilationUnit) {
+		private DiagnosticResult<BoundBlock> BindCompilationUnit(CompilationUnitSyntax compilationUnit) {
+			if (compilationUnit == null)
+				return new DiagnosticResult<BoundBlock>(Diagnostics, null);
+
 			foreach (var functionDef in compilationUnit.Statements.OfType<FunctionDeclarationSyntax>()) {
 				BindFunctionDeclaration(functionDef);
 			}
@@ -133,7 +132,7 @@ namespace InterpreterLib.Binding {
 				}
 			}
 
-			return new BoundBlock(statements);
+			return new DiagnosticResult<BoundBlock>(Diagnostics, new BoundBlock(statements));
 		}
 
 		private BoundNode Bind(SyntaxNode syntax) {
