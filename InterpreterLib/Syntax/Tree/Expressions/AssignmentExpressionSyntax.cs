@@ -20,8 +20,9 @@ namespace InterpreterLib.Syntax.Tree.Expressions {
 		public TokenSyntax OperatorToken { get; }
 		public ExpressionSyntax Expression { get; }
 		public override TextLocation Location => IdentifierToken.Location;
+		public override TextSpan Span => new TextSpan(IdentifierToken.Span.Start, Expression.Span.End);
 
-		public AssignmentExpressionSyntax( TokenSyntax identifierToken, TypeDefinitionSyntax definition, TokenSyntax operatorToken, ExpressionSyntax expression) {
+		public AssignmentExpressionSyntax(TokenSyntax identifierToken, TypeDefinitionSyntax definition, TokenSyntax operatorToken, ExpressionSyntax expression) {
 			IdentifierToken = identifierToken;
 			Definition = definition;
 			OperatorToken = operatorToken;

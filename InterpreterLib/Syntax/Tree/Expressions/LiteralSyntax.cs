@@ -15,11 +15,10 @@ namespace InterpreterLib.Syntax.Tree.Expressions {
 
 		public TokenSyntax LiteralToken { get; }
 		public override TextLocation Location => LiteralToken.Location;
+		public override TextSpan Span => LiteralToken.Span;
 
 		public LiteralSyntax(TokenSyntax literalToken) {
 			LiteralToken = literalToken;
-
-			Span = literalToken.Span;
 		}
 
 		public override string ToString() {

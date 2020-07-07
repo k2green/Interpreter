@@ -7,6 +7,7 @@ namespace InterpreterLib.Syntax.Tree.Statements {
 	internal sealed class ForLoopSyntax : StatementSyntax {
 		public override SyntaxType Type => SyntaxType.ForLoop;
 		public override TextLocation Location => ForToken.Location;
+		public override TextSpan Span => new TextSpan(ForToken.Span.Start, Body.Span.End);
 
 		public override IEnumerable<SyntaxNode> Children {
 			get {
@@ -56,8 +57,6 @@ namespace InterpreterLib.Syntax.Tree.Statements {
 			Step = step;
 			RightParenToken = rightParenToken;
 			Body = body;
-
-			Span = CreateNewSpan(ForToken.Span, Body.Span);
 		}
 
 		public override string ToString() {

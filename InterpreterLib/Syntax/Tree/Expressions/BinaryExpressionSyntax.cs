@@ -16,7 +16,8 @@ namespace InterpreterLib.Syntax.Tree.Expressions {
 		public ExpressionSyntax LeftSyntax { get; }
 		public TokenSyntax OpToken { get; }
 		public ExpressionSyntax RightSyntax { get; }
-		public override TextLocation Location => LeftSyntax.Location
+		public override TextLocation Location => LeftSyntax.Location;
+		public override TextSpan Span => new TextSpan(LeftSyntax.Span.Start, RightSyntax.Span.End);
 
 		public BinaryExpressionSyntax(ExpressionSyntax leftStntax, TokenSyntax opToken, ExpressionSyntax rightSyntax) {
 			LeftSyntax = leftStntax;

@@ -9,7 +9,8 @@ namespace InterpreterLib.Syntax.Tree.Expressions {
 		public override SyntaxType Type => SyntaxType.Token;
 
 		public IToken Token { get; }
-		public override TextLocation Location => new TextLocation(Token.Line, Token.Column); 
+		public override TextLocation Location => new TextLocation(Token.Line, Token.Column);
+		public override TextSpan Span => new TextSpan(Token.StartIndex, Token.StopIndex);
 
 		public TokenSyntax(IToken token) {
 			Token = token;

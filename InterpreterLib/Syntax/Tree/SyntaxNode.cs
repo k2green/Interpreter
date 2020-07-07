@@ -7,6 +7,7 @@ namespace InterpreterLib.Syntax.Tree {
 		public abstract SyntaxType Type { get; }
 		public abstract IEnumerable<SyntaxNode> Children { get; }
 		public abstract TextLocation Location { get; }
+		public abstract TextSpan Span { get; }
 
 		public override string ToString() {
 			var enumerable = from child in Children

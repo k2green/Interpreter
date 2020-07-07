@@ -7,6 +7,7 @@ namespace InterpreterLib.Syntax.Tree.Statements {
 	internal sealed class WhileLoopSyntax : StatementSyntax {
 		public override SyntaxType Type => SyntaxType.WhileLoop;
 		public override TextLocation Location => WhileToken.Location;
+		public override TextSpan Span => new TextSpan(WhileToken.Span.Start, Body.Span.End);
 
 		public override IEnumerable<SyntaxNode> Children {
 			get {
@@ -30,8 +31,6 @@ namespace InterpreterLib.Syntax.Tree.Statements {
 			Condition = condition;
 			RightParenToken = rightParenToken;
 			Body = body;
-
-			Span = CreateNewSpan(whileToken.Span, body.Span);
 		}
 	}
 }

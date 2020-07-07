@@ -22,8 +22,6 @@ namespace InterpreterLib.Syntax.Tree {
 		public TypedIdentifierSyntax(TokenSyntax identifier, TypeDefinitionSyntax definition) {
 			Identifier = identifier;
 			Definition = definition;
-
-			Span = CreateNewSpan(identifier.Span, definition.Span);
 		}
 	}
 }

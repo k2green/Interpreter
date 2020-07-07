@@ -20,6 +20,8 @@ namespace InterpreterLib.Syntax.Tree.Statements {
 		}
 
 		public override TextLocation Location => Identifier.Location;
+		public override TextSpan Span => new TextSpan(Identifier.Span.Start, RightParen.Span.End);
+
 		public TokenSyntax Identifier { get; }
 		public TokenSyntax LeftParen { get; }
 		public SeperatedSyntaxList<ExpressionSyntax> Parameters { get; }

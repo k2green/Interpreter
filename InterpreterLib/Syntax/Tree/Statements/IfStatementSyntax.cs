@@ -7,6 +7,7 @@ namespace InterpreterLib.Syntax.Tree.Statements {
 	internal sealed class IfStatementSyntax : StatementSyntax {
 		public override SyntaxType Type => SyntaxType.IfStatement;
 		public override TextLocation Location => IfToken.Location;
+		public override TextSpan Span { get; }
 
 		public override IEnumerable<SyntaxNode> Children {
 			get {
@@ -38,9 +39,9 @@ namespace InterpreterLib.Syntax.Tree.Statements {
 			FalseBranch = falseBranch;
 
 			if (ElseToken != null && FalseBranch != null)
-				Span = CreateNewSpan(ifToken.Span, falseBranch.Span);
+				Span = new TextSpan(IfToken.Span.Start, TrueBranch.Span.End);
 			else
-				Span = CreateNewSpan(ifToken.Span, trueBranch.Span);
+				Span = new TextSpan(IfToken.Span.Start, FalseBranch.Span.End);
 		}
 	}
 }

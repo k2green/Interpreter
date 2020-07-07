@@ -8,6 +8,7 @@ namespace InterpreterLib.Syntax.Tree.Statements {
 
 		public override SyntaxType Type => SyntaxType.Declaration;
 		public override TextLocation Location => KeywordToken.Location;
+		public override TextSpan Span => new TextSpan(KeywordToken.Span.Start, Initialiser.Span.End);
 
 		public override IEnumerable<SyntaxNode> Children {
 			get {

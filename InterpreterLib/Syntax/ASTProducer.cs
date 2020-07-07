@@ -50,8 +50,10 @@ namespace InterpreterLib.Syntax {
 			bool hasFunctionCall = context.functionCall() != null;
 
 			// Returns an error if there isn'n exactly one token
-			if (!(OnlyOne(hasInt, hasIdentifier, hasBool, hasString, hasDouble, hasFunctionCall)))
-				return Error(Diagnostic.ReportInvalidLiteral(context.Start.Line, context.Start.Column, context.GetText()));
+			if (!(OnlyOne(hasInt, hasIdentifier, hasBool, hasString, hasDouble, hasFunctionCall))) {
+				var span = new TextSpan(context.Start.StartIndex, context.Stop.StopIndex);
+				return Error(Diagnostic.ReportInvalidLiteral(context.Start.Line, context.Start.Column, span));
+			}
 
 			// Return a literal of variable Syntax depending on which token exists
 			if (hasDouble)
@@ -73,7 +75,7 @@ namespace InterpreterLib.Syntax {
 				return new LiteralSyntax(new TokenSyntax(context.STRING().Symbol));
 
 			// As a last resort, returns an error.
-			return Error(Diagnostic.ReportInvalidLiteral(context.Start.Line, context.Start.Column, context.GetText()));
+			return Error(Diagnostic.ReportInvalidLiteral(context.Start.Line, context.Start.Column, new TextSpan(context.Start.StartIndex, context.Stop.StopIndex)));
 		}
 
 		public override SyntaxNode VisitUnaryExpression([NotNull] GLangParser.UnaryExpressionContext context) {
@@ -83,7 +85,7 @@ namespace InterpreterLib.Syntax {
 			bool hasExpression = context.L_PARENTHESIS() != null && context.binaryExpression() != null && context.R_PARENTHESIS() != null;
 
 			if (!OnlyOne(hasAtom, hasUnaryOperation, hasExpression))
-				return Error(Diagnostic.ReportInvalidUnaryExpression(context.Start.Line, context.Start.Column, context.GetText()));
+				return Error(Diagnostic.ReportInvalidUnaryExpression(context.Start.Line, context.Start.Column, new TextSpan(context.Start.StartIndex, context.Stop.StopIndex)));
 
 			// Visit the atom if it exists
 			if (hasAtom)
@@ -94,11 +96,18 @@ namespace InterpreterLib.Syntax {
 
 
 			// Visit the binary expression
-			var visit = Visit(context.unaryExpression());
+			var unaryCtx = context.unaryExpression();
+			var visit = Visit(unaryCtx);
+
+			if (visit is ErrorSyntax)
+				return visit;
 
 			// Ensures the visit is an expression
-			if (!(visit is ExpressionSyntax))
-				return Error(Diagnostic.ReportInvalidUnaryExpression(context.Start.Line, context.Start.Column, context.GetText()));
+			if (!(visit is ExpressionSyntax)) {
+				var prev = new TextSpan(context.op.StartIndex, context.op.StopIndex);
+				var span = new TextSpan(unaryCtx.Start.StartIndex, unaryCtx.Stop.StopIndex);
+				return Error(Diagnostic.ReportInvalidUnaryExpression(context.Start.Line, context.Start.Column, prev, span));
+			}
 
 			return new UnaryExpressionSyntax(Token(context.op), (ExpressionSyntax)visit);
 		}
@@ -109,12 +118,12 @@ namespace InterpreterLib.Syntax {
 			bool hasOperator = context.op != null && !string.IsNullOrEmpty(context.op.Text);
 			bool hasRight = context.right != null && !string.IsNullOrEmpty(context.right.GetText());
 
-			// Ensures that either the context has both a left and right expression with an operator, or that it has an atom.
-			if (hasOperator && (!hasLeft || !hasRight || hasAtom))
-				return Error(Diagnostic.ReportInvalidBinaryExpression(context.Start.Line, context.Start.Column, context.GetText()));
-
 			if (hasAtom && (hasOperator || hasLeft || hasRight))
-				return Error(Diagnostic.ReportInvalidBinaryExpression(context.Start.Line, context.Start.Column, context.GetText()));
+				return Error(Diagnostic.ReportInvalidBinaryExpression(context.atom.Start.Line, context.atom.Start.Column, new TextSpan(context.atom.Start.StartIndex, context.atom.Stop.StopIndex)));
+
+			// Ensures that either the context has both a left and right expression with an operator, or that it has an atom.
+			if (hasOperator && (!hasLeft || !hasRight))
+				return Error(Diagnostic.ReportInvalidBinaryExpression(context.Start.Line, context.Start.Column, new TextSpan(context.Start.StartIndex, context.Stop.StopIndex)));
 
 			// Visit the atom if it exists
 			if (hasAtom)
@@ -124,11 +133,28 @@ namespace InterpreterLib.Syntax {
 			var visitLeft = Visit(context.left);
 			var visitRight = Visit(context.right);
 
-			// Ensures the visis are expressions
-			if (!(visitLeft is ExpressionSyntax && visitRight is ExpressionSyntax))
-				return Error(Diagnostic.ReportInvalidBinaryExpression(context.Start.Line, context.Start.Column, context.GetText()));
+			if (visitLeft is ErrorSyntax)
+				return visitLeft;
 
-			return new BinaryExpressionSyntax((ExpressionSyntax)visitLeft, Token(context.op), (ExpressionSyntax)visitRight);
+			if (visitRight is ErrorSyntax)
+				return visitRight;
+
+			// Ensures the visis are expressions
+			if (!(visitLeft is ExpressionSyntax left)) {
+				var offending = new TextSpan(context.left.Start.StartIndex, context.left.Stop.StopIndex);
+				var next = new TextSpan(context.op.StartIndex, context.right.Stop.StopIndex);
+
+				return Error(Diagnostic.ReportInvalidBinaryExpression(context.left.Start.Line, context.left.Start.Column, null, offending, next));
+			}
+
+			if (!(visitRight is ExpressionSyntax right)) {
+				var prev = new TextSpan(context.left.Start.StartIndex, context.op.StopIndex);
+				var offending = new TextSpan(context.right.Start.StartIndex, context.right.Stop.StopIndex);
+
+				return Error(Diagnostic.ReportInvalidBinaryExpression(context.right.Start.Line, context.right.Start.Column, prev, offending, null));
+
+			}
+			return new BinaryExpressionSyntax(left, Token(context.op), right);
 		}
 
 		public override SyntaxNode VisitTypeDefinition([NotNull] GLangParser.TypeDefinitionContext context) {
@@ -136,10 +162,10 @@ namespace InterpreterLib.Syntax {
 			var nameCtx = context.TYPE_NAME();
 
 			if (delimeterCtx == null || !delimeterCtx.GetText().Equals(":"))
-				return Error(Diagnostic.ReportMissingTypeDelimeter(context.Start.Line, context.Start.Column, context.GetText()));
+				return Error(Diagnostic.ReportMissingToken(context.Start.Line, context.Start.Column, new TextSpan(context.Start.StartIndex, context.Stop.StopIndex), "type delimeter"));
 
 			if (delimeterCtx == null)
-				return Error(Diagnostic.ReportMissingTypeName(context.Start.Line, context.Start.Column, context.GetText()));
+				return Error(Diagnostic.ReportMissingToken(context.Start.Line, context.Start.Column, new TextSpan(context.Start.StartIndex, context.Stop.StopIndex), "type name"));
 
 			return new TypeDefinitionSyntax(new TokenSyntax(delimeterCtx.Symbol), new TokenSyntax(nameCtx.Symbol));
 		}
@@ -151,28 +177,43 @@ namespace InterpreterLib.Syntax {
 			var expressionCtx = context.binaryExpression();
 
 			if (identifierCtx == null)
-				return Error(Diagnostic.ReportMissingIdentifier(context.Start.Line, context.Start.Column, context.GetText()));
+				return Error(Diagnostic.ReportMissingToken(context.Start.Line, context.Start.Column, new TextSpan(context.Start.StartIndex, context.Stop.StopIndex), "identifier"));
 
 			if (operatorCtx == null)
-				return Error(Diagnostic.ReportMissingOperator(context.Start.Line, context.Start.Column, context.GetText()));
+				return Error(Diagnostic.ReportMissingToken(context.Start.Line, context.Start.Column, new TextSpan(context.Start.StartIndex, context.Stop.StopIndex), "assignment operator"));
 
 			if (expressionCtx == null)
-				return Error(Diagnostic.ReportMissingExpression(context.Start.Line, context.Start.Column, context.GetText()));
+				return Error(Diagnostic.ReportMissingToken(context.Start.Line, context.Start.Column, new TextSpan(context.Start.StartIndex, context.Stop.StopIndex), "expression"));
 
 			TypeDefinitionSyntax typeDef = null;
 			if (typeDefCtx != null) {
 				var visit = Visit(typeDefCtx);
 
-				if (!(visit is TypeDefinitionSyntax))
-					return Error(Diagnostic.ReportInvalidTypeDefinition(typeDefCtx.Start.Line, typeDefCtx.Start.Column, typeDefCtx.GetText()));
+				if (visit is ErrorSyntax)
+					return visit;
+
+				if (!(visit is TypeDefinitionSyntax)) {
+					var prev = new TextSpan(identifierCtx.Symbol.StartIndex, identifierCtx.Symbol.StopIndex);
+					var offending = new TextSpan(typeDefCtx.Start.StartIndex, typeDefCtx.Stop.StopIndex);
+					var next = new TextSpan(operatorCtx.Symbol.StartIndex, operatorCtx.Symbol.StopIndex);
+
+					return Error(Diagnostic.ReportInvalidTypeDefinition(typeDefCtx.Start.Line, typeDefCtx.Start.Column, prev, offending, next));
+				}
 
 				typeDef = (TypeDefinitionSyntax)visit;
 			}
 
 			var visitExpr = Visit(expressionCtx);
 
-			if (!(visitExpr is ExpressionSyntax))
-				return Error(Diagnostic.ReportInvalidAssignmentOperand(expressionCtx.Start.Line, expressionCtx.Start.Column, expressionCtx.GetText()));
+			if (visitExpr is ErrorSyntax)
+				return visitExpr;
+
+			if (!(visitExpr is ExpressionSyntax)) {
+				var prev = new TextSpan(operatorCtx.Symbol.StartIndex, operatorCtx.Symbol.StopIndex);
+				var offending = new TextSpan(expressionCtx.Start.StartIndex, expressionCtx.Stop.StopIndex);
+
+				return Error(Diagnostic.ReportInvalidAssignmentOperand(expressionCtx.Start.Line, expressionCtx.Start.Column, prev, offending));
+			}
 
 			return new AssignmentExpressionSyntax(Token(identifierCtx.Symbol), typeDef, Token(operatorCtx.Symbol), (ExpressionSyntax)visitExpr);
 		}
@@ -185,11 +226,11 @@ namespace InterpreterLib.Syntax {
 			bool hasDirectDecl = identifierCtx != null;
 			bool isAssignmentDecl = assignmentCtx != null;
 
-			if (keywordCtx == null || !(keywordCtx.Symbol.Text.Equals("var") || keywordCtx.Symbol.Text.Equals("var")))
-				return Error(Diagnostic.ReportInvalidDeclarationKeyword(context.Start.Line, context.Start.Column, context.GetText()));
-
 			if (!OnlyOne(hasDirectDecl, isAssignmentDecl))
-				return Error(Diagnostic.ReportMalformedDeclaration(keywordCtx.Symbol.Line, keywordCtx.Symbol.Column, context.GetText()));
+				return Error(Diagnostic.ReportMalformedDeclaration(keywordCtx.Symbol.Line, keywordCtx.Symbol.Column, new TextSpan(context.Start.StartIndex, context.Stop.StopIndex)));
+
+			if (keywordCtx == null || !(keywordCtx.Symbol.Text.Equals("var") || keywordCtx.Symbol.Text.Equals("var")))
+				return Error(Diagnostic.ReportInvalidDeclarationKeyword(context.Start.Line, context.Start.Column, new TextSpan(context.Start.StartIndex, context.Stop.StopIndex)));
 
 			if (hasDirectDecl) {
 				var defVisit = Visit(context.definedIdentifier());
@@ -224,6 +265,9 @@ namespace InterpreterLib.Syntax {
 			else
 				visit = Visit(expressionCtx);
 
+			if (visit is ErrorSyntax)
+				return visit;
+
 			if (!(visit is ExpressionSyntax))
 				return Error(Diagnostic.ReportInvalidExpressionStatement(context.Start.Line, context.Start.Column, context.GetText()));
 
@@ -237,13 +281,16 @@ namespace InterpreterLib.Syntax {
 			if (context.assignmentExpression() != null) {
 				var visit = Visit(context.assignmentExpression());
 
+				if (visit is ErrorSyntax)
+					return visit;
+
 				if (!(visit is ExpressionSyntax))
-					return Error(Diagnostic.ReportInvalidForAssignment(context.Start.Line, context.Start.Column, context.GetText()));
+					return Error(Diagnostic.ReportInvalidInternalForAssignment(context.Start.Line, context.Start.Column, context.GetText()));
 
 				return new ExpressionStatementSyntax((ExpressionSyntax)visit);
 			}
 
-			return Error(Diagnostic.ReportInvalidForAssignment(context.Start.Line, context.Start.Column, context.GetText()));
+			return Error(Diagnostic.ReportInvalidInternalForAssignment(context.Start.Line, context.Start.Column, context.GetText()));
 		}
 
 		public override SyntaxNode VisitIfStatement([NotNull] GLangParser.IfStatementContext context) {
@@ -259,18 +306,30 @@ namespace InterpreterLib.Syntax {
 				return Error(Diagnostic.ReportInvalidIfStatement(context.Start.Line, context.Start.Column, context.GetText()));
 
 			if (!ifKeywCtx.GetText().Equals("if") || !lParenCtx.GetText().Equals("(") || !rParenCtx.GetText().Equals(")"))
-				return Error(Diagnostic.ReportInvalidIfStatement(context.Start.Line, context.Start.Column, context.GetText()));
+				return Error(Diagnostic.ReportInvalidIfStatement(ifKeywCtx.Symbol.Line, ifKeywCtx.Symbol.Column, null, ifKeywCtx.GetText(), lParenCtx.GetText() + "..." + rParenCtx.GetText()));
 
-			if (elseCtx == null ^ falseCtx == null)
-				return Error(Diagnostic.ReportInvalidIfStatement(context.Start.Line, context.Start.Column, context.GetText()));
+			if (elseCtx == null ^ falseCtx == null) {
+				var prev = trueCtx.GetText();
+				var offendingText =
+					(elseCtx == null ? null : elseCtx.GetText()) +
+					(falseCtx == null ? null : falseCtx.GetText());
+
+				return Error(Diagnostic.ReportInvalidIfStatement(context.Start.Line, context.Start.Column, prev, offendingText, null));
+			}
 
 			if (elseCtx != null && !elseCtx.GetText().Equals("else"))
-				return Error(Diagnostic.ReportInvalidIfStatement(context.Start.Line, context.Start.Column, context.GetText()));
+				return Error(Diagnostic.ReportInvalidIfStatement(elseCtx.Symbol.Line, elseCtx.Symbol.Column, trueCtx.GetText(), elseCtx.GetText(), falseCtx.GetText()));
 
 			var condVisit = Visit(conditionCtx);
 			var trueVisit = Visit(trueCtx);
 
-			if (!(condVisit is ExpressionSyntax && trueVisit is StatementSyntax))
+			if (condVisit is ErrorSyntax)
+				return condVisit;
+
+			if (trueVisit is ErrorSyntax)
+				return trueVisit;
+
+			if (!(condVisit is ExpressionSyntax condition && trueVisit is StatementSyntax trueStat))
 				return Error(Diagnostic.ReportInvalidIfStatement(context.Start.Line, context.Start.Column, context.GetText()));
 
 			TokenSyntax elseToken = null;
@@ -287,7 +346,7 @@ namespace InterpreterLib.Syntax {
 				falseStatement = (StatementSyntax)falseVisit;
 			}
 
-			return new IfStatementSyntax(Token(ifKeywCtx.Symbol), Token(lParenCtx.Symbol), (ExpressionSyntax)condVisit, Token(rParenCtx.Symbol), (StatementSyntax)trueVisit, elseToken, falseStatement);
+			return new IfStatementSyntax(Token(ifKeywCtx.Symbol), Token(lParenCtx.Symbol), condition, Token(rParenCtx.Symbol), trueStat, elseToken, falseStatement);
 		}
 
 		public override SyntaxNode VisitWhileStatement([NotNull] GLangParser.WhileStatementContext context) {

@@ -14,6 +14,7 @@ namespace InterpreterLib.Syntax.Tree.Statements {
 
 		public ExpressionSyntax Expression { get; }
 		public override TextLocation Location => Expression.Location;
+		public override TextSpan Span => Expression.Span;
 
 		public ExpressionStatementSyntax(ExpressionSyntax expression) {
 			Expression = expression;

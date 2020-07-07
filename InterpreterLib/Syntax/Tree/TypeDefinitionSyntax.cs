@@ -21,8 +21,6 @@ namespace InterpreterLib.Syntax.Tree {
 		public TypeDefinitionSyntax(TokenSyntax delimeterToken, TokenSyntax nameToken) {
 			DelimeterToken = delimeterToken;
 			NameToken = nameToken;
-
-			Span = CreateNewSpan(delimeterToken.Span, NameToken.Span);
 		}
 	}
 }

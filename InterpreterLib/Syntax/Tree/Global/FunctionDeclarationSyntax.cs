@@ -17,6 +17,7 @@ namespace InterpreterLib.Syntax.Tree.Global {
 		}
 
 		public override TextLocation Location => KeywToken.Location;
+		public override TextSpan Span => new TextSpan(KeywToken.Span.Start, Body.Span.End);
 
 		public TokenSyntax KeywToken { get; }
 		public TokenSyntax Identifier { get; }

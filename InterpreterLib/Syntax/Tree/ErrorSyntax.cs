@@ -10,6 +10,7 @@ namespace InterpreterLib.Syntax.Tree {
 
 		public Diagnostic Diagnostic { get; }
 		public override TextLocation Location => new TextLocation(Diagnostic.Line, Diagnostic.Column);
+		public override TextSpan Span => throw new NotImplementedException();
 
 		public ErrorSyntax(Diagnostic diagnostic) {
 			Diagnostic = diagnostic;

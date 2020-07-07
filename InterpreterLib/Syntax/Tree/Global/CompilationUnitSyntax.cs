@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Collections.Immutable;
+using System.Linq;
 using InterpreterLib.Syntax.Tree.Global;
 
 namespace InterpreterLib.Syntax.Tree.Global {
@@ -14,11 +15,12 @@ namespace InterpreterLib.Syntax.Tree.Global {
 			}
 		}
 
-		public override TextLocation Location => new TextLocation(0, 0);
+		public override TextLocation Location => Statements.First().Location;
+		public override TextSpan Span => new TextSpan(Statements.First().Span.Start, Statements.Last().Span.End);
 
-		public IEnumerable<GlobalSyntax> Statements { get; }
+		public ImmutableArray<GlobalSyntax> Statements { get; }
 
-		public CompilationUnitSyntax(IEnumerable<GlobalSyntax> statements) {
+		public CompilationUnitSyntax(ImmutableArray<GlobalSyntax> statements) {
 			Statements = statements;
 		}
 	}

@@ -16,6 +16,8 @@ namespace InterpreterLib.Syntax.Tree.Expressions {
 		public ExpressionSyntax Expression { get; }
 		public override TextLocation Location => OpToken.Location;
 
+		public override TextSpan Span => new TextSpan(OpToken.Span.Start, Expression.Span.End);
+
 		public UnaryExpressionSyntax(TokenSyntax opToken, ExpressionSyntax expression) {
 			OpToken = opToken;
 			Expression = expression;

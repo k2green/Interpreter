@@ -8,6 +8,7 @@ namespace InterpreterLib.Syntax.Tree.Statements {
 	internal sealed class BlockSyntax : StatementSyntax {
 		public override SyntaxType Type => SyntaxType.Block;
 		public override TextLocation Location => LeftBrace.Location;
+		public override TextSpan Span => new TextSpan(LeftBrace.Span.Start, LeftBrace.Span.End);
 
 		public override IEnumerable<SyntaxNode> Children {
 			get {

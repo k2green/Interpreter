@@ -10,6 +10,7 @@ namespace InterpreterLib.Syntax.Tree.Expressions {
 
 		public TokenSyntax IdentifierToken { get; }
 		public override TextLocation Location => IdentifierToken.Location;
+		public override TextSpan Span => IdentifierToken.Span;
 
 		public VariableSyntax(TokenSyntax identifierToken) {
 			IdentifierToken = identifierToken;

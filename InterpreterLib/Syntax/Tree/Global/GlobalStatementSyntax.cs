@@ -13,6 +13,7 @@ namespace InterpreterLib.Syntax.Tree.Global {
 		}
 
 		public override TextLocation Location => Statement.Location;
+		public override TextSpan Span => Statement.Span;
 
 		public StatementSyntax Statement { get; }
 
