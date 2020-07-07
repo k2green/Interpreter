@@ -14,13 +14,11 @@ namespace InterpreterLib.Syntax.Tree.Expressions {
 
 		public TokenSyntax OpToken { get; }
 		public ExpressionSyntax Expression { get; }
-		public override TextLocation Span { get; }
+		public override TextLocation Location => OpToken.Location;
 
 		public UnaryExpressionSyntax(TokenSyntax opToken, ExpressionSyntax expression) {
 			OpToken = opToken;
 			Expression = expression;
-
-			Span = CreateNewSpan(OpToken.Span, Expression.Span);
 		}
 
 		public override string ToString() {

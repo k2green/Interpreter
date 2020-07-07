@@ -14,7 +14,7 @@ namespace InterpreterLib.Syntax.Tree {
 			}
 		}
 
-		public override TextLocation Span { get; }
+		public override TextLocation Location => Identifier.Location;
 
 		public TokenSyntax Identifier { get; }
 		public TypeDefinitionSyntax Definition { get; }

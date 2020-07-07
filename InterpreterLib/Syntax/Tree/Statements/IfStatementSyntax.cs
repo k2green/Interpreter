@@ -6,7 +6,7 @@ using System.Text;
 namespace InterpreterLib.Syntax.Tree.Statements {
 	internal sealed class IfStatementSyntax : StatementSyntax {
 		public override SyntaxType Type => SyntaxType.IfStatement;
-		public override TextLocation Span { get; }
+		public override TextLocation Location => IfToken.Location;
 
 		public override IEnumerable<SyntaxNode> Children {
 			get {

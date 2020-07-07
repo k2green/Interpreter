@@ -6,7 +6,7 @@ using System.Text;
 namespace InterpreterLib.Syntax.Tree.Statements {
 	internal sealed class ForLoopSyntax : StatementSyntax {
 		public override SyntaxType Type => SyntaxType.ForLoop;
-		public override TextLocation Span { get; }
+		public override TextLocation Location => ForToken.Location;
 
 		public override IEnumerable<SyntaxNode> Children {
 			get {

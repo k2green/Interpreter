@@ -9,11 +9,10 @@ namespace InterpreterLib.Syntax.Tree.Expressions {
 		public override SyntaxType Type => SyntaxType.Token;
 
 		public IToken Token { get; }
-		public override TextLocation Span { get; }
+		public override TextLocation Location => new TextLocation(Token.Line, Token.Column); 
 
 		public TokenSyntax(IToken token) {
 			Token = token;
-			Span = new TextLocation(token.StartIndex, token.Text.Length, token.StartIndex, token.Column);
 		}
 
 		public override string ToString() {

@@ -19,15 +19,13 @@ namespace InterpreterLib.Syntax.Tree.Expressions {
 		public TypeDefinitionSyntax Definition { get; }
 		public TokenSyntax OperatorToken { get; }
 		public ExpressionSyntax Expression { get; }
-		public override TextLocation Span { get; }
+		public override TextLocation Location => IdentifierToken.Location;
 
 		public AssignmentExpressionSyntax( TokenSyntax identifierToken, TypeDefinitionSyntax definition, TokenSyntax operatorToken, ExpressionSyntax expression) {
 			IdentifierToken = identifierToken;
 			Definition = definition;
 			OperatorToken = operatorToken;
 			Expression = expression;
-
-			Span = CreateNewSpan(identifierToken.Span, expression.Span);
 		}
 
 		public override string ToString() {

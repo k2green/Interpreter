@@ -18,7 +18,7 @@ namespace InterpreterLib.Syntax.Tree {
 			}
 		}
 
-		public override TextLocation Span { get; }
+		public override TextLocation Location => LeftParen.Location;
 
 		public TokenSyntax LeftParen { get; }
 		public SeperatedSyntaxList<TypedIdentifierSyntax> Parameters { get; }
@@ -28,8 +28,6 @@ namespace InterpreterLib.Syntax.Tree {
 			LeftParen = leftParen;
 			Parameters = parameters;
 			RightParen = rightParen;
-
-			Span = CreateNewSpan(leftParen.Span, rightParen.Span);
 		}
 
 		public override string ToString() {

@@ -7,7 +7,7 @@ namespace InterpreterLib.Syntax.Tree.Statements {
 	internal sealed class VariableDeclarationSyntax : StatementSyntax {
 
 		public override SyntaxType Type => SyntaxType.Declaration;
-		public override TextLocation Span { get; }
+		public override TextLocation Location => KeywordToken.Location;
 
 		public override IEnumerable<SyntaxNode> Children {
 			get {
@@ -32,11 +32,6 @@ namespace InterpreterLib.Syntax.Tree.Statements {
 			Definition = definition;
 			OperatorToken = operatorToken;
 			Initialiser = initialiser;
-
-			if (initialiser != null)
-				Span = CreateNewSpan(keywordToken.Span, initialiser.Span);
-			else
-				Span = CreateNewSpan(keywordToken.Span, definition.Span);
 		}
 	}
 }

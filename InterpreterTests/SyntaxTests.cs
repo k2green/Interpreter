@@ -3,9 +3,9 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace InterpreterTests {
 	[TestClass]
-	public class UnitTest1 {
+	public class SyntaxTests {
 		[TestMethod]
-		public void TestMethod1() {
+		public void TestLiteral() {
 		}
 	}
 }

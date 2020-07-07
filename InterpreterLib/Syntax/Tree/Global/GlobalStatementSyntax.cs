@@ -12,7 +12,7 @@ namespace InterpreterLib.Syntax.Tree.Global {
 			}
 		}
 
-		public override TextLocation Span => throw new NotImplementedException();
+		public override TextLocation Location => Statement.Location;
 
 		public StatementSyntax Statement { get; }
 

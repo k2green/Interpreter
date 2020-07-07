@@ -14,7 +14,7 @@ namespace InterpreterLib.Syntax.Tree.Global {
 			}
 		}
 
-		public override TextLocation Span => throw new NotImplementedException();
+		public override TextLocation Location => new TextLocation(0, 0);
 
 		public IEnumerable<GlobalSyntax> Statements { get; }
 

@@ -16,7 +16,7 @@ namespace InterpreterLib.Syntax.Tree.Global {
 			}
 		}
 
-		public override TextLocation Span { get; }
+		public override TextLocation Location => KeywToken.Location;
 
 		public TokenSyntax KeywToken { get; }
 		public TokenSyntax Identifier { get; }
@@ -30,8 +30,6 @@ namespace InterpreterLib.Syntax.Tree.Global {
 			Parameters = parameters;
 			ReturnType = returnType;
 			Body = body;
-
-			Span = CreateNewSpan(keywToken.Span, body.Span);
 		}
 	}
 }

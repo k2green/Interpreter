@@ -1,12 +1,13 @@
 ﻿using InterpreterLib.Syntax.Tree.Expressions;
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Text;
 
 namespace InterpreterLib.Syntax.Tree.Statements {
 	internal sealed class BlockSyntax : StatementSyntax {
 		public override SyntaxType Type => SyntaxType.Block;
-		public override TextLocation Span { get; }
+		public override TextLocation Location => LeftBrace.Location;
 
 		public override IEnumerable<SyntaxNode> Children {
 			get {
@@ -20,15 +21,13 @@ namespace InterpreterLib.Syntax.Tree.Statements {
 		}
 
 		public TokenSyntax LeftBrace { get; }
-		public IEnumerable<StatementSyntax> Statements;
+		public ImmutableArray<StatementSyntax> Statements;
 		public TokenSyntax RightBrace { get; }
 
-		public BlockSyntax(TokenSyntax leftBrace, IEnumerable<StatementSyntax> statements, TokenSyntax rightBrace) {
+		public BlockSyntax(TokenSyntax leftBrace, ImmutableArray<StatementSyntax> statements, TokenSyntax rightBrace) {
 			LeftBrace = leftBrace;
 			Statements = statements;
 			RightBrace = rightBrace;
-
-			Span = CreateNewSpan(leftBrace.Span, rightBrace.Span);
 		}
 	}
 }
