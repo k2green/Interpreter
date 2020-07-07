@@ -4,6 +4,7 @@ using InterpreterLib.Binding.Tree.Statements;
 using InterpreterLib.Types;
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 
 namespace InterpreterLib.Binding.Lowering {
@@ -28,21 +29,21 @@ namespace InterpreterLib.Binding.Lowering {
 
 		private static BoundBlock Flatten(BoundStatement statement) {
 			var stack = new Stack<BoundStatement>();
-			var statements = new List<BoundStatement>();
+			var statements = ImmutableArray.CreateBuilder<BoundStatement>();
 
 			stack.Push(statement);
 
 			while (stack.Count > 0) {
 				var current = stack.Pop();
 
-				if (current is BoundBlock)
-					foreach (var subStatement in ((BoundBlock)current).Statements.Reverse())
+				if (current is BoundBlock block)
+					foreach (var subStatement in block.Statements.Reverse())
 						stack.Push(subStatement);
 				else
 					statements.Add(current);
 			}
 
-			return new BoundBlock(statements);
+			return new BoundBlock(statements.ToImmutable());
 		}
 
 		protected override BoundStatement RewriteIfStatement(BoundIfStatement statement) {
@@ -63,7 +64,7 @@ namespace InterpreterLib.Binding.Lowering {
 			var condBranch = new BoundConditionalBranchStatement(falseLabel, statement.Condition, false);
 			var endBranch = new BoundBranchStatement(endLabel);
 
-			var statements = new List<BoundStatement>();
+			var statements = ImmutableArray.CreateBuilder<BoundStatement>();
 
 			statements.AddRange(new BoundStatement[]{
 				condBranch,
@@ -77,7 +78,7 @@ namespace InterpreterLib.Binding.Lowering {
 
 			statements.Add(new BoundLabel(endLabel));
 
-			return RewriteStatement(new BoundBlock(statements));
+			return RewriteStatement(new BoundBlock(statements.ToImmutable()));
 		}
 
 		protected override BoundStatement RewriteWhileStatement(BoundWhileStatement statement) {
@@ -96,7 +97,8 @@ namespace InterpreterLib.Binding.Lowering {
 			var firstBranch = new BoundBranchStatement(conditionCheckLabel);
 			var condBranch = new BoundConditionalBranchStatement(startLabel, statement.Condition, true);
 
-			var result = new BoundBlock(new BoundStatement[] {
+			var stataments = ImmutableArray.CreateBuilder<BoundStatement>();
+			stataments.AddRange(new BoundStatement[] {
 				firstBranch,
 				new BoundLabel(startLabel),
 				statement.Body,
@@ -104,7 +106,7 @@ namespace InterpreterLib.Binding.Lowering {
 				condBranch
 			});
 
-			return RewriteStatement(result);
+			return RewriteStatement(new BoundBlock(stataments.ToImmutable()));
 		}
 
 		protected override BoundStatement RewriteForStatement(BoundForStatement statement) {
@@ -117,19 +119,23 @@ namespace InterpreterLib.Binding.Lowering {
 			 *  }
 			 */
 
-			var whileBlock = new BoundBlock(new BoundStatement[] {
+			var whileStatements = ImmutableArray.CreateBuilder<BoundStatement>();
+
+			whileStatements.AddRange(new BoundStatement[] {
 				statement.Body,
 				new BoundExpressionStatement(statement.Step)
 			});
 
-			var whileStatement = new BoundWhileStatement(statement.Condition, whileBlock);
+			var whileStatement = new BoundWhileStatement(statement.Condition, new BoundBlock(whileStatements.ToImmutable()));
 
-			var result = new BoundBlock(new BoundStatement[] {
+			var finalStatements = ImmutableArray.CreateBuilder<BoundStatement>();
+
+			finalStatements.AddRange(new BoundStatement[] {
 				statement.Assignment,
 				whileStatement
 			});
 
-			return RewriteStatement(result);
+			return RewriteStatement(new BoundBlock(finalStatements.ToImmutable()));
 		}
 
 		protected override BoundExpression RewriteBinaryExpression(BoundBinaryExpression expression) {
@@ -180,10 +186,10 @@ namespace InterpreterLib.Binding.Lowering {
 		}
 
 		protected override BoundExpression RewriteFunctionCall(BoundFunctionCall expression) {
-			List<BoundExpression> newExpressions = new List<BoundExpression>();
+			var newExpressions = ImmutableArray.CreateBuilder<BoundExpression>();
 			bool isSame = true;
 
-			for (int index = 0; index < expression.Parameters.Count; index++) {
+			for (int index = 0; index < expression.Parameters.Length; index++) {
 				var parameter = expression.Parameters[index];
 				var newParameter = RewriteExpression(parameter);
 
@@ -202,7 +208,7 @@ namespace InterpreterLib.Binding.Lowering {
 			if (isSame)
 				return expression;
 
-			return new BoundFunctionCall(expression.Function, newExpressions);
+			return new BoundFunctionCall(expression.Function, newExpressions.ToImmutable());
 		}
 	}
 }

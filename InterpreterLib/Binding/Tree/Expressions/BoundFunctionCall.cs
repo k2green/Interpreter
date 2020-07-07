@@ -2,6 +2,7 @@
 using InterpreterLib.Types;
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.Text;
 
@@ -10,11 +11,11 @@ namespace InterpreterLib.Binding.Tree.Expressions {
 		public override NodeType Type => NodeType.FunctionCall;
 
 		public FunctionSymbol Function { get; }
-		public IReadOnlyList<BoundExpression> Parameters { get; }
+		public ImmutableArray<BoundExpression> Parameters { get; }
 
 		public override TypeSymbol ValueType => Function.ReturnType;
 
-		public BoundFunctionCall(FunctionSymbol function, IReadOnlyList<BoundExpression> parameters) {
+		public BoundFunctionCall(FunctionSymbol function, ImmutableArray<BoundExpression> parameters) {
 			Function = function;
 			Parameters = parameters;
 		}

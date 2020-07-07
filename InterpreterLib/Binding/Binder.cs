@@ -10,6 +10,7 @@ using InterpreterLib.Syntax.Tree.Statements;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Collections.Immutable;
 
 namespace InterpreterLib.Binding {
 	internal sealed class Binder : GLangBaseVisitor<BoundNode> {
@@ -119,7 +120,7 @@ namespace InterpreterLib.Binding {
 				BindFunctionDeclaration(functionDef);
 			}
 
-			var statements = new List<BoundStatement>();
+			var statements = ImmutableArray.CreateBuilder<BoundStatement>();
 
 			foreach (var statementSyntax in compilationUnit.Statements) {
 				if (!(statementSyntax is FunctionDeclarationSyntax)) {
@@ -132,7 +133,7 @@ namespace InterpreterLib.Binding {
 				}
 			}
 
-			return new DiagnosticResult<BoundBlock>(Diagnostics, new BoundBlock(statements));
+			return new DiagnosticResult<BoundBlock>(Diagnostics, new BoundBlock(statements.ToImmutable()));
 		}
 
 		private BoundNode Bind(SyntaxNode syntax) {
@@ -177,12 +178,16 @@ namespace InterpreterLib.Binding {
 			string callName = syntax.Identifier.Token.Text;
 
 			if (!scope.TryLookupFunction(callName, out var symbol))
-				return Error(Diagnostic.ReportUndefinedFunction(syntax.Identifier.Location.Line, syntax.Identifier.Location.Column, callName));
+				return Error(Diagnostic.ReportUndefinedFunction(syntax.Identifier.Location.Line, syntax.Identifier.Location.Column, syntax.Identifier.Span));
 
-			if (syntax.Parameters.Count != symbol.Parameters.Count)
-				return Error(Diagnostic.ReportFunctionCountMismatch(syntax.Identifier.Location.Line, syntax.Identifier.Location.Column, callName, syntax.Parameters.Count, symbol.Parameters.Count));
+			if (syntax.Parameters.Count != symbol.Parameters.Length) {
+				int syntaxCount = syntax.Parameters.Count;
+				int requiredCount = symbol.Parameters.Length;
 
-			List<BoundExpression> expressions = new List<BoundExpression>();
+				return Error(Diagnostic.ReportFunctionCountMismatch(syntax.Identifier.Location.Line, syntax.Identifier.Location.Column, syntaxCount, requiredCount, syntax.Parameters.Span));
+			}
+
+			var expressions = ImmutableArray.CreateBuilder<BoundExpression>();
 
 			if (syntax.Parameters.Count > 0) {
 				for (int index = 0; index < syntax.Parameters.Count; index++) {
@@ -194,17 +199,17 @@ namespace InterpreterLib.Binding {
 						return paramVisit;
 
 					if (parameter.ValueType != requiredType && !TypeConversionSymbol.TryFind(parameter.ValueType, requiredType, out _))
-						return Error(Diagnostic.ReportInvalidParameterType(paramSyntax.Location.Line, paramSyntax.Location.Column, symbol.Parameters[index].Name, parameter.ValueType, requiredType));
+						return Error(Diagnostic.ReportInvalidParameterType(paramSyntax.Location.Line, paramSyntax.Location.Column, parameter.ValueType, requiredType, paramSyntax.Span));
 
 					expressions.Add(parameter);
 				}
 			}
 
-			return new BoundFunctionCall(symbol, expressions);
+			return new BoundFunctionCall(symbol, expressions.ToImmutable());
 		}
 
 		private BoundNode BindBlock(BlockSyntax syntax) {
-			var statements = new List<BoundStatement>();
+			var statements = ImmutableArray.CreateBuilder<BoundStatement>();
 
 			foreach (var statSyntax in syntax.Statements) {
 				var bound = Bind(statSyntax);
@@ -215,7 +220,7 @@ namespace InterpreterLib.Binding {
 				statements.Add(statement);
 			}
 
-			return new BoundBlock(statements);
+			return new BoundBlock(statements.ToImmutable());
 		}
 
 		private BoundNode BindError(ErrorSyntax syntax) {
@@ -241,7 +246,7 @@ namespace InterpreterLib.Binding {
 				return bodyVisit;
 
 			if (condition.ValueType != TypeSymbol.Boolean)
-				return Error(Diagnostic.ReportInvalidType(syntax.Condition.Location.Line, syntax.Condition.Location.Column, syntax.Condition.ToString(), TypeSymbol.Boolean));
+				return Error(Diagnostic.ReportInvalidType(syntax.Condition.Location.Line, syntax.Condition.Location.Column, syntax.Condition.Span, TypeSymbol.Boolean));
 
 			return new BoundForStatement(assignment, condition, step, body);
 		}
@@ -257,7 +262,7 @@ namespace InterpreterLib.Binding {
 				return bodyVisit;
 
 			if (condition.ValueType != TypeSymbol.Boolean)
-				return Error(Diagnostic.ReportInvalidType(syntax.Condition.Location.Line, syntax.Condition.Location.Column, syntax.Condition.ToString(), TypeSymbol.Boolean));
+				return Error(Diagnostic.ReportInvalidType(syntax.Condition.Location.Line, syntax.Condition.Location.Column, syntax.Condition.Span, TypeSymbol.Boolean));
 
 			return new BoundWhileStatement(condition, body);
 		}
@@ -279,7 +284,7 @@ namespace InterpreterLib.Binding {
 			var boundFalseBr = falseBranchVisit == null ? null : (BoundStatement)falseBranchVisit;
 
 			if (boundCondition.ValueType != TypeSymbol.Boolean)
-				return Error(Diagnostic.ReportInvalidType(syntax.Condition.Location.Line, syntax.Condition.Location.Column, syntax.Condition.ToString(), TypeSymbol.Boolean));
+				return Error(Diagnostic.ReportInvalidType(syntax.Condition.Location.Line, syntax.Condition.Location.Column, syntax.Condition.Span, TypeSymbol.Boolean));
 
 			return new BoundIfStatement(boundCondition, boundTrueBr, boundFalseBr);
 		}
@@ -295,7 +300,7 @@ namespace InterpreterLib.Binding {
 
 		private BoundNode BindAssignmentExpression(AssignmentExpressionSyntax syntax) {
 			if (syntax.Definition != null)
-				return Error(Diagnostic.ReportAssingmentTypeDef(syntax.Definition.Location.Line, syntax.Definition.Location.Column, syntax.Definition.ToString()));
+				return Error(Diagnostic.ReportInvalidAssingmentTypeDef(syntax.Definition.Location.Line, syntax.Definition.Location.Column, syntax.Definition.Span));
 
 			string identifierText = syntax.IdentifierToken.Token.Text;
 			var boundExpression = Bind(syntax.Expression);
@@ -304,13 +309,13 @@ namespace InterpreterLib.Binding {
 				return boundExpression;
 
 			if (expression.ValueType == TypeSymbol.Void)
-				return Error(Diagnostic.ReportVoidType(syntax.Expression.Location.Line, syntax.Expression.Location.Column, syntax.Expression.ToString()));
+				return Error(Diagnostic.ReportVoidType(syntax.Expression.Location.Line, syntax.Expression.Location.Column, syntax.Expression.Span));
 
 			if (!scope.TryLookupVariable(identifierText, out var variable))
-				return Error(Diagnostic.ReportUndefinedVariable(syntax.IdentifierToken.Location.Line, syntax.IdentifierToken.Location.Column, identifierText));
+				return Error(Diagnostic.ReportUndefinedVariable(syntax.IdentifierToken.Location.Line, syntax.IdentifierToken.Location.Column, syntax.IdentifierToken.Span));
 
 			if (variable.ValueType != expression.ValueType && !TypeConversionSymbol.TryFind(expression.ValueType, variable.ValueType, out _))
-				return Error(Diagnostic.ReportVariableTypeMismatch(syntax.IdentifierToken.Location.Line, syntax.IdentifierToken.Location.Column, identifierText, variable.ValueType, expression.ValueType));
+				return Error(Diagnostic.ReportCannotCast(syntax.Expression.Location.Line, syntax.Expression.Location.Column, syntax.Expression.Span, variable.ValueType, expression.ValueType));
 
 			return new BoundAssignmentExpression(variable, expression);
 		}
@@ -319,7 +324,7 @@ namespace InterpreterLib.Binding {
 			string varaibleName = syntax.IdentifierToken.Token.Text;
 
 			if (!scope.TryLookupVariable(varaibleName, out var variable))
-				return Error(Diagnostic.ReportUndefinedVariable(syntax.IdentifierToken.Location.Line, syntax.IdentifierToken.Location.Column, varaibleName));
+				return Error(Diagnostic.ReportUndefinedVariable(syntax.IdentifierToken.Location.Line, syntax.IdentifierToken.Location.Column, syntax.IdentifierToken.Span));
 
 			return new BoundVariableExpression(variable);
 		}
@@ -341,7 +346,7 @@ namespace InterpreterLib.Binding {
 					break;
 
 				default:
-					return Error(Diagnostic.ReportUnknownDeclKeyword(syntax.KeywordToken.Location.Line, syntax.KeywordToken.Location.Column, syntax.KeywordToken.ToString()));
+					return Error(Diagnostic.ReportUnknownDeclKeyword(syntax.KeywordToken.Location.Line, syntax.KeywordToken.Location.Column, syntax.KeywordToken.Span));
 			}
 
 			if (syntax.Initialiser != null) {
@@ -357,23 +362,23 @@ namespace InterpreterLib.Binding {
 				type = TypeSymbol.FromString(syntax.Definition.NameToken.ToString());
 
 				if (type == null)
-					return Error(Diagnostic.ReportUnknownTypeKeyword(syntax.KeywordToken.Location.Line, syntax.KeywordToken.Location.Column, syntax.KeywordToken.ToString()));
+					return Error(Diagnostic.ReportUnknownTypeKeyword(syntax.Definition.Location.Line, syntax.Definition.Location.Column, syntax.Definition.DelimeterToken.Span, syntax.Definition.NameToken.Span));
 			}
 
 			if (type != null && initialiser != null && initialiser.ValueType != type && !TypeConversionSymbol.TryFind(initialiser.ValueType, type, out _))
-				return Error(Diagnostic.ReportCannotCast(syntax.Definition.Location.Line, syntax.Definition.Location.Column, initialiser.ValueType, type));
+				return Error(Diagnostic.ReportCannotCast(syntax.Initialiser.Location.Line, syntax.Initialiser.Location.Column, syntax.Initialiser.Span, initialiser.ValueType, type));
 
 			if (type == TypeSymbol.Void)
-				return Error(Diagnostic.ReportVoidType(syntax.Definition.Location.Line, syntax.Definition.Location.Column, syntax.Definition.ToString()));
+				return Error(Diagnostic.ReportVoidType(syntax.Definition.Location.Line, syntax.Definition.Location.Column, syntax.Definition.DelimeterToken.Span, syntax.Definition.NameToken.Span));
 
 			if (initialiser != null && initialiser.ValueType == TypeSymbol.Void)
-				return Error(Diagnostic.ReportVoidType(syntax.Initialiser.Location.Line, syntax.Initialiser.Location.Column, syntax.Initialiser.ToString()));
+				return Error(Diagnostic.ReportVoidType(syntax.Initialiser.Location.Line, syntax.Initialiser.Location.Column, syntax.Definition.DelimeterToken.Span, syntax.Definition.NameToken.Span));
 
 			type = type ?? initialiser.ValueType;
 			var variable = new VariableSymbol(identifierText, isreadOnly, type);
 
 			if (!scope.TryDefineVariable(variable))
-				return Error(Diagnostic.ReportCannotRedefine(syntax.IdentifierToken.Location.Line, syntax.IdentifierToken.Location.Column, identifierText));
+				return Error(Diagnostic.ReportCannotRedefine(syntax.IdentifierToken.Location.Line, syntax.IdentifierToken.Location.Column, syntax.IdentifierToken.Span));
 
 			return new BoundVariableDeclarationStatement(variable, initialiser);
 		}
@@ -393,7 +398,7 @@ namespace InterpreterLib.Binding {
 			var op = BinaryOperator.Bind(opText, left.ValueType, right.ValueType);
 
 			if (op == null)
-				return Error(Diagnostic.ReportInvalidOperator(opToken.Line, opToken.Column, opText, left.ValueType, right.ValueType));
+				return Error(Diagnostic.ReportInvalidOperator(syntax.OpToken.Location.Line, syntax.OpToken.Location.Column, syntax.LeftSyntax.Span, syntax.OpToken.Span, syntax.RightSyntax.Span, left.ValueType, right.ValueType));
 
 			return new BoundBinaryExpression(left, op, right);
 		}
@@ -409,7 +414,7 @@ namespace InterpreterLib.Binding {
 			var op = UnaryOperator.Bind(opText, boundSubExpression.ValueType);
 
 			if (op == null)
-				return Error(Diagnostic.ReportInvalidOperator(opToken.Line, opToken.Column, opText, boundSubExpression.ValueType));
+				return Error(Diagnostic.ReportInvalidOperator(opToken.Line, opToken.Column, syntax.OpToken.Span, syntax.Expression.Span, boundSubExpression.ValueType));
 
 			return new BoundUnaryExpression(op, boundSubExpression);
 		}
@@ -433,29 +438,33 @@ namespace InterpreterLib.Binding {
 
 		public BoundNode BindFunctionDeclaration(FunctionDeclarationSyntax syntax) {
 			string funcName = syntax.Identifier.ToString();
-			var parameterList = new List<ParameterSymbol>();
+			var parameters = ImmutableArray.CreateBuilder<ParameterSymbol>();
 			var returnType = TypeSymbol.FromString(syntax.ReturnType.NameToken.ToString());
 
 			foreach (var parameter in syntax.Parameters.Parameters) {
 				string parameterName = parameter.Identifier.ToString();
 				var typeBind = TypeSymbol.FromString(parameter.Definition.NameToken.ToString());
 
+				int line = parameter.Definition.NameToken.Location.Line;
+				int column = parameter.Definition.NameToken.Location.Column;
+				var span = parameter.Definition.NameToken.Span;
+
 				if (typeBind == null)
-					return Error(Diagnostic.ReportInvalidParameterDefinition(parameter.Location.Line, parameter.Location.Column, parameterName));
+					return Error(Diagnostic.ReportInvalidParameterDefinition(line, column, span));
 
 				if (typeBind == TypeSymbol.Void)
-					return Error(Diagnostic.ReportVoidType(parameter.Location.Line, parameter.Location.Column, parameterName));
+					return Error(Diagnostic.ReportVoidType(line, column, span));
 
-				parameterList.Add(new ParameterSymbol(parameterName, typeBind));
+				parameters.Add(new ParameterSymbol(parameterName, typeBind));
 			}
 
 			if (returnType == null)
-				return Error(Diagnostic.ReportInvalidReturnType(syntax.ReturnType.Location.Line, syntax.ReturnType.Location.Column, syntax.ReturnType.ToString()));
+				return Error(Diagnostic.ReportInvalidReturnType(syntax.ReturnType.Location.Line, syntax.ReturnType.Location.Column, syntax.ReturnType.Span));
 
-			var functionSymbol = new FunctionSymbol(funcName, parameterList, returnType);
+			var functionSymbol = new FunctionSymbol(funcName, parameters.ToImmutable(), returnType);
 
 			if (!scope.TryDefineFunction(functionSymbol))
-				return Error(Diagnostic.ReportCannotRedefineFunction(syntax.Identifier.Location.Line, syntax.Identifier.Location.Column, funcName));
+				return Error(Diagnostic.ReportCannotRedefineFunction(syntax.Identifier.Location.Line, syntax.Identifier.Location.Column, syntax.Identifier.Span));
 
 			functionBodies.Add(functionSymbol, syntax);
 			return null;

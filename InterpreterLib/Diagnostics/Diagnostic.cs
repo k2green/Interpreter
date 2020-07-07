@@ -49,8 +49,8 @@ namespace InterpreterLib {
 			return new Diagnostic(line, column, $"Syntax error: Missing {tokenName}", null, offendingText, null);
 		}
 
-		internal static Diagnostic ReportInvalidTypeDefinition(int line, int column, TextSpan previousText, TextSpan offendingText, TextSpan nextText) {
-			return new Diagnostic(line, column, "Syntax error: Invalid TypeDefinitionSyntax", previousText, offendingText, nextText);
+		internal static Diagnostic ReportInvalidTypeDefinition(int line, int column, TextSpan? previousText, TextSpan offendingText, TextSpan? nextText) {
+			return new Diagnostic(line, column, "Syntax error: Invalid type definition", previousText, offendingText, nextText);
 		}
 
 		internal static Diagnostic ReportInvalidAssignmentOperand(int line, int column, TextSpan previousText, TextSpan offendingText) {
@@ -69,7 +69,7 @@ namespace InterpreterLib {
 			return new Diagnostic(line, column, "Syntax error: Invalid expression statement", null, offendingText, null);
 		}
 
-		internal static Diagnostic ReportInvalidInternalForAssignment(int line, int column, TextSpan offendingText, TextSpan nextText) {
+		internal static Diagnostic ReportInvalidInternalForAssignment(int line, int column, TextSpan offendingText) {
 			return new Diagnostic(line, column, "Syntax error: Invalid for assignment step", null, offendingText, null);
 		}
 
@@ -79,6 +79,138 @@ namespace InterpreterLib {
 
 		internal static Diagnostic ReportInvalidIfStatement(int line, int column, TextSpan offendingText) {
 			return ReportInvalidIfStatement(line, column, null, offendingText, null);
+		}
+
+		internal static Diagnostic ReportInvalidWhileStatement(int line, int column, TextSpan? previousText, TextSpan offendingText, TextSpan? nextText) {
+			return new Diagnostic(line, column, "Syntax error: Invalid while statement", previousText, offendingText, nextText);
+		}
+
+		internal static Diagnostic ReportInvalidWhileStatement(int line, int column, TextSpan offendingText) {
+			return ReportInvalidWhileStatement(line, column, null, offendingText, null);
+		}
+
+		internal static Diagnostic ReportInvalidForStatement(int line, int column, TextSpan? previousText, TextSpan offendingText, TextSpan? nextText) {
+			return new Diagnostic(line, column, "Syntax error: Invalid for statement", previousText, offendingText, nextText);
+		}
+
+		internal static Diagnostic ReportInvalidForStatement(int line, int column, TextSpan offendingText) {
+			return ReportInvalidForStatement(line, column, null, offendingText, null);
+		}
+
+		internal static Diagnostic ReportInvalidBlock(int line, int column, TextSpan offendingText) {
+			return new Diagnostic(line, column, "Syntax error: Invalid body ", null, offendingText, null);
+		}
+
+		internal static Diagnostic ReportInvalidStatement(int line, int column, TextSpan offendingText) {
+			return new Diagnostic(line, column, "Syntax error: Invalid statement ", null, offendingText, null);
+		}
+
+		internal static Diagnostic ReportInvalidFunctionCall(int line, int column, TextSpan offendingText) {
+			return new Diagnostic(line, column, "Syntax error: Invalid Function call ", null, offendingText, null);
+		}
+
+		internal static Diagnostic ReportInvalidCallParameters(int line, int column, TextSpan offendingText) {
+			return new Diagnostic(line, column, "Syntax error: Invalid parameters", null, offendingText, null);
+		}
+
+		internal static Diagnostic ReportInvalidCallParameter(int line, int column, TextSpan offendingText) {
+			return new Diagnostic(line, column, "Syntax error: Invalid parameter", null, offendingText, null);
+		}
+
+		internal static Diagnostic ReportMissingComma(int line, int column, TextSpan? previousText, TextSpan offendingText, TextSpan? nextText) {
+			return new Diagnostic(line, column, "Syntax error: Missing comma", previousText, offendingText, previousText);
+		}
+
+		internal static Diagnostic ReportSyntaxError(int line, int column, TextSpan offendingText) {
+			return new Diagnostic(line, column, "Syntax error: ", null, offendingText, null);
+		}
+
+		internal static Diagnostic ReportUndefinedFunction(int line, int column, TextSpan span) {
+			throw new NotImplementedException();
+		}
+
+		internal static Diagnostic ReportInvalidCompilationUnit(int line, int column, TextSpan offendingText) {
+			return new Diagnostic(line, column, "Syntax error: Invalid compilation unit", null, offendingText, null);
+		}
+
+		internal static Diagnostic ReportFunctionCountMismatch(int line, int column, int syntaxCount, int requiredCount, TextSpan span) {
+			throw new NotImplementedException();
+		}
+
+		internal static Diagnostic ReportInvalidGlobalStatement(int line, int column, TextSpan offendingText) {
+			return new Diagnostic(line, column, "Syntax error: Invalid global statement", null, offendingText, null);
+		}
+
+		internal static Diagnostic ReportInvalidTypedIdentifier(int line, int column, TextSpan offendingText) {
+			return new Diagnostic(line, column, "Syntax error: Invalid typed identifier", null, offendingText, null);
+		}
+
+		internal static Diagnostic ReportInvalidParameterDefinition(int line, int column, TextSpan offendingText) {
+			return new Diagnostic(line, column, "Syntax error: Invalid typed parameter", null, offendingText, null);
+		}
+
+		internal static Diagnostic ReportInvalidParameterType(int line, int column, TypeSymbol valueType, TypeSymbol requiredType, TextSpan span) {
+			throw new NotImplementedException();
+		}
+
+		internal static Diagnostic ReportInvalidFunctionDef(int line, int column, TextSpan? previousText, TextSpan offendingText, TextSpan? nextText) {
+			return new Diagnostic(line, column, "Syntax error: Invalid function definition", previousText, offendingText, nextText);
+		}
+
+		internal static Diagnostic ReportInvalidFunctionDef(int line, int column, TextSpan offendingText) {
+			return ReportInvalidFunctionDef(line, column, null, offendingText, null);
+		}
+
+		internal static Diagnostic ReportInvalidType(int line, int column, TextSpan offendingText, TypeSymbol requiredType) {
+			return new Diagnostic(line, column, $"Invalid type. Required type: {requiredType}", null, offendingText, null);
+		}
+
+		internal static Diagnostic ReportInvalidAssingmentTypeDef(int line, int column, TextSpan offendingText) {
+			return new Diagnostic(line, column, "Assignment expressions cannot have a type definition.", null, offendingText, null);
+		}
+
+		internal static Diagnostic ReportVoidType(int line, int column, TextSpan offendingText) {
+			return new Diagnostic(line, column, "Invalid use of void type", null, offendingText, null);
+		}
+
+		internal static Diagnostic ReportUndefinedVariable(int line, int column, TextSpan offendingText) {
+			return new Diagnostic(line, column, "Variable is undefined", null, offendingText, null);
+		}
+
+		internal static Diagnostic ReportUnknownDeclKeyword(int line, int column, TextSpan offendingText) {
+			return new Diagnostic(line, column, "Unknown variable declaration keyeword", null, offendingText, null);
+		}
+
+		internal static Diagnostic ReportUnknownTypeKeyword(int line, int column, TextSpan prevText, TextSpan offendingText) {
+			return new Diagnostic(line, column, "Unknown variable type", prevText, offendingText, null);
+		}
+
+		internal static Diagnostic ReportCannotCast(int line, int column, TextSpan offendingText, TypeSymbol fromType, TypeSymbol toType) {
+			return new Diagnostic(line, column, $"Cannot implicitly convert {fromType} to {toType}", null, offendingText, null);
+		}
+
+		internal static Diagnostic ReportVoidType(int line, int column, TextSpan span1, TextSpan span2) {
+			throw new NotImplementedException();
+		}
+
+		internal static Diagnostic ReportCannotRedefine(int line, int column, TextSpan span) {
+			throw new NotImplementedException();
+		}
+
+		internal static Diagnostic ReportInvalidOperator(int line, int column, TextSpan span, TextSpan span, TextSpan span1, TypeSymbol valueType1, TypeSymbol valueType2) {
+			throw new NotImplementedException();
+		}
+
+		internal static Diagnostic ReportInvalidOperator(int line, int column, TextSpan span1, TextSpan span2, TypeSymbol valueType) {
+			throw new NotImplementedException();
+		}
+
+		internal static Diagnostic ReportInvalidReturnType(int line, int column, TextSpan span) {
+			throw new NotImplementedException();
+		}
+
+		internal static Diagnostic ReportCannotRedefineFunction(int line, int column, TextSpan span) {
+			throw new NotImplementedException();
 		}
 	}
 }

@@ -1,22 +1,24 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Text;
+using System.Collections.Immutable;
+using System.Linq;
 
 namespace InterpreterLib.Syntax.Tree {
 	internal class SeperatedSyntaxList<T> : IEnumerable<T> where T : SyntaxNode {
-		private List<SyntaxNode> nodesAndSeperators;
+		private ImmutableArray<SyntaxNode> nodesAndSeperators;
 
-		public SeperatedSyntaxList(IEnumerable<SyntaxNode> nodes) {
-			nodesAndSeperators = new List<SyntaxNode>();
-			nodesAndSeperators.AddRange(nodes);
-		}
+		public TextSpan Span => new TextSpan(nodesAndSeperators.First().Span.Start, nodesAndSeperators.Last().Span.End);
 
-		public int Count => (nodesAndSeperators.Count + 1) / 2;
+		public int Count => (nodesAndSeperators.Length + 1) / 2;
 
 		public T this[int index] => (T)nodesAndSeperators[index * 2];
 
 		public SyntaxNode GetSeperator(int index) => nodesAndSeperators[index * 2 + 1];
+
+		public SeperatedSyntaxList(ImmutableArray<SyntaxNode> nodes) {
+			nodesAndSeperators = nodes;
+		}
 
 		public IEnumerator<T> GetEnumerator() {
 			for (int i = 0; i < Count; i++)

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Text;
 
 namespace InterpreterLib.Types {
@@ -7,10 +8,10 @@ namespace InterpreterLib.Types {
 
 		public override SymbolType Type => SymbolType.Function;
 		public override string Name { get; }
-		public IReadOnlyList<ParameterSymbol> Parameters { get; }
+		public ImmutableArray<ParameterSymbol> Parameters { get; }
 		public TypeSymbol ReturnType { get; }
 
-		public FunctionSymbol(string name, IReadOnlyList<ParameterSymbol> parameters, TypeSymbol returnType) {
+		public FunctionSymbol(string name, ImmutableArray<ParameterSymbol> parameters, TypeSymbol returnType) {
 			Name = name;
 			Parameters = parameters;
 			ReturnType = returnType;
@@ -22,10 +23,10 @@ namespace InterpreterLib.Types {
 			if (!Name.Equals(symbol.Name) || ReturnType != symbol.ReturnType)
 				return false;
 
-			if (Parameters.Count != symbol.Parameters.Count)
+			if (Parameters.Length != symbol.Parameters.Length)
 				return false;
 
-			for (int index = 0; index < Parameters.Count; index++) {
+			for (int index = 0; index < Parameters.Length; index++) {
 				if (!Parameters[index].Equals(symbol.Parameters[index]))
 					return false;
 			}
