@@ -9,7 +9,7 @@ namespace InterpreterLib.Syntax.Tree.Expressions {
 		public override IEnumerable<SyntaxNode> Children { get { yield return IdentifierToken; } }
 
 		public TokenSyntax IdentifierToken { get; }
-		public override TextSpan Span { get; }
+		public override TextLocation Span { get; }
 
 		public VariableSyntax(TokenSyntax identifierToken) {
 			IdentifierToken = identifierToken;

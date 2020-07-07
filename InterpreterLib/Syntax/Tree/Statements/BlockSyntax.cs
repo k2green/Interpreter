@@ -6,7 +6,7 @@ using System.Text;
 namespace InterpreterLib.Syntax.Tree.Statements {
 	internal sealed class BlockSyntax : StatementSyntax {
 		public override SyntaxType Type => SyntaxType.Block;
-		public override TextSpan Span { get; }
+		public override TextLocation Span { get; }
 
 		public override IEnumerable<SyntaxNode> Children {
 			get {

@@ -19,7 +19,7 @@ namespace InterpreterLib.Syntax.Tree.Expressions {
 		public TypeDefinitionSyntax Definition { get; }
 		public TokenSyntax OperatorToken { get; }
 		public ExpressionSyntax Expression { get; }
-		public override TextSpan Span { get; }
+		public override TextLocation Span { get; }
 
 		public AssignmentExpressionSyntax( TokenSyntax identifierToken, TypeDefinitionSyntax definition, TokenSyntax operatorToken, ExpressionSyntax expression) {
 			IdentifierToken = identifierToken;

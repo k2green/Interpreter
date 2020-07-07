@@ -14,7 +14,7 @@ namespace InterpreterLib.Syntax.Tree.Expressions {
 		}
 
 		public TokenSyntax LiteralToken { get; }
-		public override TextSpan Span { get; }
+		public override TextLocation Span { get; }
 
 		public LiteralSyntax(TokenSyntax literalToken) {
 			LiteralToken = literalToken;

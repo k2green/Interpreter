@@ -71,7 +71,6 @@ functionCall: funcName=IDENTIFIER L_PARENTHESIS seperatedExpression+ last=binary
 fragment DIGIT : '0'..'9';
 fragment TRUE : ('T' | 't') 'rue';
 fragment FALSE : ('F' | 'f') 'alse';
-fragment CHARACTER : 'a'..'z'|'A'..'Z';
 
 fragment VAR: 'var';
 fragment VAL: 'val';
@@ -104,11 +103,11 @@ DOUBLE: '.' DIGIT+ | DIGIT+ '.' DIGIT+;
 INTEGER: DIGIT+;
 
 DECL_VARIABLE : VAL | VAR;
-IF : 'if';
-ELSE : 'else';
-WHILE : 'while';
-FOR : 'for';
-FUNCTION: 'function';
+IF : 'i' 'f';
+ELSE : 'e' 'l' 's' 'e';
+WHILE : 'w' 'h' 'i' 'l' 'e';
+FOR : 'f' 'o' 'r';
+FUNCTION: 'f' 'u' 'n' 'c' 't' 'i' 'o' 'n';
 
 ASSIGNMENT_OPERATOR: '+=' | '-=' | '*=' | '/=' | '=';
 
@@ -126,9 +125,12 @@ LOGICAL_OP: '&&' | '||';
 
 BANG: '!';
 
+fragment CHARACTER : 'a'..'z'|'A'..'Z';
 IDENTIFIER: (CHARACTER | '_') (CHARACTER | DIGIT | '_')*;
 
 L_PARENTHESIS : '(';
 R_PARENTHESIS : ')';
 L_BRACE : '{';
 R_BRACE : '}';
+
+UNKNOWN: .;

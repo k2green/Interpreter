@@ -12,25 +12,20 @@ namespace Interpreter {
 		protected const int TAB_SPACES = 4;
 		protected static readonly string TAB_STRING = new string(' ', TAB_SPACES);
 
+		private List<string> previousSubmissions = new List<string>();
+		private int previousSubmissionIndex;
+
 		protected RuntimeParser parser;
 		protected bool done;
 		protected bool running;
 
-		protected bool showTree;
-		protected bool showProgram;
 		protected bool multiLine;
-		protected bool evaluate;
 
 		protected Dictionary<VariableSymbol, object> variables;
 		protected BindingEnvironment environment;
 
-		public Repl() : this(false, false, false, true) { }
-
-		public Repl(bool showTree, bool showProgram, bool multiLine, bool evaluate) {
-			this.showTree = showTree;
-			this.showProgram = showProgram;
-			this.multiLine = multiLine;
-			this.evaluate = evaluate;
+		public Repl(bool isMultiline) {
+			multiLine = isMultiline;
 		}
 
 		public void Run() {
@@ -49,13 +44,18 @@ namespace Interpreter {
 				} else {
 					EvaluateInput(input);
 				}
+
+				previousSubmissions.Add(input);
 			}
 		}
 
 		private string EditSubmission() {
+
 			var observable = new ObservableCollection<string>() { "" };
-			var view = new SubmissionView(observable);
+			var view = new SubmissionView(RenderLine, observable);
+
 			done = false;
+			previousSubmissionIndex = previousSubmissions.Count;
 
 			while (!done) {
 				var key = Console.ReadKey(true);
@@ -91,6 +91,15 @@ namespace Interpreter {
 					case ConsoleKey.Backspace:
 						HandleBackspace(observable, view);
 						break;
+					case ConsoleKey.PageUp:
+						HandlePageUp(observable, view);
+						break;
+					case ConsoleKey.PageDown:
+						HandlePageDown(observable, view);
+						break;
+					case ConsoleKey.Delete:
+						HandleDelete(observable, view);
+						break;
 				}
 			} else if (key.Modifiers.HasFlag(ConsoleModifiers.Control)) {
 				switch (key.Key) {
@@ -105,8 +114,84 @@ namespace Interpreter {
 			}
 		}
 
+		private void HandleDelete(ObservableCollection<string> observable, SubmissionView view) {
+			int line = view.CursorLine;
+			int column = view.CursorCharacter;
+			int lineLength = observable[line].Length;
+
+			if (column < lineLength) {
+				if (column % TAB_SPACES == 0 && column + TAB_SPACES <= lineLength && observable[line].Substring(column, TAB_SPACES).Equals(TAB_STRING)) {
+					observable[line] = observable[line].Remove(column, TAB_SPACES);
+				} else {
+					string text = observable[line].Remove(column, 1);
+					observable[line] = text;
+				}
+			} else {
+				int nextLine = line + 1;
+
+				if (nextLine < observable.Count) {
+					if (!string.IsNullOrEmpty(observable[nextLine])) {
+						observable[view.CursorLine] = observable[line] + observable[nextLine];
+						observable.RemoveAt(nextLine);
+					} else {
+						observable.RemoveAt(nextLine);
+					}
+				}
+			}
+		}
+
+		private void HandlePageDown(ObservableCollection<string> observable, SubmissionView view) {
+			previousSubmissionIndex++;
+
+			if (previousSubmissionIndex < previousSubmissions.Count) {
+				var next = previousSubmissions[previousSubmissionIndex];
+				var lines = next.Split(Environment.NewLine);
+
+				if (lines.Length > 1 && !multiLine)
+					HandlePageDown(observable, view);
+				else
+					UpdateFromHistory(observable, view, lines);
+			} else {
+				previousSubmissionIndex = previousSubmissions.Count;
+				observable.Clear();
+				observable.Add("");
+				view.CursorLine = 0;
+				view.CursorCharacter = 0;
+			}
+		}
+
+		private void HandlePageUp(ObservableCollection<string> observable, SubmissionView view) {
+			previousSubmissionIndex--;
+
+			if (previousSubmissionIndex >= 0) {
+				var previous = previousSubmissions[previousSubmissionIndex];
+				var lines = previous.Split(Environment.NewLine);
+
+				if (lines.Length > 1 && !multiLine)
+					HandlePageUp(observable, view);
+				else
+					UpdateFromHistory(observable, view, lines);
+			} else {
+				previousSubmissionIndex = -1;
+				observable.Clear();
+				observable.Add("");
+				view.CursorLine = 0;
+				view.CursorCharacter = 0;
+			}
+		}
+
+		private void UpdateFromHistory(ObservableCollection<string> observable, SubmissionView view, string[] lines) {
+			observable.Clear();
+
+			foreach (var line in lines)
+				observable.Add(line);
+
+			view.CursorLine = lines.Length - 1;
+			view.CursorCharacter = observable[view.CursorLine].Length;
+		}
+
 		private void HandleTab(ObservableCollection<string> observable, SubmissionView view) {
-			int line = view.TextLine;
+			int line = view.CursorLine;
 			int start = view.CursorCharacter;
 
 			int spaceCount = TAB_SPACES - (start % TAB_SPACES);
@@ -121,7 +206,7 @@ namespace Interpreter {
 		}
 
 		private void HandleBackspace(ObservableCollection<string> observable, SubmissionView view) {
-			int line = view.TextLine;
+			int line = view.CursorLine;
 			int column = view.CursorCharacter;
 
 			if (column > 0) {
@@ -134,17 +219,23 @@ namespace Interpreter {
 					view.CursorCharacter--;
 				}
 			} else {
-				if (string.IsNullOrEmpty(observable[line]) && observable.Count > 1) {
+				if(!string.IsNullOrEmpty(observable[line]) && line > 0) {
+					view.CursorLine--;
+					view.CursorCharacter = observable[view.CursorLine].Length;
+
+					observable[view.CursorLine] = observable[view.CursorLine] + observable[line];
+					observable.RemoveAt(line);
+				} else if (string.IsNullOrEmpty(observable[line]) && observable.Count > 1) {
 					observable.RemoveAt(line);
 					view.CursorLine--;
-					view.CursorCharacter = observable[view.TextLine].Length;
+					view.CursorCharacter = observable[view.CursorLine].Length;
 				}
 			}
 		}
 
 
 		private void HandleTyping(ObservableCollection<string> observable, SubmissionView view, string text) {
-			int line = view.TextLine;
+			int line = view.CursorLine;
 			int start = view.CursorCharacter;
 
 			observable[line] = observable[line].Insert(start, text);
@@ -155,11 +246,11 @@ namespace Interpreter {
 			if (!multiLine || (observable.Count == 1 && IsCommand(observable[0]))) {
 				HandleCtrlEnter(observable, view);
 			} else {
-				int line = view.TextLine;
+				int line = view.CursorLine;
 				var lineText = observable[line];
 				int spaceCount = 0;
 
-				foreach(var character in lineText) {
+				foreach (var character in lineText) {
 					if (character != ' ')
 						break;
 
@@ -177,33 +268,41 @@ namespace Interpreter {
 				}
 
 				view.CursorLine++;
-				view.CursorCharacter = observable[view.TextLine].Length ;
+				view.CursorCharacter = 0;
 			}
 		}
 
 		private void HandleDownArrow(ObservableCollection<string> observable, SubmissionView view) {
-			if (view.TextLine < observable.Count - 1)
-				view.CursorLine++;
+			if(!multiLine) {
+				HandlePageDown(observable, view);
+			} else {
+				if (view.CursorLine < observable.Count - 1)
+					view.CursorLine++;
 
-			var line = observable[view.TextLine];
-			if (view.CursorCharacter > line.Length)
-				view.CursorCharacter = line.Length;
+				var line = observable[view.CursorLine];
+				if (view.CursorCharacter > line.Length)
+					view.CursorCharacter = line.Length;
+			}
 		}
 
 		private void HandleUpArrow(ObservableCollection<string> observable, SubmissionView view) {
-			if (view.TextLine > 0)
-				view.CursorLine--;
+			if(!multiLine) {
+				HandlePageUp(observable, view);
+			} else {
+				if (view.CursorLine > 0)
+					view.CursorLine--;
 
-			var line = observable[view.TextLine];
-			if (view.CursorCharacter >= line.Length)
-				view.CursorCharacter = line.Length;
+				var line = observable[view.CursorLine];
+				if (view.CursorCharacter >= line.Length)
+					view.CursorCharacter = line.Length;
+			}
 		}
 
 		private void HandleRightArrow(ObservableCollection<string> observable, SubmissionView view) {
-			var line = observable[view.TextLine];
+			var line = observable[view.CursorLine];
 			if (view.CursorCharacter < line.Length) {
 				view.CursorCharacter++;
-			} else if (view.TextLine < observable.Count - 1) {
+			} else if (view.CursorLine < observable.Count - 1) {
 				view.CursorLine++;
 				view.CursorCharacter = 0;
 			}
@@ -212,9 +311,9 @@ namespace Interpreter {
 		private void HandleLeftArrow(ObservableCollection<string> observable, SubmissionView view) {
 			if (view.CursorCharacter > 0) {
 				view.CursorCharacter--;
-			} else if (view.TextLine > 0) {
+			} else if (view.CursorLine > 0) {
 				view.CursorLine--;
-				view.CursorCharacter = observable[view.TextLine].Length;
+				view.CursorCharacter = observable[view.CursorLine].Length;
 			}
 		}
 
@@ -227,43 +326,10 @@ namespace Interpreter {
 			return true;
 		}
 
-		protected bool EvaluateCommand(string command) {
-			string outputString;
+		protected abstract bool EvaluateCommand(string command);
 
-			switch (command.ToLower()) {
-				case "clear":
-					Console.Clear();
-					return true;
-				case "reset":
-					variables = new Dictionary<VariableSymbol, object>();
-					environment = null;
-					return true;
-				case "showtree":
-					showTree = !showTree;
-					outputString = $"{(showTree ? "S" : "Not s")}howing syntax tree";
-					Console.WriteLine(outputString);
-					return true;
-				case "multiline":
-					multiLine = !multiLine;
-					outputString = $"Mode: {(multiLine ? "Multiple lines\nPress Ctrl+Enter to evaluate" : "SingleLine")}";
-					Console.WriteLine(outputString);
-					return true;
-				case "showprogram":
-					showProgram = !showProgram;
-					outputString = $"{(showProgram ? "S" : "Not s")}howing bound tree";
-					Console.WriteLine(outputString);
-					return true;
-				case "evaluate":
-					evaluate = !evaluate;
-					outputString = $"{(evaluate ? "E" : "Not e")}valuating bound tree";
-					Console.WriteLine(outputString);
-					return true;
-				case "exit":
-					running = false;
-					return true;
-				default:
-					return false;
-			}
+		protected virtual void RenderLine(string line) {
+			Console.WriteLine(line);
 		}
 
 		protected virtual bool IsCompleteSubmission(string input) {

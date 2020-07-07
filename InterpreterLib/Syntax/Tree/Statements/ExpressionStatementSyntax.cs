@@ -8,7 +8,7 @@ namespace InterpreterLib.Syntax.Tree.Statements {
 		public override SyntaxType Type => SyntaxType.Expression;
 		public override IEnumerable<SyntaxNode> Children { get { yield return Expression; } }
 		public ExpressionSyntax Expression { get; }
-		public override TextSpan Span { get; }
+		public override TextLocation Span { get; }
 
 		public ExpressionStatementSyntax(ExpressionSyntax expression) {
 			Expression = expression;

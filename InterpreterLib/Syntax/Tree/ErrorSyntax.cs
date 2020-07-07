@@ -9,11 +9,11 @@ namespace InterpreterLib.Syntax.Tree {
 		public override IEnumerable<SyntaxNode> Children => throw new Exception("Errors have no children");
 
 		public Diagnostic Diagnostic { get; }
-		public override TextSpan Span { get; }
+		public override TextLocation Span { get; }
 
 		public ErrorSyntax(Diagnostic diagnostic) {
 			Diagnostic = diagnostic;
-			Span = new TextSpan(0, 0, diagnostic.Line, diagnostic.Column);
+			Span = new TextLocation(0, 0, diagnostic.Line, diagnostic.Column);
 		}
 
 		public override string ToString() {

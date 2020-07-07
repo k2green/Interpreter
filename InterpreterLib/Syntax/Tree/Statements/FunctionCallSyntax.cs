@@ -19,7 +19,7 @@ namespace InterpreterLib.Syntax.Tree.Statements {
 			}
 		}
 
-		public override TextSpan Span { get; }
+		public override TextLocation Span { get; }
 		public TokenSyntax Identifier { get; }
 		public TokenSyntax LeftParen { get; }
 		public SeperatedSyntaxList<ExpressionSyntax> Parameters { get; }

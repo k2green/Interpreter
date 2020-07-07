@@ -18,7 +18,7 @@ namespace InterpreterLib.Syntax.Tree {
 			}
 		}
 
-		public override TextSpan Span { get; }
+		public override TextLocation Span { get; }
 
 		public TokenSyntax LeftParen { get; }
 		public SeperatedSyntaxList<TypedIdentifierSyntax> Parameters { get; }

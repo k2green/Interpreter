@@ -21,13 +21,17 @@ namespace InterpreterLib.Runtime {
 			}
 		}
 
-		public RuntimeParser(string input) {
+		public static (CommonTokenStream, IVocabulary) GetTokens(string input) {
 			AntlrInputStream stream = new AntlrInputStream(input);
 
 			GLangLexer lexer = new GLangLexer(stream);
 			lexer.RemoveErrorListeners();
 
-			CommonTokenStream tokens = new CommonTokenStream(lexer);
+			return (new CommonTokenStream(lexer), lexer.Vocabulary);
+		}
+
+		public RuntimeParser(string input) {
+			CommonTokenStream tokens = GetTokens(input).Item1;
 			GLangParser parser = new GLangParser(tokens);
 			parser.RemoveErrorListeners();
 

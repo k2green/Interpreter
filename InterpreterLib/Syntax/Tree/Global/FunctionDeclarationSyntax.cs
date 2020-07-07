@@ -16,7 +16,7 @@ namespace InterpreterLib.Syntax.Tree.Global {
 			}
 		}
 
-		public override TextSpan Span { get; }
+		public override TextLocation Span { get; }
 
 		public TokenSyntax KeywToken { get; }
 		public TokenSyntax Identifier { get; }

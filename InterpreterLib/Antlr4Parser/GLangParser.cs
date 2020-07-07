@@ -41,7 +41,7 @@ public partial class GLangParser : Parser {
 		DOUBLE=7, INTEGER=8, DECL_VARIABLE=9, IF=10, ELSE=11, WHILE=12, FOR=13, 
 		FUNCTION=14, ASSIGNMENT_OPERATOR=15, ADDITIVE_OP=16, MULTIPLICATIVE_OP=17, 
 		CARAT=18, LOW_PRIORITY_OP=19, COMPARE_OP=20, LOGICAL_OP=21, BANG=22, IDENTIFIER=23, 
-		L_PARENTHESIS=24, R_PARENTHESIS=25, L_BRACE=26, R_BRACE=27;
+		L_PARENTHESIS=24, R_PARENTHESIS=25, L_BRACE=26, R_BRACE=27, UNKNOWN=28;
 	public const int
 		RULE_compilationUnit = 0, RULE_declerationOrAssign = 1, RULE_typeDefinition = 2, 
 		RULE_globalStatement = 3, RULE_statement = 4, RULE_definedIdentifier = 5, 
@@ -60,16 +60,16 @@ public partial class GLangParser : Parser {
 	};
 
 	private static readonly string[] _LiteralNames = {
-		null, null, null, "','", "':'", null, null, null, null, null, "'if'", 
-		"'else'", "'while'", "'for'", "'function'", null, null, null, "'^'", null, 
-		null, null, "'!'", null, "'('", "')'", "'{'", "'}'"
+		null, null, null, "','", "':'", null, null, null, null, null, null, null, 
+		null, null, null, null, null, null, "'^'", null, null, null, "'!'", null, 
+		"'('", "')'", "'{'", "'}'"
 	};
 	private static readonly string[] _SymbolicNames = {
 		null, "STRING", "WHITESPACE", "COMMA", "TYPE_DELIMETER", "TYPE_NAME", 
 		"BOOLEAN", "DOUBLE", "INTEGER", "DECL_VARIABLE", "IF", "ELSE", "WHILE", 
 		"FOR", "FUNCTION", "ASSIGNMENT_OPERATOR", "ADDITIVE_OP", "MULTIPLICATIVE_OP", 
 		"CARAT", "LOW_PRIORITY_OP", "COMPARE_OP", "LOGICAL_OP", "BANG", "IDENTIFIER", 
-		"L_PARENTHESIS", "R_PARENTHESIS", "L_BRACE", "R_BRACE"
+		"L_PARENTHESIS", "R_PARENTHESIS", "L_BRACE", "R_BRACE", "UNKNOWN"
 	};
 	public static readonly IVocabulary DefaultVocabulary = new Vocabulary(_LiteralNames, _SymbolicNames);
 
@@ -1652,7 +1652,7 @@ public partial class GLangParser : Parser {
 
 	private static char[] _serializedATN = {
 		'\x3', '\x608B', '\xA72A', '\x8133', '\xB9ED', '\x417C', '\x3BE7', '\x7786', 
-		'\x5964', '\x3', '\x1D', '\xD7', '\x4', '\x2', '\t', '\x2', '\x4', '\x3', 
+		'\x5964', '\x3', '\x1E', '\xD7', '\x4', '\x2', '\t', '\x2', '\x4', '\x3', 
 		'\t', '\x3', '\x4', '\x4', '\t', '\x4', '\x4', '\x5', '\t', '\x5', '\x4', 
 		'\x6', '\t', '\x6', '\x4', '\a', '\t', '\a', '\x4', '\b', '\t', '\b', 
 		'\x4', '\t', '\t', '\t', '\x4', '\n', '\t', '\n', '\x4', '\v', '\t', '\v', 

@@ -16,7 +16,7 @@ namespace InterpreterLib.Syntax.Tree.Expressions {
 		public ExpressionSyntax LeftSyntax { get; }
 		public TokenSyntax OpToken { get; }
 		public ExpressionSyntax RightSyntax { get; }
-		public override TextSpan Span { get; }
+		public override TextLocation Span { get; }
 
 		public BinaryExpressionSyntax(ExpressionSyntax leftStntax, TokenSyntax opToken, ExpressionSyntax rightSyntax) {
 			LeftSyntax = leftStntax;

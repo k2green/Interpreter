@@ -6,11 +6,11 @@ namespace InterpreterLib.Syntax.Tree {
 	internal abstract class SyntaxNode {
 		public abstract SyntaxType Type { get; }
 		public abstract IEnumerable<SyntaxNode> Children { get; }
-		public abstract TextSpan Span { get; }
+		public abstract TextLocation Span { get; }
 
-		protected TextSpan CreateNewSpan(TextSpan start, TextSpan end) {
+		protected TextLocation CreateNewSpan(TextLocation start, TextLocation end) {
 			int width = end.Start + end.Width - start.Start;
-			return new TextSpan(start.Start, width, start.Line, start.Column);
+			return new TextLocation(start.Start, width, start.Line, start.Column);
 		}
 
 		public override string ToString() {

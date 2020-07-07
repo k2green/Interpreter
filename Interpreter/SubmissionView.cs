@@ -7,6 +7,8 @@ using System.Text;
 namespace Interpreter {
 	public sealed class SubmissionView {
 
+		public Action<string> Renderer { get; }
+
 		private ObservableCollection<string> submissionText;
 		private int renderHeight;
 
@@ -15,11 +17,12 @@ namespace Interpreter {
 
 		public int Top { get; }
 
-		public SubmissionView(ObservableCollection<string> text) {
+		public SubmissionView(Action<string> renderer, ObservableCollection<string> text) {
+			Renderer = renderer;
 			submissionText = text;
 			submissionText.CollectionChanged += SubmissionTextChanged;
 			Top = Console.CursorTop;
-			cursorLine = Top;
+			cursorLine = 0;
 			Render();
 			UpdateCursorPosition();
 		}
@@ -32,6 +35,13 @@ namespace Interpreter {
 			Console.CursorVisible = false;
 			Console.SetCursorPosition(0, Top);
 
+			var blankLine = new string(' ', Console.WindowWidth);
+
+			for (int blankCount = 0; blankCount < renderHeight; blankCount++) {
+				Console.WriteLine(blankLine);
+			}
+
+			Console.SetCursorPosition(0, Top);
 			int lineCount = 0;
 
 			foreach (var line in submissionText) {
@@ -44,16 +54,8 @@ namespace Interpreter {
 
 				Console.ForegroundColor = ConsoleColor.White;
 
-				Console.WriteLine(line + new string(' ', Console.WindowWidth - line.Length - 2));
+				Renderer(line);
 				lineCount++;
-			}
-
-			int blankCount = renderHeight - lineCount;
-			var blankLine = new string(' ', Console.WindowWidth);
-
-			while (blankCount > 0) {
-				Console.WriteLine(blankLine);
-				blankCount--;
 			}
 
 			renderHeight = lineCount;
@@ -62,10 +64,8 @@ namespace Interpreter {
 		}
 
 		private void UpdateCursorPosition() {
-			Console.SetCursorPosition(cursorCharacter + 2, cursorLine);
+			Console.SetCursorPosition(cursorCharacter + 2, cursorLine + Top);
 		}
-
-		public int TextLine => CursorLine - Top;
 
 		public int CursorLine {
 			get => cursorLine;

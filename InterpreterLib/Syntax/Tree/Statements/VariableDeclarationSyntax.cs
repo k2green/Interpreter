@@ -7,7 +7,7 @@ namespace InterpreterLib.Syntax.Tree.Statements {
 	internal sealed class VariableDeclarationSyntax : StatementSyntax {
 
 		public override SyntaxType Type => SyntaxType.Declaration;
-		public override TextSpan Span { get; }
+		public override TextLocation Span { get; }
 
 		public override IEnumerable<SyntaxNode> Children {
 			get {
