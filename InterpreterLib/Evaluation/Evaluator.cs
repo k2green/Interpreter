@@ -39,7 +39,7 @@ namespace InterpreterLib {
 		private object EvaluateBlock(BoundBlock block) {
 			var labelConversions = new Dictionary<LabelSymbol, int>();
 
-			for (int index = 0; index < block.Statements.Count; index++) {
+			for (int index = 0; index < block.Statements.Length; index++) {
 				if (block.Statements[index] is BoundLabel label) {
 					labelConversions.Add(label.Label, index + 1);
 				}
@@ -47,7 +47,7 @@ namespace InterpreterLib {
 
 			var currentIndex = 0;
 			object val = null;
-			while (currentIndex < block.Statements.Count) {
+			while (currentIndex < block.Statements.Length) {
 				var statement = block.Statements[currentIndex];
 
 				switch (statement.Type) {
@@ -111,7 +111,7 @@ namespace InterpreterLib {
 				return input;
 			} else if (Program.FunctionBodies.TryGetValue(statement.Function, out var boundBlock)) {
 				var newScope = new Dictionary<VariableSymbol, object>();
-				var parameters = new VariableSymbol[statement.Parameters.Count];
+				var parameters = new VariableSymbol[statement.Parameters.Length];
 				int index = 0;
 
 				foreach (var param in statement.Function.Parameters) {

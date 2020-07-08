@@ -19,6 +19,7 @@ namespace InterpreterLib.Syntax.Tree {
 		}
 
 		public override TextLocation Location => LeftParen.Location;
+		public override TextSpan Span => new TextSpan(LeftParen.Span.Start, RightParen.Span.End);
 
 		public TokenSyntax LeftParen { get; }
 		public SeperatedSyntaxList<TypedIdentifierSyntax> Parameters { get; }

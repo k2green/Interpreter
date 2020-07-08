@@ -2,6 +2,7 @@
 using InterpreterLib.Binding.Tree.Statements;
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Text;
 
 namespace InterpreterLib.Binding.Tree {
@@ -70,7 +71,7 @@ namespace InterpreterLib.Binding.Tree {
 		}
 
 		protected virtual BoundExpression RewriteFunctionCall(BoundFunctionCall expression) {
-			List<BoundExpression> newExpressions = new List<BoundExpression>();
+			var newExpressions = ImmutableArray.CreateBuilder<BoundExpression>();
 			bool isSame = true;
 
 			foreach (var parameter in expression.Parameters) {
@@ -84,7 +85,7 @@ namespace InterpreterLib.Binding.Tree {
 			if (isSame)
 				return expression;
 
-			return new BoundFunctionCall(expression.Function, newExpressions);
+			return new BoundFunctionCall(expression.Function, newExpressions.ToImmutable());
 		}
 
 		protected virtual BoundStatement RewriteStatement(BoundStatement statement) {
@@ -133,7 +134,7 @@ namespace InterpreterLib.Binding.Tree {
 		}
 
 		protected virtual BoundStatement RewriteBlock(BoundBlock block) {
-			List<BoundStatement> rewrittenStatements = new List<BoundStatement>();
+			var rewrittenStatements = ImmutableArray.CreateBuilder<BoundStatement>();
 			bool isSame = true;
 
 			foreach (var statement in block.Statements) {
@@ -148,7 +149,7 @@ namespace InterpreterLib.Binding.Tree {
 			if (isSame)
 				return block;
 			else
-				return new BoundBlock(rewrittenStatements);
+				return new BoundBlock(rewrittenStatements.ToImmutable());
 		}
 
 		protected virtual BoundNode RewriteError(BoundError error) {

@@ -17,6 +17,7 @@ namespace InterpreterLib.Syntax.Tree {
 		public TokenSyntax DelimeterToken { get; }
 		public TokenSyntax NameToken { get; }
 		public override TextLocation Location => DelimeterToken.Location;
+		public override TextSpan Span => new TextSpan(DelimeterToken.Span.Start, NameToken.Span.End);
 
 		public TypeDefinitionSyntax(TokenSyntax delimeterToken, TokenSyntax nameToken) {
 			DelimeterToken = delimeterToken;

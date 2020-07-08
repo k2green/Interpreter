@@ -33,6 +33,10 @@ namespace InterpreterLib {
 			return new Diagnostic(line, column, "Syntax error: Invalid unary expression syntax", previousText, offendingText, null);
 		}
 
+		internal static Diagnostic ReportErrorEncounteredWhileEvaluating() {
+			throw new NotImplementedException();
+		}
+
 		internal static Diagnostic ReportInvalidUnaryExpression(int line, int column, TextSpan offendingText) {
 			return ReportInvalidUnaryExpression(line, column, null, offendingText);
 		}
@@ -169,10 +173,6 @@ namespace InterpreterLib {
 			return new Diagnostic(line, column, "Assignment expressions cannot have a type definition.", null, offendingText, null);
 		}
 
-		internal static Diagnostic ReportVoidType(int line, int column, TextSpan offendingText) {
-			return new Diagnostic(line, column, "Invalid use of void type", null, offendingText, null);
-		}
-
 		internal static Diagnostic ReportUndefinedVariable(int line, int column, TextSpan offendingText) {
 			return new Diagnostic(line, column, "Variable is undefined", null, offendingText, null);
 		}
@@ -189,28 +189,32 @@ namespace InterpreterLib {
 			return new Diagnostic(line, column, $"Cannot implicitly convert {fromType} to {toType}", null, offendingText, null);
 		}
 
-		internal static Diagnostic ReportVoidType(int line, int column, TextSpan span1, TextSpan span2) {
-			throw new NotImplementedException();
+		internal static Diagnostic ReportVoidType(int line, int column, TextSpan? prevText, TextSpan offendingText) {
+			return new Diagnostic(line, column, "Invalid use of void type", prevText, offendingText, null);
 		}
 
-		internal static Diagnostic ReportCannotRedefine(int line, int column, TextSpan span) {
-			throw new NotImplementedException();
+		internal static Diagnostic ReportVoidType(int line, int column, TextSpan offendingText) {
+			return ReportVoidType(line, column, null, offendingText);
 		}
 
-		internal static Diagnostic ReportInvalidOperator(int line, int column, TextSpan span, TextSpan span, TextSpan span1, TypeSymbol valueType1, TypeSymbol valueType2) {
-			throw new NotImplementedException();
+		internal static Diagnostic ReportCannotRedefine(int line, int column, TextSpan offendingText) {
+			return new Diagnostic(line, column, "Cannot redefine vadriable", null, offendingText, null);
 		}
 
-		internal static Diagnostic ReportInvalidOperator(int line, int column, TextSpan span1, TextSpan span2, TypeSymbol valueType) {
-			throw new NotImplementedException();
+		internal static Diagnostic ReportInvalidOperator(int line, int column, TextSpan prevText, TextSpan offendingText, TextSpan nextText, TypeSymbol valueType1, TypeSymbol valueType2) {
+			return new Diagnostic(line, column, $"Operator is invalid for types {valueType1} and {valueType2}", prevText, offendingText, nextText);
 		}
 
-		internal static Diagnostic ReportInvalidReturnType(int line, int column, TextSpan span) {
-			throw new NotImplementedException();
+		internal static Diagnostic ReportInvalidOperator(int line, int column, TextSpan prevText, TextSpan offendingText, TypeSymbol valueType) {
+			return new Diagnostic(line, column, $"Operator is invalid for type {valueType}", prevText, offendingText, null);
 		}
 
-		internal static Diagnostic ReportCannotRedefineFunction(int line, int column, TextSpan span) {
-			throw new NotImplementedException();
+		internal static Diagnostic ReportInvalidReturnType(int line, int column, TextSpan offendingText) {
+			return new Diagnostic(line, column, $"Invalid return type", null, offendingText, null);
+		}
+
+		internal static Diagnostic ReportCannotRedefineFunction(int line, int column, TextSpan offendingText) {
+			return new Diagnostic(line, column, $"Cannot redefine function", null, offendingText, null);
 		}
 	}
 }

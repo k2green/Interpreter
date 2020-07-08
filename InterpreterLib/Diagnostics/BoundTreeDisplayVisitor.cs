@@ -152,11 +152,11 @@ namespace InterpreterLib.Diagnostics {
 			Console.ForegroundColor = STATEMENT_COLOR;
 			Console.WriteLine($"Block");
 
-			if (block.Statements != null && block.Statements.Count > 0) {
-				for (int i = 0; i < block.Statements.Count - 1; i++)
+			if (block.Statements != null && block.Statements.Length > 0) {
+				for (int i = 0; i < block.Statements.Length - 1; i++)
 					Visit(block.Statements[i], prefix2 + NEXT_CHILD, prefix2 + NO_CHILD);
 
-				Visit(block.Statements[block.Statements.Count - 1], prefix2 + LAST_CHILD, prefix2 + SPACING);
+				Visit(block.Statements[block.Statements.Length - 1], prefix2 + LAST_CHILD, prefix2 + SPACING);
 			}
 		}
 

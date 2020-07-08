@@ -19,6 +19,8 @@ namespace InterpreterLib.Syntax.Tree {
 		public TokenSyntax Identifier { get; }
 		public TypeDefinitionSyntax Definition { get; }
 
+		public override TextSpan Span => new TextSpan(Identifier.Span.Start, Identifier.Span.End);
+
 		public TypedIdentifierSyntax(TokenSyntax identifier, TypeDefinitionSyntax definition) {
 			Identifier = identifier;
 			Definition = definition;

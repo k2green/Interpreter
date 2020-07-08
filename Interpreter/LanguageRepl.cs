@@ -49,6 +49,8 @@ namespace Interpreter {
 			}
 		}
 
+		protected override 
+
 		protected override bool IsCompleteSubmission(string input) {
 			if (!base.IsCompleteSubmission(input))
 				return false;
