@@ -108,23 +108,35 @@ namespace InterpreterLib.Binding.Tree {
 					return RewriteConditionalBranchStatement((BoundConditionalBranchStatement)statement);
 				case NodeType.Branch:
 					return RewriteBranchStatement((BoundBranchStatement)statement);
+				case NodeType.Break:
+					return RewriteBreak((BoundBreakStatement)statement);
+				case NodeType.Continue:
+					return RewriteContinue((BoundContinueStatement)statement);
 				default: throw new Exception($"Unexpected statement {statement.Type}");
 			}
 		}
 
-		private BoundStatement RewriteBranchStatement(BoundBranchStatement statement) {
+		protected virtual BoundStatement RewriteContinue(BoundContinueStatement statement) {
 			return statement;
 		}
 
-		private BoundStatement RewriteConditionalBranchStatement(BoundConditionalBranchStatement statement) {
+		protected virtual BoundStatement RewriteBreak(BoundBreakStatement statement) {
 			return statement;
 		}
 
-		private BoundLabel RewriteLabelStatement(BoundLabel statement) {
+		protected virtual BoundStatement RewriteBranchStatement(BoundBranchStatement statement) {
 			return statement;
 		}
 
-		private BoundStatement RewriteExpressionStatement(BoundExpressionStatement statement) {
+		protected virtual BoundStatement RewriteConditionalBranchStatement(BoundConditionalBranchStatement statement) {
+			return statement;
+		}
+
+		protected virtual BoundLabel RewriteLabelStatement(BoundLabel statement) {
+			return statement;
+		}
+
+		protected virtual BoundStatement RewriteExpressionStatement(BoundExpressionStatement statement) {
 			var expression = RewriteExpression(statement.Expression);
 
 			if (expression == statement.Expression)

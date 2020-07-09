@@ -14,8 +14,9 @@ typeDefinition: TYPE_DELIMETER TYPE_NAME;
 	 */
 
 	
-globalStatement: functionDefinition | statement;
-statement : forStatement | whileStatement | ifStatement | block| variableDeclarationStatement | expressionStatement;
+globalStatement: functionDefinition | baseStatement;
+baseStatement : forStatement | whileStatement | ifStatement | block | variableDeclarationStatement | expressionStatement;
+statement : baseStatement | BREAK | CONTINUE;
 
 definedIdentifier: IDENTIFIER typeDefinition;
 seperatedDefinedIdentifier: definedIdentifier COMMA;
@@ -96,6 +97,8 @@ WHITESPACE : [ \t\r\n]+ -> channel(HIDDEN);
 COMMA : ',';
 
 TYPE_DELIMETER : ':';
+BREAK: 'b' 'r' 'e' 'a' 'k';
+CONTINUE : 'c' 'o' 'n' 't' 'i' 'n' 'u' 'e';
 TYPE_NAME : INTEGER_TYPE | DOUBLE_TYPE | BOOLEAN_TYPE | STRING_TYPE | VOID_TYPE;
 
 BOOLEAN: TRUE | FALSE;

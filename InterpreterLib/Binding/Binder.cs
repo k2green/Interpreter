@@ -167,8 +167,20 @@ namespace InterpreterLib.Binding {
 					return BindFunctionCall((FunctionCallSyntax)syntax);
 				case SyntaxType.GlobalStatement:
 					return BindGlobalStatement((GlobalStatementSyntax)syntax);
+				case SyntaxType.Break:
+					return BindBreakStatement((BreakSyntax)syntax);
+				case SyntaxType.Continue:
+					return BindContinueStatement((ContinueSyntax)syntax);
 				default: throw new Exception($"Encountered unhandled syntax {syntax.Type}");
 			}
+		}
+
+		private BoundNode BindContinueStatement(ContinueSyntax syntax) {
+			return new BoundContinueStatement(); 
+		}
+
+		private BoundNode BindBreakStatement(BreakSyntax syntax) {
+			return new BoundBreakStatement();
 		}
 
 		private BoundNode BindGlobalStatement(GlobalStatementSyntax syntax) {

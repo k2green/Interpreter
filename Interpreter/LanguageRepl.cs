@@ -79,7 +79,7 @@ namespace Interpreter {
 		}
 
 		protected override void RenderLine(string line) {
-			if(line.StartsWith("#")) {
+			if (line.StartsWith("#")) {
 				Console.WriteLine(line);
 			} else {
 				tree = new SyntaxTree(line, false);
@@ -94,7 +94,7 @@ namespace Interpreter {
 		}
 
 		private void RenderToken(IToken token, IVocabulary vocab) {
-			switch(vocab.GetDisplayName(token.Type)) {
+			switch (vocab.GetDisplayName(token.Type)) {
 				case "INTEGER":
 				case "DOUBLE":
 				case "BOOLEAN":
@@ -114,6 +114,8 @@ namespace Interpreter {
 				case "ELSE":
 				case "WHILE":
 				case "FOR":
+				case "BREAK":
+				case "CONTINUE":
 					Console.ForegroundColor = Color.MediumVioletRed;
 					break;
 

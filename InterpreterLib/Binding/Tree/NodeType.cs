@@ -15,6 +15,8 @@
 		TypeDefinition,
 		FunctionCall,
 		InternalTypeConversion,
-		FunctionDefinition
+		FunctionDefinition,
+		Break,
+		Continue
 	}
 }

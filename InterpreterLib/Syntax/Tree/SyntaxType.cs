@@ -23,6 +23,8 @@ namespace InterpreterLib.Syntax.Tree {
 		ParameterDefinition,
 		FunctionDeclaration,
 		CompilationUnit,
-		GlobalStatement
+		GlobalStatement,
+		Continue,
+		Break
 	}
 }

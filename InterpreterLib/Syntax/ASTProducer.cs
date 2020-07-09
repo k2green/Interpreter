@@ -636,7 +636,7 @@ namespace InterpreterLib.Syntax {
 			return null;
 		}
 
-		public override SyntaxNode VisitStatement([NotNull] GLangParser.StatementContext context) {
+		public override SyntaxNode VisitBaseStatement([NotNull] GLangParser.BaseStatementContext context) {
 			if (context.forStatement() != null)
 				return Visit(context.forStatement());
 
@@ -685,12 +685,38 @@ namespace InterpreterLib.Syntax {
 			return new CompilationUnitSyntax(statements.ToImmutable());
 		}
 
+		public override SyntaxNode VisitStatement([NotNull] GLangParser.StatementContext context) {
+			var baseCtx = context.baseStatement();
+			var breakCtx = context.BREAK();
+			var continueCtx = context.CONTINUE();
+
+			bool hasBreak = breakCtx != null && breakCtx.Symbol.Text.Equals("break");
+			bool hasContinue = continueCtx != null && continueCtx.Symbol.Text.Equals("continue");
+
+			if (!OnlyOne(baseCtx != null, hasBreak, hasContinue)) {
+				var span = new TextSpan(context.Start.StartIndex, context.Stop.StopIndex);
+				diagnostics.AddDiagnostic(Diagnostic.ReportInvalidStatement(context.Start.Line, context.Start.Column, span));
+				return null;
+			}
+
+			if (baseCtx != null)
+				return Visit(baseCtx);
+
+			if (hasBreak)
+				return new BreakSyntax(Token(breakCtx.Symbol));
+
+			if (hasContinue)
+				return new ContinueSyntax(Token(continueCtx.Symbol));
+
+			return null;
+		}
+
 		public override SyntaxNode VisitGlobalStatement([NotNull] GLangParser.GlobalStatementContext context) {
 			if (context.functionDefinition() != null)
 				return Visit(context.functionDefinition());
 
-			if (context.statement() != null) {
-				var statementVisit = Visit(context.statement());
+			if (context.baseStatement() != null) {
+				var statementVisit = Visit(context.baseStatement());
 
 				if (statementVisit == null)
 					return null;
