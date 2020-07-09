@@ -20,9 +20,7 @@ namespace InterpreterLib.Types {
 		public override string ToString() => $"{Name} : {ValueType}";
 
 		public override bool Equals(object obj) {
-			if (!(obj is VariableSymbol)) return false;
-
-			VariableSymbol symbol = (VariableSymbol)obj;
+			if (!(obj is VariableSymbol symbol)) return false;
 
 			return Name.Equals(symbol.Name) && IsReadOnly == symbol.IsReadOnly && ValueType == symbol.ValueType;
 		}

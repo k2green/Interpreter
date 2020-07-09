@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Collections.Immutable;
+using InterpreterLib.Syntax;
 
 namespace InterpreterLib.Binding {
 	internal sealed class Binder : GLangBaseVisitor<BoundNode> {
@@ -231,7 +232,10 @@ namespace InterpreterLib.Binding {
 			var assignVisit = Bind(syntax.Assignment);
 			var conditionVisit = Bind(syntax.Condition);
 			var stepVisit = Bind(syntax.Step);
+
+			scope = new BoundScope(scope);
 			var bodyVisit = Bind(syntax.Body);
+			scope = scope.Parent;
 
 			if (!(assignVisit is BoundStatement assignment))
 				return assignVisit;
@@ -245,15 +249,21 @@ namespace InterpreterLib.Binding {
 			if (!(bodyVisit is BoundStatement body))
 				return bodyVisit;
 
-			if (condition.ValueType != TypeSymbol.Boolean)
-				return Error(Diagnostic.ReportInvalidType(syntax.Condition.Location.Line, syntax.Condition.Location.Column, syntax.Condition.Span, TypeSymbol.Boolean));
+			if (condition.ValueType != TypeSymbol.Boolean) {
+				var prev = new TextSpan(syntax.ForToken.Span.Start, syntax.LeftParenToken.Span.End);
+				var next = new TextSpan(syntax.Comma1.Span.Start, syntax.Comma1.Span.End);
 
+				return Error(Diagnostic.ReportInvalidType(syntax.Condition.Location.Line, syntax.Condition.Location.Column, prev, syntax.Condition.Span, next, TypeSymbol.Boolean));
+			}
 			return new BoundForStatement(assignment, condition, step, body);
 		}
 
 		private BoundNode BindWhileLoop(WhileLoopSyntax syntax) {
 			var conditionVisit = Bind(syntax.Condition);
+
+			scope = new BoundScope(scope);
 			var bodyVisit = Bind(syntax.Body);
+			scope = scope.Parent;
 
 			if (!(conditionVisit is BoundExpression condition))
 				return conditionVisit;
@@ -261,16 +271,26 @@ namespace InterpreterLib.Binding {
 			if (!(bodyVisit is BoundStatement body))
 				return bodyVisit;
 
-			if (condition.ValueType != TypeSymbol.Boolean)
-				return Error(Diagnostic.ReportInvalidType(syntax.Condition.Location.Line, syntax.Condition.Location.Column, syntax.Condition.Span, TypeSymbol.Boolean));
+			if (condition.ValueType != TypeSymbol.Boolean) {
+				var prev = new TextSpan(syntax.WhileToken.Span.Start, syntax.LeftParenToken.Span.End);
+				var next = new TextSpan(syntax.RightParenToken.Span.Start, syntax.RightParenToken.Span.End);
+
+				return Error(Diagnostic.ReportInvalidType(syntax.Condition.Location.Line, syntax.Condition.Location.Column, prev, syntax.Condition.Span, next, TypeSymbol.Boolean));
+			}
 
 			return new BoundWhileStatement(condition, body);
 		}
 
 		private BoundNode BindIfStatement(IfStatementSyntax syntax) {
 			var conditionVisit = Bind(syntax.Condition);
+
+			scope = new BoundScope(scope);
 			var trueBranchVisit = Bind(syntax.TrueBranch);
+			scope = scope.Parent;
+
+			scope = new BoundScope(scope);
 			var falseBranchVisit = syntax.FalseBranch == null ? null : Bind(syntax.FalseBranch);
+			scope = scope.Parent;
 
 			if (!(conditionVisit is BoundExpression boundCondition))
 				return conditionVisit;
@@ -283,8 +303,12 @@ namespace InterpreterLib.Binding {
 
 			var boundFalseBr = falseBranchVisit == null ? null : (BoundStatement)falseBranchVisit;
 
-			if (boundCondition.ValueType != TypeSymbol.Boolean)
-				return Error(Diagnostic.ReportInvalidType(syntax.Condition.Location.Line, syntax.Condition.Location.Column, syntax.Condition.Span, TypeSymbol.Boolean));
+			if (boundCondition.ValueType != TypeSymbol.Boolean) {
+				var prev = new TextSpan(syntax.IfToken.Span.Start, syntax.LeftParenToken.Span.End);
+				var next = new TextSpan(syntax.RightParenToken.Span.Start, syntax.RightParenToken.Span.End);
+
+				return Error(Diagnostic.ReportInvalidType(syntax.Condition.Location.Line, syntax.Condition.Location.Column, prev, syntax.Condition.Span, next, TypeSymbol.Boolean));
+			}
 
 			return new BoundIfStatement(boundCondition, boundTrueBr, boundFalseBr);
 		}
@@ -299,23 +323,26 @@ namespace InterpreterLib.Binding {
 		}
 
 		private BoundNode BindAssignmentExpression(AssignmentExpressionSyntax syntax) {
-			if (syntax.Definition != null)
-				return Error(Diagnostic.ReportInvalidAssingmentTypeDef(syntax.Definition.Location.Line, syntax.Definition.Location.Column, syntax.Definition.Span));
+			if (syntax.Definition != null) {
+				return Error(Diagnostic.ReportInvalidAssignmentTypeDef(syntax.Definition.Location.Line, syntax.Definition.Location.Column, syntax.IdentifierToken.Span, syntax.Definition.Span));
+			}
 
 			string identifierText = syntax.IdentifierToken.Token.Text;
 			var boundExpression = Bind(syntax.Expression);
+			var prev = new TextSpan(syntax.IdentifierToken.Span.Start, syntax.OperatorToken.Span.End);
 
 			if (!(boundExpression is BoundExpression expression))
 				return boundExpression;
 
 			if (expression.ValueType == TypeSymbol.Void)
-				return Error(Diagnostic.ReportVoidType(syntax.Expression.Location.Line, syntax.Expression.Location.Column, syntax.Expression.Span));
+				return Error(Diagnostic.ReportVoidType(syntax.Expression.Location.Line, syntax.Expression.Location.Column, prev, syntax.Expression.Span));
 
 			if (!scope.TryLookupVariable(identifierText, out var variable))
 				return Error(Diagnostic.ReportUndefinedVariable(syntax.IdentifierToken.Location.Line, syntax.IdentifierToken.Location.Column, syntax.IdentifierToken.Span));
 
 			if (variable.ValueType != expression.ValueType && !TypeConversionSymbol.TryFind(expression.ValueType, variable.ValueType, out _))
-				return Error(Diagnostic.ReportCannotCast(syntax.Expression.Location.Line, syntax.Expression.Location.Column, syntax.Expression.Span, variable.ValueType, expression.ValueType));
+				return Error(Diagnostic.ReportCannotCast(syntax.Expression.Location.Line, syntax.Expression.Location.Column, prev, syntax.Expression.Span, variable.ValueType, expression.ValueType));
+
 
 			return new BoundAssignmentExpression(variable, expression);
 		}
@@ -355,6 +382,13 @@ namespace InterpreterLib.Binding {
 				if (!(initialiserBind is BoundExpression init))
 					return initialiserBind;
 
+				var line = syntax.Initialiser.Location.Line;
+				var column = syntax.Initialiser.Location.Column;
+				var prev = new TextSpan(syntax.KeywordToken.Span.Start, syntax.OperatorToken.Span.End);
+
+				if (init.ValueType == TypeSymbol.Void)
+					return Error(Diagnostic.ReportVoidType(line, column, prev, syntax.Initialiser.Span));
+
 				initialiser = init;
 			}
 
@@ -363,13 +397,20 @@ namespace InterpreterLib.Binding {
 
 				if (type == null)
 					return Error(Diagnostic.ReportUnknownTypeKeyword(syntax.Definition.Location.Line, syntax.Definition.Location.Column, syntax.Definition.DelimeterToken.Span, syntax.Definition.NameToken.Span));
+
+				if (type == TypeSymbol.Void) {
+					var line = syntax.Definition.NameToken.Location.Line;
+					var column = syntax.Definition.NameToken.Location.Column;
+					var prev = new TextSpan(syntax.KeywordToken.Span.Start, syntax.Definition.DelimeterToken.Span.End);
+
+					return Error(Diagnostic.ReportVoidType(line, column, prev, syntax.Definition.NameToken.Span));
+				}
 			}
 
-			if (type != null && initialiser != null && initialiser.ValueType != type && !TypeConversionSymbol.TryFind(initialiser.ValueType, type, out _))
-				return Error(Diagnostic.ReportCannotCast(syntax.Initialiser.Location.Line, syntax.Initialiser.Location.Column, syntax.Initialiser.Span, initialiser.ValueType, type));
-
-			if (type == TypeSymbol.Void)
-				return Error(Diagnostic.ReportVoidType(syntax.Definition.Location.Line, syntax.Definition.Location.Column, syntax.Definition.DelimeterToken.Span, syntax.Definition.NameToken.Span));
+			if (type != null && initialiser != null && initialiser.ValueType != type && !TypeConversionSymbol.TryFind(initialiser.ValueType, type, out _)) {
+				var prev = new TextSpan(syntax.KeywordToken.Span.Start, syntax.OperatorToken.Span.End);
+				return Error(Diagnostic.ReportCannotCast(syntax.Definition.Location.Line, syntax.Definition.Location.Column, prev, syntax.Initialiser.Span, initialiser.ValueType, type));
+			}
 
 			if (initialiser != null && initialiser.ValueType == TypeSymbol.Void)
 				return Error(Diagnostic.ReportVoidType(syntax.Initialiser.Location.Line, syntax.Initialiser.Location.Column, syntax.Definition.DelimeterToken.Span, syntax.Definition.NameToken.Span));

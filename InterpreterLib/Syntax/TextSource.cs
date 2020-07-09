@@ -18,7 +18,12 @@ namespace InterpreterLib.Syntax {
 			if (notNull.Width < 1)
 				return "";
 
-			return source.Substring(notNull.Start, notNull.Width);
+			var outStr = source.Substring(notNull.Start, notNull.Width);
+
+			if (outStr.Length == 1 && char.IsLetter(outStr[0]))
+				return "";
+
+			return outStr;
 		}
 	}
 }

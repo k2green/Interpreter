@@ -38,7 +38,7 @@ namespace InterpreterLib.Syntax.Tree.Statements {
 			ElseToken = elseToken;
 			FalseBranch = falseBranch;
 
-			if (ElseToken != null && FalseBranch != null)
+			if (ElseToken == null && FalseBranch == null)
 				Span = new TextSpan(IfToken.Span.Start, TrueBranch.Span.End);
 			else
 				Span = new TextSpan(IfToken.Span.Start, FalseBranch.Span.End);

@@ -56,7 +56,9 @@ namespace Interpreter {
 			Console.WriteLine($"({diagnostic.Line}: {diagnostic.Column}) {diagnostic.Message}", Color.Red);
 			Console.Write("\t");
 			Console.Write(tree.Source.GetSubstring(diagnostic.PreviousText), DEFAULT_COLOR);
+			Console.Write(" ", DEFAULT_COLOR);
 			Console.Write(tree.Source.GetSubstring(diagnostic.OffendingText), Color.Red);
+			Console.Write(" ", DEFAULT_COLOR);
 			Console.Write(tree.Source.GetSubstring(diagnostic.NextText), DEFAULT_COLOR);
 			Console.WriteLine();
 		}
@@ -96,23 +98,23 @@ namespace Interpreter {
 				case "INTEGER":
 				case "DOUBLE":
 				case "BOOLEAN":
-					Console.ForegroundColor = Color.Magenta;
+					Console.ForegroundColor = Color.Aquamarine;
 					break;
 
 				case "STRING":
 					Console.ForegroundColor = Color.FromArgb(214, 157, 133);
 					break;
 
+				case "FUNCTION":
 				case "DECL_VARIABLE":
-					Console.ForegroundColor = Color.DarkCyan;
+					Console.ForegroundColor = Color.Violet;
 					break;
 
-				case "FUNCTION":
 				case "IF":
 				case "ELSE":
 				case "WHILE":
 				case "FOR":
-					Console.ForegroundColor = Color.SlateBlue;
+					Console.ForegroundColor = Color.MediumVioletRed;
 					break;
 
 				case "TYPE_NAME":
@@ -120,7 +122,7 @@ namespace Interpreter {
 					break;
 
 				case "IDENTIFIER":
-					Console.ForegroundColor = Color.Aquamarine;
+					Console.ForegroundColor = Color.Yellow;
 					break;
 
 				case "UNKNOWN":

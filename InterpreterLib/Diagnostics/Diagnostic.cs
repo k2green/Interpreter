@@ -165,12 +165,12 @@ namespace InterpreterLib {
 			return ReportInvalidFunctionDef(line, column, null, offendingText, null);
 		}
 
-		internal static Diagnostic ReportInvalidType(int line, int column, TextSpan offendingText, TypeSymbol requiredType) {
-			return new Diagnostic(line, column, $"Invalid type. Required type: {requiredType}", null, offendingText, null);
+		internal static Diagnostic ReportInvalidType(int line, int column, TextSpan previousText, TextSpan offendingText, TextSpan nextText, TypeSymbol requiredType) {
+			return new Diagnostic(line, column, $"Invalid type. Required type: {requiredType}", previousText, offendingText, nextText);
 		}
 
-		internal static Diagnostic ReportInvalidAssingmentTypeDef(int line, int column, TextSpan offendingText) {
-			return new Diagnostic(line, column, "Assignment expressions cannot have a type definition.", null, offendingText, null);
+		internal static Diagnostic ReportInvalidAssignmentTypeDef(int line, int column, TextSpan previousText, TextSpan offendingText) {
+			return new Diagnostic(line, column, "Variable types cannot be redefined", previousText, offendingText, null);
 		}
 
 		internal static Diagnostic ReportUndefinedVariable(int line, int column, TextSpan offendingText) {
@@ -185,8 +185,8 @@ namespace InterpreterLib {
 			return new Diagnostic(line, column, "Unknown variable type", prevText, offendingText, null);
 		}
 
-		internal static Diagnostic ReportCannotCast(int line, int column, TextSpan offendingText, TypeSymbol fromType, TypeSymbol toType) {
-			return new Diagnostic(line, column, $"Cannot implicitly convert {fromType} to {toType}", null, offendingText, null);
+		internal static Diagnostic ReportCannotCast(int line, int column, TextSpan prevText, TextSpan offendingText, TypeSymbol fromType, TypeSymbol toType) {
+			return new Diagnostic(line, column, $"Cannot implicitly convert {fromType} to {toType}", prevText, offendingText, null);
 		}
 
 		internal static Diagnostic ReportVoidType(int line, int column, TextSpan? prevText, TextSpan offendingText) {
