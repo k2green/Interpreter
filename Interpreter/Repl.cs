@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
+using InterpreterLib.Syntax.Tree;
 
 namespace Interpreter {
 	public abstract class Repl {
@@ -15,7 +16,7 @@ namespace Interpreter {
 		private List<string> previousSubmissions = new List<string>();
 		private int previousSubmissionIndex;
 
-		protected RuntimeParser parser;
+		protected SyntaxTree tree;
 		protected bool done;
 		protected bool running;
 

@@ -25,10 +25,10 @@ namespace InterpreterLib.Syntax {
 			Writer = writer;
 		}
 
-		public static void Write(RuntimeParser parser, TextWriter writer) {
+		public static void Write(SyntaxTree tree, TextWriter writer) {
 			var treeWriter = new SyntaxTreeWriter(writer);
 
-			treeWriter.Write(parser.Node, "└─", "  ");
+			treeWriter.Write(tree.Root, "└─", "  ");
 		}
 
 		private void WriteChildren(IEnumerable<SyntaxNode> children, string prefix) {

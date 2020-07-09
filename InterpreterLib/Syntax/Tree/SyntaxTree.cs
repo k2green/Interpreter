@@ -7,12 +7,14 @@ using System.Text;
 namespace InterpreterLib.Syntax.Tree {
 	public class SyntaxTree {
 
+		public TextSource Source { get; }
 		public DiagnosticContainer Diagnostics { get; private set; }
 		public IList<IToken> Tokens { get; private set; }
 		public IVocabulary Vocabulary { get; private set; }
 		internal CompilationUnitSyntax Root { get; private set; }
 
 		public SyntaxTree(string input, bool parseFull = true) {
+			Source = new TextSource(input);
 			var tokenStream = GetTokens(input);
 			tokenStream.Fill();
 			Tokens = tokenStream.GetTokens();

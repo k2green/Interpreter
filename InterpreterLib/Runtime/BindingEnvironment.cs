@@ -23,15 +23,15 @@ namespace InterpreterLib.Runtime {
 
 		public IEnumerable<Diagnostic> Diagnostics => diagnostics;
 
-		public static BindingEnvironment CreateEnvironment(RuntimeParser input, bool chainDiagnostics) {
+		public static BindingEnvironment CreateEnvironment(SyntaxTree input, bool chainDiagnostics) {
 			if (input.Diagnostics.Any())
 				return null;
 
-			return new BindingEnvironment(input.Node, chainDiagnostics, null);
+			return new BindingEnvironment(input.Root, chainDiagnostics, null);
 		}
 
-		public BindingEnvironment ContinueWith(RuntimeParser input) {
-			return new BindingEnvironment(input.Node, chainDiagnostics, this);
+		public BindingEnvironment ContinueWith(SyntaxTree input) {
+			return new BindingEnvironment(input.Root, chainDiagnostics, this);
 		}
 
 

@@ -7,11 +7,15 @@ using System.Linq;
 using Antlr4.Runtime;
 using Console = Colorful.Console;
 using System.Drawing;
+using InterpreterLib.Syntax.Tree;
+using InterpreterLib;
 
 namespace Interpreter {
 	public sealed class LanguageRepl : Repl {
 
 		private static readonly Color DEFAULT_COLOR = Color.White;
+
+		private SyntaxTree tree;
 
 		private bool showTree;
 		private bool showProgram;
@@ -26,18 +30,18 @@ namespace Interpreter {
 		}
 
 		protected override void EvaluateInput(string input) {
-			var parser = new RuntimeParser(input);
+			tree = new SyntaxTree(input);
 
 			if (environment == null)
-				environment = BindingEnvironment.CreateEnvironment(parser, false);
+				environment = BindingEnvironment.CreateEnvironment(tree, false);
 			else
-				environment = environment.ContinueWith(parser);
+				environment = environment.ContinueWith(tree);
 
-			if (parser.Diagnostics.Any()) {
-				foreach (var diagnostic in parser.Diagnostics)
+			if (tree.Diagnostics.Any()) {
+				foreach (var diagnostic in tree.Diagnostics)
 					Console.WriteLine(diagnostic, Color.Red);
 			} else if (showTree) {
-				SyntaxTreeWriter.Write(parser, Console.Out);
+				SyntaxTreeWriter.Write(tree, Console.Out);
 			}
 
 			if (environment != null) {
@@ -49,18 +53,9 @@ namespace Interpreter {
 			}
 		}
 
-		protected override 
-
-		protected override bool IsCompleteSubmission(string input) {
-			if (!base.IsCompleteSubmission(input))
-				return false;
-
-			parser = new RuntimeParser(input);
-
-			if (parser.Diagnostics.Any())
-				return false;
-
-			return true;
+		private void PrintDiagnostic(Diagnostic diagnostic) {
+			Console.WriteLine($"({diagnostic.Line}: {diagnostic.Column}) {diagnostic.Message}", Color.Red);
+			Console.Write(tree.Source.GetSubstring(diagnostic.PreviousText));
 		}
 
 		public void Evaluate(BindingEnvironment env, Dictionary<VariableSymbol, object> variables) {
