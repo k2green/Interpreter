@@ -33,18 +33,12 @@ namespace Interpreter {
 
 		private void Render() {
 			Console.CursorVisible = false;
-			Console.SetCursorPosition(0, Top);
 
-			var blankLine = new string(' ', Console.WindowWidth);
-
-			for (int blankCount = 0; blankCount < renderHeight; blankCount++) {
-				Console.WriteLine(blankLine);
-			}
-
-			Console.SetCursorPosition(0, Top);
 			int lineCount = 0;
 
 			foreach (var line in submissionText) {
+				Console.SetCursorPosition(0, Top + lineCount);
+
 				Console.ForegroundColor = ConsoleColor.Green;
 
 				if (lineCount == 0)
@@ -55,7 +49,16 @@ namespace Interpreter {
 				Console.ForegroundColor = ConsoleColor.White;
 
 				Renderer(line);
+
+				Console.WriteLine(new string(' ', Console.WindowWidth - Console.CursorLeft));
 				lineCount++;
+			}
+
+			var blankCount = renderHeight - lineCount;
+			var blankLine = new string(' ', Console.WindowWidth);
+			while(blankCount > 0) {
+				Console.WriteLine(blankLine);
+				blankCount--;
 			}
 
 			renderHeight = lineCount;

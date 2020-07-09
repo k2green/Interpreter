@@ -12,6 +12,6 @@ namespace InterpreterLib.Syntax {
 
 		public int Start { get; }
 		public int End { get; }
-		public int Width => End - Start;
+		public int Width => End - Start + 1;
 	}
 }

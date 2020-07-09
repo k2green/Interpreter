@@ -38,8 +38,7 @@ namespace Interpreter {
 				environment = environment.ContinueWith(tree);
 
 			if (tree.Diagnostics.Any()) {
-				foreach (var diagnostic in tree.Diagnostics)
-					Console.WriteLine(diagnostic, Color.Red);
+				PrintDiagnostic(tree.Diagnostics);
 			} else if (showTree) {
 				SyntaxTreeWriter.Write(tree, Console.Out);
 			}
@@ -55,15 +54,23 @@ namespace Interpreter {
 
 		private void PrintDiagnostic(Diagnostic diagnostic) {
 			Console.WriteLine($"({diagnostic.Line}: {diagnostic.Column}) {diagnostic.Message}", Color.Red);
-			Console.Write(tree.Source.GetSubstring(diagnostic.PreviousText));
+			Console.Write("\t");
+			Console.Write(tree.Source.GetSubstring(diagnostic.PreviousText), DEFAULT_COLOR);
+			Console.Write(tree.Source.GetSubstring(diagnostic.OffendingText), Color.Red);
+			Console.Write(tree.Source.GetSubstring(diagnostic.NextText), DEFAULT_COLOR);
+			Console.WriteLine();
+		}
+
+		private void PrintDiagnostic(IEnumerable<Diagnostic> diagnostics) {
+			foreach (var diagnostic in diagnostics)
+				PrintDiagnostic(diagnostic);
 		}
 
 		public void Evaluate(BindingEnvironment env, Dictionary<VariableSymbol, object> variables) {
 			var res = env.Evaluate(variables);
 
 			if (res.Diagnostics.Any()) {
-				foreach (var diagnostic in res.Diagnostics)
-					Console.WriteLine(diagnostic, Color.Red);
+				PrintDiagnostic(res.Diagnostics);
 			} else if (evaluate && res.Value != null) {
 				Console.WriteLine(res.Value, DEFAULT_COLOR);
 			}
@@ -73,17 +80,14 @@ namespace Interpreter {
 			if(line.StartsWith("#")) {
 				Console.WriteLine(line);
 			} else {
-				var res = RuntimeParser.GetTokens(line);
-				var tokens = res.Item1;
-				var vocab = res.Item2;
-				tokens.Fill();
+				tree = new SyntaxTree(line, false);
+				var tokens = tree.Tokens;
+				var vocab = tree.Vocabulary;
 
-				foreach (var token in tokens.GetTokens()) {
+				foreach (var token in tokens) {
 					if (!vocab.GetDisplayName(token.Type).ToLower().Equals("eof"))
 						RenderToken(token, vocab);
 				}
-				
-				Console.WriteLine();
 			}
 		}
 

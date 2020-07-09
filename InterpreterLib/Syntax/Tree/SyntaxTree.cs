@@ -14,6 +14,7 @@ namespace InterpreterLib.Syntax.Tree {
 		internal CompilationUnitSyntax Root { get; private set; }
 
 		public SyntaxTree(string input, bool parseFull = true) {
+			Diagnostics = new DiagnosticContainer();
 			Source = new TextSource(input);
 			var tokenStream = GetTokens(input);
 			tokenStream.Fill();
