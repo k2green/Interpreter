@@ -16,10 +16,12 @@ typeDefinition: TYPE_DELIMETER TYPE_NAME;
 	
 globalStatement: functionDefinition | baseStatement;
 baseStatement : forStatement | whileStatement | ifStatement | block | variableDeclarationStatement | expressionStatement;
-statement : baseStatement | BREAK | CONTINUE;
+statement : returnStatement | baseStatement | BREAK | CONTINUE;
 
 definedIdentifier: IDENTIFIER typeDefinition;
 seperatedDefinedIdentifier: definedIdentifier COMMA;
+
+returnStatement : RETURN binaryExpression;
 
 parametersDefinition: L_PARENTHESIS seperatedDefinedIdentifier+ last=definedIdentifier R_PARENTHESIS
 					| L_PARENTHESIS last=definedIdentifier R_PARENTHESIS
@@ -99,6 +101,7 @@ COMMA : ',';
 TYPE_DELIMETER : ':';
 BREAK: 'b' 'r' 'e' 'a' 'k';
 CONTINUE : 'c' 'o' 'n' 't' 'i' 'n' 'u' 'e';
+RETURN : 'r' 'e' 't' 'u' 'r' 'n' ;
 TYPE_NAME : INTEGER_TYPE | DOUBLE_TYPE | BOOLEAN_TYPE | STRING_TYPE | VOID_TYPE;
 
 BOOLEAN: TRUE | FALSE;

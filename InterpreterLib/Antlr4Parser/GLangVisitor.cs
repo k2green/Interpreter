@@ -81,6 +81,12 @@ public interface IGLangVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitSeperatedDefinedIdentifier([NotNull] GLangParser.SeperatedDefinedIdentifierContext context);
 	/// <summary>
+	/// Visit a parse tree produced by <see cref="GLangParser.returnStatement"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitReturnStatement([NotNull] GLangParser.ReturnStatementContext context);
+	/// <summary>
 	/// Visit a parse tree produced by <see cref="GLangParser.parametersDefinition"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>

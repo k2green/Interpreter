@@ -112,6 +112,16 @@ public interface IGLangListener : IParseTreeListener {
 	/// <param name="context">The parse tree.</param>
 	void ExitSeperatedDefinedIdentifier([NotNull] GLangParser.SeperatedDefinedIdentifierContext context);
 	/// <summary>
+	/// Enter a parse tree produced by <see cref="GLangParser.returnStatement"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterReturnStatement([NotNull] GLangParser.ReturnStatementContext context);
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="GLangParser.returnStatement"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitReturnStatement([NotNull] GLangParser.ReturnStatementContext context);
+	/// <summary>
 	/// Enter a parse tree produced by <see cref="GLangParser.parametersDefinition"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>

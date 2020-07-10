@@ -686,6 +686,7 @@ namespace InterpreterLib.Syntax {
 		}
 
 		public override SyntaxNode VisitStatement([NotNull] GLangParser.StatementContext context) {
+			var returnCtx = context.returnStatement();
 			var baseCtx = context.baseStatement();
 			var breakCtx = context.BREAK();
 			var continueCtx = context.CONTINUE();
@@ -693,11 +694,14 @@ namespace InterpreterLib.Syntax {
 			bool hasBreak = breakCtx != null && breakCtx.Symbol.Text.Equals("break");
 			bool hasContinue = continueCtx != null && continueCtx.Symbol.Text.Equals("continue");
 
-			if (!OnlyOne(baseCtx != null, hasBreak, hasContinue)) {
+			if (!OnlyOne(returnCtx != null, baseCtx != null, hasBreak, hasContinue)) {
 				var span = new TextSpan(context.Start.StartIndex, context.Stop.StopIndex);
 				diagnostics.AddDiagnostic(Diagnostic.ReportInvalidStatement(context.Start.Line, context.Start.Column, span));
 				return null;
 			}
+
+			if (returnCtx != null)
+				return Visit(returnCtx);
 
 			if (baseCtx != null)
 				return Visit(baseCtx);
@@ -709,6 +713,16 @@ namespace InterpreterLib.Syntax {
 				return new ContinueSyntax(Token(continueCtx.Symbol));
 
 			return null;
+		}
+
+		public override SyntaxNode VisitReturnStatement([NotNull] GLangParser.ReturnStatementContext context) {
+			var keywCtx = context.RETURN();
+			var expressionCtx = context.binaryExpression();
+
+			if (keywCtx == null || expressionCtx == null || !keywCtx.GetText().Equals("return")) {
+				var span = new TextSpan(context.Start.StartIndex, context.Stop.StopIndex);
+				diagnostics.AddDiagnostic(Diagnostic.ReportInvalidReturnStatement(context.Start.Line, context.Start.Column,))
+			}
 		}
 
 		public override SyntaxNode VisitGlobalStatement([NotNull] GLangParser.GlobalStatementContext context) {

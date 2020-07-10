@@ -25,6 +25,7 @@ namespace InterpreterLib.Syntax.Tree {
 		CompilationUnit,
 		GlobalStatement,
 		Continue,
-		Break
+		Break,
+		Return
 	}
 }

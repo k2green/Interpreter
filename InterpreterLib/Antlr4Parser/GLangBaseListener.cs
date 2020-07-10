@@ -132,6 +132,18 @@ public partial class GLangBaseListener : IGLangListener {
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitSeperatedDefinedIdentifier([NotNull] GLangParser.SeperatedDefinedIdentifierContext context) { }
 	/// <summary>
+	/// Enter a parse tree produced by <see cref="GLangParser.returnStatement"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterReturnStatement([NotNull] GLangParser.ReturnStatementContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="GLangParser.returnStatement"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitReturnStatement([NotNull] GLangParser.ReturnStatementContext context) { }
+	/// <summary>
 	/// Enter a parse tree produced by <see cref="GLangParser.parametersDefinition"/>.
 	/// <para>The default implementation does nothing.</para>
 	/// </summary>
