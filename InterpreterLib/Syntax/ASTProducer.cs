@@ -721,8 +721,11 @@ namespace InterpreterLib.Syntax {
 
 			if (keywCtx == null || expressionCtx == null || !keywCtx.GetText().Equals("return")) {
 				var span = new TextSpan(context.Start.StartIndex, context.Stop.StopIndex);
-				diagnostics.AddDiagnostic(Diagnostic.ReportInvalidReturnStatement(context.Start.Line, context.Start.Column,))
+				diagnostics.AddDiagnostic(Diagnostic.ReportInvalidReturnStatement(context.Start.Line, context.Start.Column, span));
+				return null;
 			}
+
+			throw new NotImplementedException();
 		}
 
 		public override SyntaxNode VisitGlobalStatement([NotNull] GLangParser.GlobalStatementContext context) {

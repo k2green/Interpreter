@@ -64,7 +64,7 @@ namespace InterpreterLib.Syntax {
 				case SyntaxType.BinaryExpression:
 					WriteBinaryExpression((BinaryExpressionSyntax)node, prefix1, prefix2);
 					break;
-				case SyntaxType.Declaration:
+				case SyntaxType.VariableDeclaration:
 					WriteVariableDeclaration((VariableDeclarationSyntax)node, prefix1, prefix2);
 					break;
 				case SyntaxType.Variable:

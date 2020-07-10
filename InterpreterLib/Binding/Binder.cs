@@ -21,11 +21,15 @@ namespace InterpreterLib.Binding {
 		private FunctionSymbol Function;
 		private Dictionary<FunctionSymbol, FunctionDeclarationSyntax> functionBodies;
 
+		private Stack<(LabelSymbol, LabelSymbol)> breakContinueLabels;
+		private int currentBreakContinueNo;
+
 		private Binder(BoundScope parent, FunctionSymbol function = null) {
 			scope = new BoundScope(parent);
 			Diagnostics = new DiagnosticContainer();
 			Function = function;
 			functionBodies = new Dictionary<FunctionSymbol, FunctionDeclarationSyntax>();
+			breakContinueLabels = new Stack<(LabelSymbol, LabelSymbol)>();
 
 			if (function != null) {
 				foreach (var param in function.Parameters) {
@@ -145,7 +149,7 @@ namespace InterpreterLib.Binding {
 					return BindUnaryExpression((UnaryExpressionSyntax)syntax);
 				case SyntaxType.BinaryExpression:
 					return BindBinaryExpression((BinaryExpressionSyntax)syntax);
-				case SyntaxType.Declaration:
+				case SyntaxType.VariableDeclaration:
 					return BindDeclarationStatement((VariableDeclarationSyntax)syntax);
 				case SyntaxType.Variable:
 					return BindVariableExpression((VariableSyntax)syntax);
@@ -176,11 +180,17 @@ namespace InterpreterLib.Binding {
 		}
 
 		private BoundNode BindContinueStatement(ContinueSyntax syntax) {
-			return new BoundContinueStatement(); 
+			if (breakContinueLabels.Count == 0)
+				return Error(Diagnostic.ReportInvalidContinueStatement(syntax.Location.Line, syntax.Location.Column, syntax.Span));
+
+			return new BoundBranchStatement(breakContinueLabels.Peek().Item2);
 		}
 
 		private BoundNode BindBreakStatement(BreakSyntax syntax) {
-			return new BoundBreakStatement();
+			if (breakContinueLabels.Count == 0)
+				return Error(Diagnostic.ReportInvalidBreakStatement(syntax.Location.Line, syntax.Location.Column, syntax.Span));
+
+			return new BoundBranchStatement(breakContinueLabels.Peek().Item1);
 		}
 
 		private BoundNode BindGlobalStatement(GlobalStatementSyntax syntax) {
@@ -240,10 +250,20 @@ namespace InterpreterLib.Binding {
 			return Error(syntax.Diagnostic, false);
 		}
 
+		private (LabelSymbol, LabelSymbol) CreateLoopLabels() {
+			var breakLabel = new LabelSymbol($"Break{currentBreakContinueNo}");
+			var continueLabel = new LabelSymbol($"Continue{currentBreakContinueNo}");
+
+			return (breakLabel, continueLabel);
+		}
+
 		private BoundNode BindForLoop(ForLoopSyntax syntax) {
 			var assignVisit = Bind(syntax.Assignment);
 			var conditionVisit = Bind(syntax.Condition);
 			var stepVisit = Bind(syntax.Step);
+
+			var labels = CreateLoopLabels();
+			breakContinueLabels.Push(labels);
 
 			scope = new BoundScope(scope);
 			var bodyVisit = Bind(syntax.Body);
@@ -267,11 +287,18 @@ namespace InterpreterLib.Binding {
 
 				return Error(Diagnostic.ReportInvalidType(syntax.Condition.Location.Line, syntax.Condition.Location.Column, prev, syntax.Condition.Span, next, TypeSymbol.Boolean));
 			}
-			return new BoundForStatement(assignment, condition, step, body);
+
+			var bindRes = new BoundForStatement(assignment, condition, step, body, labels.Item1, labels.Item2);
+
+			breakContinueLabels.Pop();
+			return bindRes;
 		}
 
 		private BoundNode BindWhileLoop(WhileLoopSyntax syntax) {
 			var conditionVisit = Bind(syntax.Condition);
+
+			var labels = CreateLoopLabels();
+			breakContinueLabels.Push(labels);
 
 			scope = new BoundScope(scope);
 			var bodyVisit = Bind(syntax.Body);
@@ -290,7 +317,10 @@ namespace InterpreterLib.Binding {
 				return Error(Diagnostic.ReportInvalidType(syntax.Condition.Location.Line, syntax.Condition.Location.Column, prev, syntax.Condition.Span, next, TypeSymbol.Boolean));
 			}
 
-			return new BoundWhileStatement(condition, body);
+			var bindRes = new BoundWhileStatement(condition, body, labels.Item1, labels.Item2);
+
+			breakContinueLabels.Pop();
+			return bindRes;
 		}
 
 		private BoundNode BindIfStatement(IfStatementSyntax syntax) {

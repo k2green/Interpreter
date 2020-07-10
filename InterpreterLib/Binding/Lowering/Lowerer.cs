@@ -12,9 +12,6 @@ namespace InterpreterLib.Binding.Lowering {
 
 		private int counter;
 
-		private LabelSymbol currentBreakLabel;
-		private LabelSymbol currentContinueLabel;
-
 		public Lowerer() {
 			counter = 0;
 		}
@@ -93,7 +90,6 @@ namespace InterpreterLib.Binding.Lowering {
 
 			var startLabel = CreateNextLabel();
 			var conditionCheckLabel = CreateNextLabel();
-			var endLabel = CreateNextLabel();
 
 			var firstBranch = new BoundBranchStatement(conditionCheckLabel);
 			var condBranch = new BoundConditionalBranchStatement(startLabel, statement.Condition, true);
@@ -105,26 +101,17 @@ namespace InterpreterLib.Binding.Lowering {
 				statement.Body
 			});
 
-			if (currentContinueLabel == null) {
-				var continueLabel = CreateNextLabel();
-
-				statements.Add(new BoundLabel(continueLabel));
-
-				currentContinueLabel = continueLabel;
+			if (statement.AddContinue) {
+				statements.Add(new BoundLabel(statement.ContinueLabel));
 			}
 
 			statements.AddRange(new BoundStatement[] {
 				new BoundLabel(conditionCheckLabel),
 				condBranch,
-				new BoundLabel(endLabel)
+				new BoundLabel(statement.BreakLabel)
 			});
 
-			currentBreakLabel = endLabel;
-
 			var rewrite = RewriteStatement(new BoundBlock(statements.ToImmutable()));
-
-			currentBreakLabel = null;
-			currentContinueLabel = null;
 
 			return rewrite;
 		}
@@ -140,16 +127,14 @@ namespace InterpreterLib.Binding.Lowering {
 			 */
 
 			var whileStatements = ImmutableArray.CreateBuilder<BoundStatement>();
-			var continueLabel = CreateNextLabel();
-			currentContinueLabel = continueLabel;
 
 			whileStatements.AddRange(new BoundStatement[] {
 				statement.Body,
-				new BoundLabel(continueLabel),
+				new BoundLabel(statement.ContinueLabel),
 				new BoundExpressionStatement(statement.Step)
 			});
 
-			var whileStatement = new BoundWhileStatement(statement.Condition, new BoundBlock(whileStatements.ToImmutable()));
+			var whileStatement = new BoundWhileStatement(statement.Condition, new BoundBlock(whileStatements.ToImmutable()), statement.BreakLabel, statement.ContinueLabel, false);
 
 			var finalStatements = ImmutableArray.CreateBuilder<BoundStatement>();
 
@@ -232,20 +217,6 @@ namespace InterpreterLib.Binding.Lowering {
 				return expression;
 
 			return new BoundFunctionCall(expression.Function, newExpressions.ToImmutable());
-		}
-
-		protected override BoundStatement RewriteBreak(BoundBreakStatement statement) {
-			if (currentBreakLabel == null)
-				return new BoundBlock(ImmutableArray.Create(new BoundStatement[] { }));
-
-			return new BoundBranchStatement(currentBreakLabel);
-		}
-
-		protected override BoundStatement RewriteContinue(BoundContinueStatement statement) {
-			if (currentContinueLabel == null)
-				return new BoundBlock(ImmutableArray.Create(new BoundStatement[] { }));
-
-			return new BoundBranchStatement(currentContinueLabel);
 		}
 	}
 }

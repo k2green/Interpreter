@@ -6,7 +6,7 @@ using System.Text;
 namespace InterpreterLib.Syntax.Tree.Statements {
 	internal sealed class VariableDeclarationSyntax : StatementSyntax {
 
-		public override SyntaxType Type => SyntaxType.Declaration;
+		public override SyntaxType Type => SyntaxType.VariableDeclaration;
 		public override TextLocation Location => KeywordToken.Location;
 		public override TextSpan Span => new TextSpan(KeywordToken.Span.Start, Initialiser.Span.End);
 

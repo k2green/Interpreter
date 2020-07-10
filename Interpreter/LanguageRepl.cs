@@ -9,6 +9,7 @@ using Console = Colorful.Console;
 using System.Drawing;
 using InterpreterLib.Syntax.Tree;
 using InterpreterLib;
+using InterpreterLib.Output;
 
 namespace Interpreter {
 	public sealed class LanguageRepl : Repl {
@@ -40,12 +41,13 @@ namespace Interpreter {
 			if (tree.Diagnostics.Any()) {
 				PrintDiagnostic(tree.Diagnostics);
 			} else if (showTree) {
-				SyntaxTreeWriter.Write(tree, Console.Out);
+				var treeOutput = new SyntaxTreeOutput(tree);
+				treeOutput.Output(Console.Write, Console.WriteLine);
 			}
 
 			if (environment != null) {
 				if (environment != null && showProgram)
-					environment.PrintText();
+					environment.PrintProgram(Console.Write, Console.WriteLine);
 
 				Console.ForegroundColor = DEFAULT_COLOR;
 				Evaluate(environment, variables);

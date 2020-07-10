@@ -13,6 +13,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using InterpreterLib.Syntax.Tree.Global;
+using System.Drawing;
+using InterpreterLib.Output;
 
 namespace InterpreterLib.Runtime {
 	public sealed class BindingEnvironment {
@@ -20,6 +22,27 @@ namespace InterpreterLib.Runtime {
 		private readonly bool chainDiagnostics;
 		private BindingEnvironment previous;
 		private CompilationUnitSyntax SyntaxRoot;
+
+		private BoundProgram boundProgram;
+		internal BoundProgram BoundProgram {
+			get {
+				if (boundProgram == null) {
+					if (GlobalScope == null || GlobalScope.Root == null || diagnostics.Any())
+						return null;
+
+					var program = Binder.BindProgram(GlobalScope);
+					diagnostics.AddDiagnostics(program.Diagnostics);
+
+					if (program.Value == null)
+						return null;
+
+					Interlocked.CompareExchange<BoundProgram>(ref boundProgram, program.Value, null);
+					diagnostics.AddDiagnostics(program.Diagnostics);
+				}
+
+				return boundProgram;
+			}
+		}
 
 		public IEnumerable<Diagnostic> Diagnostics => diagnostics;
 
@@ -33,7 +56,6 @@ namespace InterpreterLib.Runtime {
 		public BindingEnvironment ContinueWith(SyntaxTree input) {
 			return new BindingEnvironment(input.Root, chainDiagnostics, this);
 		}
-
 
 		private BoundGlobalScope globalScope;
 		internal BoundGlobalScope GlobalScope {
@@ -62,20 +84,22 @@ namespace InterpreterLib.Runtime {
 		}
 
 		public DiagnosticResult<object> Evaluate(Dictionary<VariableSymbol, object> variables) {
-			if (GlobalScope == null || GlobalScope.Root == null || diagnostics.Any())
+			if (BoundProgram == null)
 				return new DiagnosticResult<object>(diagnostics, null);
 
-			var program = Binder.BindProgram(GlobalScope);
-			diagnostics.AddDiagnostics(program.Diagnostics);
-
-			if (program.Value == null)
-				return new DiagnosticResult<object>(diagnostics, null);
-
-			Evaluator evaluator = new Evaluator(program.Value, variables);
+			Evaluator evaluator = new Evaluator(boundProgram, variables);
 
 			var evalResult = evaluator.Evaluate();
 			diagnostics.AddDiagnostics(evalResult.Diagnostics);
 			return new DiagnosticResult<object>(diagnostics, evalResult.Value);
+		}
+
+		public void PrintProgram(Action<string, Color> printAction, Action newlineAction) {
+			if (BoundProgram == null)
+				return;
+
+			var output = new ProgramOutput(BoundProgram);
+			output.Document.Output((frag) => printAction(frag.Text, frag.TextColour), newlineAction);
 		}
 
 		public void PrintText() {

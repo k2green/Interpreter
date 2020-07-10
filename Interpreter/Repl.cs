@@ -269,7 +269,7 @@ namespace Interpreter {
 				}
 
 				view.CursorLine++;
-				view.CursorCharacter = 0;
+				view.CursorCharacter = tabCount * TAB_SPACES;
 			}
 		}
 

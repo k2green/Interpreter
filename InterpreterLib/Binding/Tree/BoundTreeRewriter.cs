@@ -108,20 +108,8 @@ namespace InterpreterLib.Binding.Tree {
 					return RewriteConditionalBranchStatement((BoundConditionalBranchStatement)statement);
 				case NodeType.Branch:
 					return RewriteBranchStatement((BoundBranchStatement)statement);
-				case NodeType.Break:
-					return RewriteBreak((BoundBreakStatement)statement);
-				case NodeType.Continue:
-					return RewriteContinue((BoundContinueStatement)statement);
 				default: throw new Exception($"Unexpected statement {statement.Type}");
 			}
-		}
-
-		protected virtual BoundStatement RewriteContinue(BoundContinueStatement statement) {
-			return statement;
-		}
-
-		protected virtual BoundStatement RewriteBreak(BoundBreakStatement statement) {
-			return statement;
 		}
 
 		protected virtual BoundStatement RewriteBranchStatement(BoundBranchStatement statement) {
@@ -178,7 +166,7 @@ namespace InterpreterLib.Binding.Tree {
 			if (assignment == statement.Assignment && cond == statement.Condition && step == statement.Step && body == statement.Body)
 				return statement;
 
-			return new BoundForStatement(assignment, cond, step, body);
+			return new BoundForStatement(assignment, cond, step, body, statement.BreakLabel, statement.ContinueLabel);
 		}
 
 		protected virtual BoundStatement RewriteIfStatement(BoundIfStatement statement) {
@@ -204,7 +192,7 @@ namespace InterpreterLib.Binding.Tree {
 			if (cond == statement.Condition && body == statement.Body)
 				return statement;
 
-			return new BoundWhileStatement(cond, body);
+			return new BoundWhileStatement(cond, body, statement.BreakLabel, statement.ContinueLabel);
 		}
 	}
 }

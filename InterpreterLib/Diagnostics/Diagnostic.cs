@@ -133,6 +133,14 @@ namespace InterpreterLib {
 			throw new NotImplementedException();
 		}
 
+		internal static Diagnostic ReportInvalidBreakStatement(int line, int column, TextSpan offendingText) {
+			return new Diagnostic(line, column, "Break statements cannot exist outside of a loop.", null, offendingText, null);
+		}
+
+		internal static Diagnostic ReportInvalidContinueStatement(int line, int column, TextSpan offendingText) {
+			return new Diagnostic(line, column, "Continue statements cannot exist outside of a loop.", null, offendingText, null);
+		}
+
 		internal static Diagnostic ReportInvalidCompilationUnit(int line, int column, TextSpan offendingText) {
 			return new Diagnostic(line, column, "Syntax error: Invalid compilation unit", null, offendingText, null);
 		}
@@ -215,6 +223,10 @@ namespace InterpreterLib {
 
 		internal static Diagnostic ReportCannotRedefineFunction(int line, int column, TextSpan offendingText) {
 			return new Diagnostic(line, column, $"Cannot redefine function", null, offendingText, null);
+		}
+
+		internal static Diagnostic ReportInvalidReturnStatement(int line, int column, TextSpan span) {
+			throw new NotImplementedException();
 		}
 	}
 }

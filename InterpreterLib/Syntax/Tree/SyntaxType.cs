@@ -9,7 +9,7 @@ namespace InterpreterLib.Syntax.Tree {
 		UnaryExpression,
 		Token,
 		BinaryExpression,
-		Declaration,
+		VariableDeclaration,
 		Variable,
 		TypeDefinition,
 		Assignment,
