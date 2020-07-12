@@ -240,5 +240,9 @@ namespace InterpreterLib {
 		internal static Diagnostic ReportInvalidReturnExpressionType(TextLocation location, TextSpan offendingText, TypeSymbol valueType, TypeSymbol returnType) {
 			return new Diagnostic(location.Line, location.Column, $"Function returns {returnType}, but {valueType} was returned instead", null, offendingText, null);
 		}
+
+		internal static Diagnostic ReportNoReturn(TextLocation location, TextSpan offendingText) {
+			return new Diagnostic(location.Line, location.Column, $"Non void functions must return a value", null, offendingText, null);
+		}
 	}
 }

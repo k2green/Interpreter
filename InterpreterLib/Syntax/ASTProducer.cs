@@ -15,6 +15,7 @@ namespace InterpreterLib.Syntax {
 	internal class ASTProducer : GLangBaseVisitor<SyntaxNode> {
 
 		private DiagnosticContainer diagnostics;
+		private ExpressionSyntax returnExpression = null;
 
 		public ASTProducer() {
 			diagnostics = new DiagnosticContainer();
@@ -846,7 +847,7 @@ namespace InterpreterLib.Syntax {
 			var paramCtx = context.parameterDefinition();
 			var rParenCtx = context.R_PARENTHESIS();
 			var typeDefCtx = context.typeDefinition();
-			var bodyCtx = context.statement();
+			var bodyCtx = context.block();
 
 			if (keywCtx == null || identCtx == null || lParenCtx == null || rParenCtx == null || typeDefCtx == null || bodyCtx == null
 				|| !lParenCtx.GetText().Equals("(") || !rParenCtx.GetText().Equals(")") || !keywCtx.GetText().Equals("function")) {

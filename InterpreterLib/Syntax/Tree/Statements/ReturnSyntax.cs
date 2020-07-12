@@ -8,7 +8,7 @@ namespace InterpreterLib.Syntax.Tree.Statements {
 		public override SyntaxType Type => SyntaxType.Return;
 
 		public override TextLocation Location => ReturnToken.Location;
-		public override TextSpan Span => new TextSpan(ReturnToken.Span.Start, Expression.Span.End);
+		public override TextSpan Span => Expression != null ? new TextSpan(ReturnToken.Span.Start, Expression.Span.End) : ReturnToken.Span;
 
 		public override IEnumerable<SyntaxNode> Children {
 			get {

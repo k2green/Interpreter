@@ -74,8 +74,19 @@ namespace InterpreterLib.Output {
 				case SyntaxType.Break:
 					OutputBreak((BreakSyntax)node, prefix);
 					break;
+				case SyntaxType.Return:
+					OutputReturn((ReturnSyntax)node, prefix);
+					break;
 				default: throw new NotImplementedException();
 			}
+		}
+
+		private void OutputReturn(ReturnSyntax node, string prefix) {
+			builder.AddFragment(new OutputFragment(prefix, DefaultColour));
+			builder.AddFragment(new OutputFragment("return ", StatementColour));
+
+			if (node.Expression != null)
+				Output(node.Expression, string.Empty);
 		}
 
 		private void OutputCompilationUnit(CompilationUnitSyntax node, string prefix) {

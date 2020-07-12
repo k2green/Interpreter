@@ -46,9 +46,10 @@ namespace InterpreterLib.Diagnostics {
 			}
 
 			var currentIndex = 0;
-			object val = null;
+			object ret = null;
 			while (currentIndex < block.Statements.Length) {
 				var statement = block.Statements[currentIndex];
+				object val = null;
 
 				switch (statement.Type) {
 					case NodeType.VariableDeclaration:
@@ -65,7 +66,6 @@ namespace InterpreterLib.Diagnostics {
 							currentIndex = labelConversions[cBranch.Label];
 						else
 							currentIndex++;
-
 						break;
 					case NodeType.Branch:
 						var branch = (BoundBranchStatement)statement;
@@ -77,9 +77,12 @@ namespace InterpreterLib.Diagnostics {
 
 					default: throw new NotImplementedException();
 				}
+
+				if (val != null)
+					ret = val;
 			}
 
-			return val;
+			return ret;
 		}
 
 		private object EvaluateExpression(BoundExpression expression) {
@@ -120,15 +123,17 @@ namespace InterpreterLib.Diagnostics {
 					index++;
 				}
 
-				for(index = 0; index < parameters.Length; index++) {
+				for (index = 0; index < parameters.Length; index++) {
 					newScope[parameters[index]] = EvaluateExpression(statement.Parameters[index]);
 				}
 
 				locals.Push(newScope);
 
-				EvaluateBlock(boundBlock);
+				var value = EvaluateBlock(boundBlock);
 
 				locals.Pop();
+
+				return value;
 			}
 
 			return null;

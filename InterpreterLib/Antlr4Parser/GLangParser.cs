@@ -768,8 +768,8 @@ public partial class GLangParser : Parser {
 		public TypeDefinitionContext typeDefinition() {
 			return GetRuleContext<TypeDefinitionContext>(0);
 		}
-		public StatementContext statement() {
-			return GetRuleContext<StatementContext>(0);
+		public BlockContext block() {
+			return GetRuleContext<BlockContext>(0);
 		}
 		public FunctionDefinitionContext(ParserRuleContext parent, int invokingState)
 			: base(parent, invokingState)
@@ -808,7 +808,7 @@ public partial class GLangParser : Parser {
 				State = 97; parameterDefinition();
 				State = 98; Match(R_PARENTHESIS);
 				State = 99; typeDefinition();
-				State = 100; statement();
+				State = 100; block();
 				}
 				break;
 			case 2:
@@ -819,7 +819,7 @@ public partial class GLangParser : Parser {
 				State = 104; Match(L_PARENTHESIS);
 				State = 105; Match(R_PARENTHESIS);
 				State = 106; typeDefinition();
-				State = 107; statement();
+				State = 107; block();
 				}
 				break;
 			}
@@ -1867,11 +1867,11 @@ public partial class GLangParser : Parser {
 		'\x2', '\x61', '\x62', '\a', '\x1C', '\x2', '\x2', '\x62', '\x63', '\a', 
 		'\x1D', '\x2', '\x2', '\x63', '\x64', '\x5', '\x14', '\v', '\x2', '\x64', 
 		'\x65', '\a', '\x1E', '\x2', '\x2', '\x65', '\x66', '\x5', '\x6', '\x4', 
-		'\x2', '\x66', 'g', '\x5', '\f', '\a', '\x2', 'g', 'p', '\x3', '\x2', 
+		'\x2', '\x66', 'g', '\x5', '\x18', '\r', '\x2', 'g', 'p', '\x3', '\x2', 
 		'\x2', '\x2', 'h', 'i', '\a', '\x13', '\x2', '\x2', 'i', 'j', '\a', '\x1C', 
 		'\x2', '\x2', 'j', 'k', '\a', '\x1D', '\x2', '\x2', 'k', 'l', '\a', '\x1E', 
-		'\x2', '\x2', 'l', 'm', '\x5', '\x6', '\x4', '\x2', 'm', 'n', '\x5', '\f', 
-		'\a', '\x2', 'n', 'p', '\x3', '\x2', '\x2', '\x2', 'o', '`', '\x3', '\x2', 
+		'\x2', '\x2', 'l', 'm', '\x5', '\x6', '\x4', '\x2', 'm', 'n', '\x5', '\x18', 
+		'\r', '\x2', 'n', 'p', '\x3', '\x2', '\x2', '\x2', 'o', '`', '\x3', '\x2', 
 		'\x2', '\x2', 'o', 'h', '\x3', '\x2', '\x2', '\x2', 'p', '\x17', '\x3', 
 		'\x2', '\x2', '\x2', 'q', 'u', '\a', '\x1F', '\x2', '\x2', 'r', 't', '\x5', 
 		'\f', '\a', '\x2', 's', 'r', '\x3', '\x2', '\x2', '\x2', 't', 'w', '\x3', 

@@ -27,8 +27,8 @@ returnStatement : RETURN binaryExpression
 parameterDefinition	: definedIdentifier COMMA parameterDefinition
 					| definedIdentifier;
 
-functionDefinition: FUNCTION IDENTIFIER L_PARENTHESIS parameterDefinition R_PARENTHESIS typeDefinition statement
-				  | FUNCTION IDENTIFIER L_PARENTHESIS R_PARENTHESIS typeDefinition statement;
+functionDefinition: FUNCTION IDENTIFIER L_PARENTHESIS parameterDefinition R_PARENTHESIS typeDefinition block
+				  | FUNCTION IDENTIFIER L_PARENTHESIS R_PARENTHESIS typeDefinition block;
 
 block : L_BRACE statement* R_BRACE;
 
@@ -36,13 +36,17 @@ expressionStatement: assignmentExpression | binaryExpression;
 
 forStatement: FOR L_PARENTHESIS declerationOrAssign COMMA binaryExpression COMMA assignmentExpression R_PARENTHESIS statement;
 
-ifStatement : IF L_PARENTHESIS binaryExpression R_PARENTHESIS trueBranch=statement (ELSE falseBranch=statement)?;
+ifStatement: ifElseStatement | pureIfStatement;
+pureIfStatement : IF L_PARENTHESIS binaryExpression R_PARENTHESIS trueBranch=statement;
+ifElseStatement : pureIfStatement ELSE falseBranch=statement;
+
 whileStatement: WHILE L_PARENTHESIS binaryExpression R_PARENTHESIS body=statement;
 
 variableDeclarationStatement: DECL_VARIABLE definedIdentifier
 							| DECL_VARIABLE assignmentExpression;
 
-assignmentExpression : IDENTIFIER typeDefinition? ASSIGNMENT_OPERATOR binaryExpression;
+assignmentOperand : ifElseStatement | binaryExpression;
+assignmentExpression : IDENTIFIER typeDefinition? ASSIGNMENT_OPERATOR assignmentOperand;
 
 
 	/*
