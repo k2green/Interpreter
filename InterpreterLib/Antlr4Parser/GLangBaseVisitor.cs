@@ -125,7 +125,7 @@ public partial class GLangBaseVisitor<Result> : AbstractParseTreeVisitor<Result>
 	/// <return>The visitor result.</return>
 	public virtual Result VisitReturnStatement([NotNull] GLangParser.ReturnStatementContext context) { return VisitChildren(context); }
 	/// <summary>
-	/// Visit a parse tree produced by <see cref="GLangParser.parametersDefinition"/>.
+	/// Visit a parse tree produced by <see cref="GLangParser.parameterDefinition"/>.
 	/// <para>
 	/// The default implementation returns the result of calling <see cref="AbstractParseTreeVisitor{Result}.VisitChildren(IRuleNode)"/>
 	/// on <paramref name="context"/>.
@@ -133,7 +133,7 @@ public partial class GLangBaseVisitor<Result> : AbstractParseTreeVisitor<Result>
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
-	public virtual Result VisitParametersDefinition([NotNull] GLangParser.ParametersDefinitionContext context) { return VisitChildren(context); }
+	public virtual Result VisitParameterDefinition([NotNull] GLangParser.ParameterDefinitionContext context) { return VisitChildren(context); }
 	/// <summary>
 	/// Visit a parse tree produced by <see cref="GLangParser.functionDefinition"/>.
 	/// <para>
@@ -245,7 +245,7 @@ public partial class GLangBaseVisitor<Result> : AbstractParseTreeVisitor<Result>
 	/// <return>The visitor result.</return>
 	public virtual Result VisitBinaryExpression([NotNull] GLangParser.BinaryExpressionContext context) { return VisitChildren(context); }
 	/// <summary>
-	/// Visit a parse tree produced by <see cref="GLangParser.seperatedExpression"/>.
+	/// Visit a parse tree produced by <see cref="GLangParser.expressionParameter"/>.
 	/// <para>
 	/// The default implementation returns the result of calling <see cref="AbstractParseTreeVisitor{Result}.VisitChildren(IRuleNode)"/>
 	/// on <paramref name="context"/>.
@@ -253,7 +253,7 @@ public partial class GLangBaseVisitor<Result> : AbstractParseTreeVisitor<Result>
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
-	public virtual Result VisitSeperatedExpression([NotNull] GLangParser.SeperatedExpressionContext context) { return VisitChildren(context); }
+	public virtual Result VisitExpressionParameter([NotNull] GLangParser.ExpressionParameterContext context) { return VisitChildren(context); }
 	/// <summary>
 	/// Visit a parse tree produced by <see cref="GLangParser.functionCall"/>.
 	/// <para>

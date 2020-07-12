@@ -129,24 +129,20 @@ namespace InterpreterLib {
 			return new Diagnostic(line, column, "Syntax error: ", null, offendingText, null);
 		}
 
-		internal static Diagnostic ReportUndefinedFunction(int line, int column, TextSpan span) {
-			throw new NotImplementedException();
-		}
-
-		internal static Diagnostic ReportInvalidBreakStatement(int line, int column, TextSpan offendingText) {
-			return new Diagnostic(line, column, "Break statements cannot exist outside of a loop.", null, offendingText, null);
-		}
-
-		internal static Diagnostic ReportInvalidContinueStatement(int line, int column, TextSpan offendingText) {
-			return new Diagnostic(line, column, "Continue statements cannot exist outside of a loop.", null, offendingText, null);
+		internal static Diagnostic ReportUndefinedFunction(TextLocation location, TextSpan offendingText) {
+			return new Diagnostic(location.Line, location.Column, "Function is undefined", null, offendingText, null);
 		}
 
 		internal static Diagnostic ReportInvalidCompilationUnit(int line, int column, TextSpan offendingText) {
 			return new Diagnostic(line, column, "Syntax error: Invalid compilation unit", null, offendingText, null);
 		}
 
-		internal static Diagnostic ReportFunctionCountMismatch(int line, int column, int syntaxCount, int requiredCount, TextSpan span) {
-			throw new NotImplementedException();
+		internal static Diagnostic ReportFunctionCountMismatch(TextLocation location, int syntaxCount, int requiredCount, TextSpan offendingText) {
+			var reqString = $"{requiredCount} parameter{(requiredCount == 1 ? "" : "s")}";
+			var countString = $"{syntaxCount} parameter{(syntaxCount == 1 ? "" : "s")}";
+			var message = $"Function requires {reqString} but was given {countString} ";
+
+			return new Diagnostic(location.Line, location.Column, message, null, offendingText, null);
 		}
 
 		internal static Diagnostic ReportInvalidGlobalStatement(int line, int column, TextSpan offendingText) {
@@ -161,8 +157,8 @@ namespace InterpreterLib {
 			return new Diagnostic(line, column, "Syntax error: Invalid typed parameter", null, offendingText, null);
 		}
 
-		internal static Diagnostic ReportInvalidParameterType(int line, int column, TypeSymbol valueType, TypeSymbol requiredType, TextSpan span) {
-			throw new NotImplementedException();
+		internal static Diagnostic ReportInvalidParameterType(TextLocation location, TypeSymbol valueType, TypeSymbol requiredType, TextSpan offendingText) {
+			return new Diagnostic(location.Line, location.Column, $"Parameter type {valueType} is not {requiredType}", null, offendingText, null);
 		}
 
 		internal static Diagnostic ReportInvalidFunctionDef(int line, int column, TextSpan? previousText, TextSpan offendingText, TextSpan? nextText) {
@@ -173,52 +169,52 @@ namespace InterpreterLib {
 			return ReportInvalidFunctionDef(line, column, null, offendingText, null);
 		}
 
-		internal static Diagnostic ReportInvalidType(int line, int column, TextSpan previousText, TextSpan offendingText, TextSpan nextText, TypeSymbol requiredType) {
-			return new Diagnostic(line, column, $"Invalid type. Required type: {requiredType}", previousText, offendingText, nextText);
+		internal static Diagnostic ReportInvalidType(TextLocation location, TextSpan previousText, TextSpan offendingText, TextSpan nextText, TypeSymbol requiredType) {
+			return new Diagnostic(location.Line, location.Column, $"Invalid type. Required type: {requiredType}", previousText, offendingText, nextText);
 		}
 
-		internal static Diagnostic ReportInvalidAssignmentTypeDef(int line, int column, TextSpan previousText, TextSpan offendingText) {
-			return new Diagnostic(line, column, "Variable types cannot be redefined", previousText, offendingText, null);
+		internal static Diagnostic ReportInvalidAssignmentTypeDef(TextLocation location, TextSpan previousText, TextSpan offendingText) {
+			return new Diagnostic(location.Line, location.Column, "Variable types cannot be redefined", previousText, offendingText, null);
 		}
 
-		internal static Diagnostic ReportUndefinedVariable(int line, int column, TextSpan offendingText) {
-			return new Diagnostic(line, column, "Variable is undefined", null, offendingText, null);
+		internal static Diagnostic ReportUndefinedVariable(TextLocation location, TextSpan offendingText) {
+			return new Diagnostic(location.Line, location.Column, "Variable is undefined", null, offendingText, null);
 		}
 
-		internal static Diagnostic ReportUnknownDeclKeyword(int line, int column, TextSpan offendingText) {
-			return new Diagnostic(line, column, "Unknown variable declaration keyeword", null, offendingText, null);
+		internal static Diagnostic ReportUnknownDeclKeyword(TextLocation location, TextSpan offendingText) {
+			return new Diagnostic(location.Line, location.Column, "Unknown variable declaration keyeword", null, offendingText, null);
 		}
 
-		internal static Diagnostic ReportUnknownTypeKeyword(int line, int column, TextSpan prevText, TextSpan offendingText) {
-			return new Diagnostic(line, column, "Unknown variable type", prevText, offendingText, null);
+		internal static Diagnostic ReportUnknownTypeKeyword(TextLocation location, TextSpan prevText, TextSpan offendingText) {
+			return new Diagnostic(location.Line, location.Column, "Unknown variable type", prevText, offendingText, null);
 		}
 
-		internal static Diagnostic ReportCannotCast(int line, int column, TextSpan prevText, TextSpan offendingText, TypeSymbol fromType, TypeSymbol toType) {
-			return new Diagnostic(line, column, $"Cannot implicitly convert {fromType} to {toType}", prevText, offendingText, null);
+		internal static Diagnostic ReportCannotCast(TextLocation location, TextSpan prevText, TextSpan offendingText, TypeSymbol fromType, TypeSymbol toType) {
+			return new Diagnostic(location.Line, location.Column, $"Cannot implicitly convert {fromType} to {toType}", prevText, offendingText, null);
 		}
 
-		internal static Diagnostic ReportVoidType(int line, int column, TextSpan? prevText, TextSpan offendingText) {
-			return new Diagnostic(line, column, "Invalid use of void type", prevText, offendingText, null);
+		internal static Diagnostic ReportVoidType(TextLocation location, TextSpan? prevText, TextSpan offendingText) {
+			return new Diagnostic(location.Line, location.Column, "Invalid use of void type", prevText, offendingText, null);
 		}
 
-		internal static Diagnostic ReportVoidType(int line, int column, TextSpan offendingText) {
-			return ReportVoidType(line, column, null, offendingText);
+		internal static Diagnostic ReportVoidType(TextLocation location, TextSpan offendingText) {
+			return ReportVoidType(location, null, offendingText);
 		}
 
-		internal static Diagnostic ReportCannotRedefine(int line, int column, TextSpan offendingText) {
-			return new Diagnostic(line, column, "Cannot redefine vadriable", null, offendingText, null);
+		internal static Diagnostic ReportCannotRedefine(TextLocation location, TextSpan offendingText) {
+			return new Diagnostic(location.Line, location.Column, "Cannot redefine vadriable", null, offendingText, null);
 		}
 
-		internal static Diagnostic ReportInvalidOperator(int line, int column, TextSpan prevText, TextSpan offendingText, TextSpan nextText, TypeSymbol valueType1, TypeSymbol valueType2) {
-			return new Diagnostic(line, column, $"Operator is invalid for types {valueType1} and {valueType2}", prevText, offendingText, nextText);
+		internal static Diagnostic ReportInvalidOperator(TextLocation location, TextSpan prevText, TextSpan offendingText, TextSpan nextText, TypeSymbol valueType1, TypeSymbol valueType2) {
+			return new Diagnostic(location.Line, location.Column, $"Operator is invalid for types {valueType1} and {valueType2}", prevText, offendingText, nextText);
 		}
 
-		internal static Diagnostic ReportInvalidOperator(int line, int column, TextSpan prevText, TextSpan offendingText, TypeSymbol valueType) {
-			return new Diagnostic(line, column, $"Operator is invalid for type {valueType}", prevText, offendingText, null);
+		internal static Diagnostic ReportInvalidOperator(TextLocation location, TextSpan prevText, TextSpan offendingText, TypeSymbol valueType) {
+			return new Diagnostic(location.Line, location.Column, $"Operator is invalid for type {valueType}", prevText, offendingText, null);
 		}
 
-		internal static Diagnostic ReportInvalidReturnType(int line, int column, TextSpan offendingText) {
-			return new Diagnostic(line, column, $"Invalid return type", null, offendingText, null);
+		internal static Diagnostic ReportInvalidReturnType(TextLocation location, TextSpan offendingText) {
+			return new Diagnostic(location.Line, location.Column, $"Invalid return type", null, offendingText, null);
 		}
 
 		internal static Diagnostic ReportCannotRedefineFunction(int line, int column, TextSpan offendingText) {
@@ -227,6 +223,22 @@ namespace InterpreterLib {
 
 		internal static Diagnostic ReportInvalidReturnStatement(int line, int column, TextSpan span) {
 			throw new NotImplementedException();
+		}
+
+		internal static Diagnostic ReportInvalidBreakOrContinueStatement(TextLocation location, TextSpan offendingText, string keyword) {
+			return new Diagnostic(location.Line, location.Column, $"Keyword \"{keyword}\" can only be used inside of a loop.", null, offendingText, null);
+		}
+
+		internal static Diagnostic ReportInvalidReturnStatement(TextLocation location, TextSpan offendingText) {
+			return new Diagnostic(location.Line, location.Column, $"Retrun statements can only exist in a function", null, offendingText, null);
+		}
+
+		internal static Diagnostic ReportInvalidReturnExpression(TextLocation location, TextSpan offendingText) {
+			return new Diagnostic(location.Line, location.Column, $"Void functions cannot return a value", null, offendingText, null);
+		}
+
+		internal static Diagnostic ReportInvalidReturnExpressionType(TextLocation location, TextSpan offendingText, TypeSymbol valueType, TypeSymbol returnType) {
+			return new Diagnostic(location.Line, location.Column, $"Function returns {returnType}, but {valueType} was returned instead", null, offendingText, null);
 		}
 	}
 }

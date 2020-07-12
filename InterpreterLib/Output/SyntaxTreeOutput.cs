@@ -136,8 +136,9 @@ namespace InterpreterLib.Output {
 			builder.NewLine();
 
 			Output(node.Body, prefix + IndentString);
-			builder.NewLine();
 
+			builder.NewLine();
+			builder.AddFragment(new OutputFragment(prefix, DefaultColour));
 			builder.AddFragment(new OutputFragment("}", DefaultColour));
 		}
 
@@ -179,7 +180,9 @@ namespace InterpreterLib.Output {
 			builder.NewLine();
 
 			Output(node.Body, prefix + IndentString);
+
 			builder.NewLine();
+			builder.AddFragment(new OutputFragment(prefix, DefaultColour));
 			builder.AddFragment(new OutputFragment("}", DefaultColour));
 		}
 
@@ -194,7 +197,9 @@ namespace InterpreterLib.Output {
 			builder.NewLine();
 
 			Output(node.Body, prefix + IndentString);
+
 			builder.NewLine();
+			builder.AddFragment(new OutputFragment(prefix, DefaultColour));
 			builder.AddFragment(new OutputFragment("}", DefaultColour));
 		}
 
@@ -210,15 +215,17 @@ namespace InterpreterLib.Output {
 
 			Output(node.TrueBranch, prefix + IndentString);
 			builder.NewLine();
+			builder.AddFragment(new OutputFragment(prefix, DefaultColour));
 			builder.AddFragment(new OutputFragment("}", DefaultColour));
 
 			if (node.FalseBranch != null) {
-				builder.AddFragment(new OutputFragment(prefix, DefaultColour));
-				builder.AddFragment(new OutputFragment(" else {", StatementColour));
+				builder.AddFragment(new OutputFragment(" else ", StatementColour));
+				builder.AddFragment(new OutputFragment("{", DefaultColour));
 				builder.NewLine();
 
 				Output(node.FalseBranch, prefix + IndentString);
-				builder.AddFragment(new OutputFragment("}", StatementColour));
+				builder.AddFragment(new OutputFragment(prefix, DefaultColour));
+				builder.AddFragment(new OutputFragment("}", DefaultColour));
 			}
 		}
 

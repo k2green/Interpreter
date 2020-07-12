@@ -15,11 +15,9 @@ namespace InterpreterLib.Syntax {
 	internal class ASTProducer : GLangBaseVisitor<SyntaxNode> {
 
 		private DiagnosticContainer diagnostics;
-		private List<FunctionDeclarationSyntax> functionDeclarations;
 
 		public ASTProducer() {
 			diagnostics = new DiagnosticContainer();
-			functionDeclarations = new List<FunctionDeclarationSyntax>();
 		}
 
 		private bool OnlyOne(IEnumerable<bool> conditions) => conditions.Count(b => b) == 1;
@@ -240,6 +238,13 @@ namespace InterpreterLib.Syntax {
 
 			bool hasDirectDecl = identifierCtx != null;
 			bool isAssignmentDecl = assignmentCtx != null;
+
+			if (keywordCtx == null) {
+				var span = new TextSpan(context.Start.StartIndex, context.Stop.StopIndex);
+				var diagnostic = Diagnostic.ReportMalformedDeclaration(context.Start.Line, context.Start.Column, span);
+				diagnostics.AddDiagnostic(diagnostic);
+				return null;
+			}
 
 			if (!OnlyOne(hasDirectDecl, isAssignmentDecl)) {
 				diagnostics.AddDiagnostic(Diagnostic.ReportMalformedDeclaration(keywordCtx.Symbol.Line, keywordCtx.Symbol.Column, new TextSpan(context.Start.StartIndex, context.Stop.StopIndex)));
@@ -565,70 +570,78 @@ namespace InterpreterLib.Syntax {
 			return new BlockSyntax(Token(leftBraceCtx.Symbol), builder.ToImmutable(), Token(rightBraceCtx.Symbol));
 		}
 
+		private SeperatedSyntaxList<ExpressionSyntax> InternalVisitCallParameters([NotNull] GLangParser.ExpressionParameterContext context) {
+			var builder = ImmutableArray.CreateBuilder<SyntaxNode>();
+
+			if (!InternalVisitCallParameter(context, ref builder))
+				return null;
+
+			return new SeperatedSyntaxList<ExpressionSyntax>(builder.ToImmutable());
+		}
+
+		private bool InternalVisitCallParameter([NotNull] GLangParser.ExpressionParameterContext context, ref ImmutableArray<SyntaxNode>.Builder builder) {
+			var expressionCtx = context.binaryExpression();
+			var commaCtx = context.COMMA();
+			var paramCtx = context.expressionParameter();
+
+			bool hasComma = commaCtx != null && commaCtx.GetText().Equals(",");
+			bool hasParam = paramCtx != null;
+
+			if (expressionCtx == null || (hasComma ^ hasParam)) {
+				var span = new TextSpan(context.Start.StartIndex, context.Stop.StopIndex);
+				diagnostics.AddDiagnostic(Diagnostic.ReportInvalidCallParameter(expressionCtx.Start.Line, expressionCtx.Start.Column, span));
+				return false;
+			}
+
+			var visit = Visit(expressionCtx);
+
+			if (visit == null)
+				return false;
+
+			if (!(visit is ExpressionSyntax expression)) {
+				diagnostics.AddDiagnostic(Diagnostic.ReportInvalidCallParameter(expressionCtx.Start.Line, expressionCtx.Start.Column, visit.Span));
+				return false;
+			}
+
+			builder.Add(expression);
+
+			if (hasComma && hasParam) {
+				builder.Add(Token(commaCtx.Symbol));
+				return InternalVisitCallParameter(paramCtx, ref builder);
+			}
+
+			return true;
+		}
+
 		public override SyntaxNode VisitFunctionCall([NotNull] GLangParser.FunctionCallContext context) {
 			var funcIdentifierCtx = context.funcName;
 			var leftParenCtx = context.L_PARENTHESIS();
+			var paramCtx = context.expressionParameter();
 			var rightParenCtx = context.R_PARENTHESIS();
-			var span = new TextSpan(context.Start.StartIndex, context.Stop.StopIndex);
 
-			if (funcIdentifierCtx == null || leftParenCtx == null || rightParenCtx == null || !leftParenCtx.GetText().Equals("(") || !rightParenCtx.GetText().Equals(")")) {
+			if (funcIdentifierCtx == null || leftParenCtx == null || rightParenCtx == null
+				|| !leftParenCtx.GetText().Equals("(") || !rightParenCtx.GetText().Equals(")")) {
+				var span = new TextSpan(context.Start.StartIndex, context.Stop.StopIndex);
 				diagnostics.AddDiagnostic(Diagnostic.ReportInvalidFunctionCall(context.Start.Line, context.Start.Column, span));
 				return null;
 			}
 
-			var firstCtx = context.seperatedExpression();
-			var lastCtx = context.last;
+			var parameters = new SeperatedSyntaxList<ExpressionSyntax>(ImmutableArray.Create(new SyntaxNode[] { }));
 
-			if (firstCtx != null && firstCtx.Length > 0 && lastCtx == null) {
-				diagnostics.AddDiagnostic(Diagnostic.ReportInvalidCallParameters(context.Start.Line, context.Start.Column, span));
-				return null;
-			}
+			if (paramCtx != null) {
+				var visit = InternalVisitCallParameters(paramCtx);
 
-			var builder = ImmutableArray.CreateBuilder<SyntaxNode>();
-
-			if (firstCtx != null && firstCtx.Length > 0 && lastCtx != null) {
-				foreach (var ctx in firstCtx) {
-					var expressionCtx = ctx.binaryExpression();
-					var commaCtx = ctx.COMMA();
-
-					var visit = Visit(expressionCtx);
-
-					if (visit == null)
-						return null;
-
-					if (!(visit is ExpressionSyntax expressionSyntax)) {
-						diagnostics.AddDiagnostic(Diagnostic.ReportInvalidCallParameter(expressionCtx.Start.Line, expressionCtx.Start.Column, visit.Span));
-						return null;
-					}
-
-					if (commaCtx == null || !commaCtx.GetText().Equals(",")) {
-						var commaSpan = new TextSpan(visit.Span.End, ctx.Stop.StopIndex);
-						diagnostics.AddDiagnostic(Diagnostic.ReportMissingComma(expressionCtx.Start.Line, expressionCtx.Start.Column, visit.Span, commaSpan, null));
-						return null;
-					}
-
-					builder.Add(expressionSyntax);
-					builder.Add(Token(commaCtx.Symbol));
-				}
-			}
-
-			if (lastCtx != null) {
-				var lastVisit = Visit(lastCtx);
-
-				if (lastVisit == null)
+				if (visit == null)
 					return null;
 
-				if (!(lastVisit is ExpressionSyntax lastExpressionSyntax)) {
-					var commaSpan = new TextSpan(lastCtx.Start.StartIndex, lastCtx.Stop.StopIndex);
-					diagnostics.AddDiagnostic(Diagnostic.ReportInvalidCallParameter(lastVisit.Location.Line, lastVisit.Location.Column, lastVisit.Span));
-					return null;
-				}
-
-				builder.Add(lastExpressionSyntax);
+				parameters = visit;
 			}
 
-			var seperatedList = new SeperatedSyntaxList<ExpressionSyntax>(builder.ToImmutable());
-			return new FunctionCallSyntax(Token(funcIdentifierCtx), Token(leftParenCtx.Symbol), seperatedList, Token(rightParenCtx.Symbol));
+			var identToken = Token(funcIdentifierCtx);
+			var lParen = Token(leftParenCtx.Symbol);
+			var rParen = Token(rightParenCtx.Symbol);
+
+			return new FunctionCallSyntax(identToken, lParen, parameters, rParen);
 		}
 
 		public override SyntaxNode VisitErrorNode(IErrorNode node) {
@@ -719,13 +732,30 @@ namespace InterpreterLib.Syntax {
 			var keywCtx = context.RETURN();
 			var expressionCtx = context.binaryExpression();
 
-			if (keywCtx == null || expressionCtx == null || !keywCtx.GetText().Equals("return")) {
+			if (keywCtx == null || !keywCtx.GetText().Equals("return")) {
 				var span = new TextSpan(context.Start.StartIndex, context.Stop.StopIndex);
 				diagnostics.AddDiagnostic(Diagnostic.ReportInvalidReturnStatement(context.Start.Line, context.Start.Column, span));
 				return null;
 			}
 
-			throw new NotImplementedException();
+			ExpressionSyntax expression = null;
+
+			if (expressionCtx != null) {
+				var visit = Visit(expressionCtx);
+
+				if (visit == null)
+					return null;
+
+				if (!(visit is ExpressionSyntax syntax)) {
+					var span = new TextSpan(context.Start.StartIndex, context.Stop.StopIndex);
+					diagnostics.AddDiagnostic(Diagnostic.ReportInvalidReturnStatement(context.Start.Line, context.Start.Column, span));
+					return null;
+				}
+
+				expression = syntax;
+			}
+
+			return new ReturnSyntax(Token(keywCtx.Symbol), expression);
 		}
 
 		public override SyntaxNode VisitGlobalStatement([NotNull] GLangParser.GlobalStatementContext context) {
@@ -770,90 +800,75 @@ namespace InterpreterLib.Syntax {
 			return new TypedIdentifierSyntax(Token(identifierCtx.Symbol), typeDef);
 		}
 
-		public override SyntaxNode VisitParametersDefinition([NotNull] GLangParser.ParametersDefinitionContext context) {
-			var leftParenCtx = context.L_PARENTHESIS();
-			var rightParenCtx = context.R_PARENTHESIS();
+		private SeperatedSyntaxList<TypedIdentifierSyntax> InternalVisitParameterDefinition([NotNull] GLangParser.ParameterDefinitionContext context) {
+			var builder = ImmutableArray.CreateBuilder<SyntaxNode>();
 
-			var firstCtx = context.seperatedDefinedIdentifier();
-			var lastCtx = context.last;
-			var span = new TextSpan(context.Start.StartIndex, context.Stop.StopIndex);
-
-			if (leftParenCtx == null || rightParenCtx == null || !leftParenCtx.GetText().Equals("(") || !rightParenCtx.GetText().Equals(")")) {
-				diagnostics.AddDiagnostic(Diagnostic.ReportInvalidParameterDefinition(context.Start.Line, context.Start.Column, span));
+			if (!InternalVisitParameterDefinition(context, ref builder))
 				return null;
+
+			return new SeperatedSyntaxList<TypedIdentifierSyntax>(builder.ToImmutable());
+		}
+
+		private bool InternalVisitParameterDefinition([NotNull] GLangParser.ParameterDefinitionContext context, ref ImmutableArray<SyntaxNode>.Builder builder) {
+			var typeDefCtx = context.definedIdentifier();
+			var commaCtx = context.COMMA();
+			var paramCtx = context.parameterDefinition();
+
+			var hasComma = commaCtx != null && commaCtx.GetText().Equals(",");
+			var hasParam = paramCtx != null;
+
+			if (typeDefCtx == null || (hasComma ^ hasParam)) {
+				var span = new TextSpan(context.Start.StartIndex, context.Stop.StopIndex);
+				var diagnostic = Diagnostic.ReportInvalidParameterDefinition(context.Start.Line, context.Start.Column, span);
+				diagnostics.AddDiagnostic(diagnostic);
+				return false;
 			}
 
-			if (firstCtx != null && firstCtx.Length > 0 && lastCtx == null) {
-				diagnostics.AddDiagnostic(Diagnostic.ReportInvalidParameterDefinition(context.Start.Line, context.Start.Column, span));
-				return null;
+			var visit = Visit(typeDefCtx);
+
+			if (visit == null)
+				return false;
+
+			builder.Add(visit);
+
+			if (hasComma && hasParam) {
+				builder.Add(Token(commaCtx.Symbol));
+				return InternalVisitParameterDefinition(paramCtx, ref builder);
 			}
 
-			var parameters = ImmutableArray.CreateBuilder<SyntaxNode>();
-
-			if (firstCtx != null && firstCtx.Length > 0) {
-				foreach (var ctx in firstCtx) {
-					if (ctx.definedIdentifier() == null || ctx.COMMA() == null || !ctx.COMMA().GetText().Equals(",")) {
-						diagnostics.AddDiagnostic(Diagnostic.ReportInvalidParameterDefinition(context.Start.Line, context.Start.Column, span));
-						return null;
-					}
-
-					var visit = Visit(ctx.definedIdentifier());
-
-					if (visit == null)
-						return null;
-
-					if (!(visit is TypedIdentifierSyntax identSyntax)) {
-						diagnostics.AddDiagnostic(Diagnostic.ReportInvalidTypedIdentifier(visit.Location.Line, visit.Location.Column, visit.Span));
-						return null;
-					}
-
-					parameters.Add(identSyntax);
-					parameters.Add(Token(ctx.COMMA().Symbol));
-				}
-			}
-
-			if (lastCtx != null) {
-
-				var lastVisit = Visit(lastCtx);
-
-				if (lastVisit == null)
-					return null;
-
-				if (!(lastVisit is TypedIdentifierSyntax lastIdentSyntax)) {
-					diagnostics.AddDiagnostic(Diagnostic.ReportInvalidTypedIdentifier(lastVisit.Location.Line, lastVisit.Location.Column, lastVisit.Span));
-					return null;
-				}
-
-				parameters.Add(lastIdentSyntax);
-			}
-
-			var seperatedList = new SeperatedSyntaxList<TypedIdentifierSyntax>(parameters.ToImmutable());
-			return new ParameterDefinitionSyntax(Token(leftParenCtx.Symbol), seperatedList, Token(rightParenCtx.Symbol));
+			return true;
 		}
 
 		public override SyntaxNode VisitFunctionDefinition([NotNull] GLangParser.FunctionDefinitionContext context) {
 			var keywCtx = context.FUNCTION();
 			var identCtx = context.IDENTIFIER();
-			var paramCtx = context.parametersDefinition();
+			var lParenCtx = context.L_PARENTHESIS();
+			var paramCtx = context.parameterDefinition();
+			var rParenCtx = context.R_PARENTHESIS();
 			var typeDefCtx = context.typeDefinition();
 			var bodyCtx = context.statement();
 
-			if (keywCtx == null || identCtx == null || paramCtx == null || typeDefCtx == null || bodyCtx == null || !keywCtx.GetText().Equals("function")) {
+			if (keywCtx == null || identCtx == null || lParenCtx == null || rParenCtx == null || typeDefCtx == null || bodyCtx == null
+				|| !lParenCtx.GetText().Equals("(") || !rParenCtx.GetText().Equals(")") || !keywCtx.GetText().Equals("function")) {
 				var span = new TextSpan(context.Start.StartIndex, context.Stop.StopIndex);
 				diagnostics.AddDiagnostic(Diagnostic.ReportInvalidFunctionDef(context.Start.Line, context.Start.Column, span));
 				return null;
 			}
 
-			var paramVisit = Visit(paramCtx);
+			var paramVisit = new SeperatedSyntaxList<TypedIdentifierSyntax>(ImmutableArray.Create(new SyntaxNode[] { }));
 			var typeDefVisit = Visit(typeDefCtx);
 			var bodyVisit = Visit(bodyCtx);
 
-			if (paramVisit == null || typeDefVisit == null || bodyVisit == null)
+			if (typeDefVisit == null || bodyVisit == null)
 				return null;
 
-			if (!(paramVisit is ParameterDefinitionSyntax parameters)) {
-				diagnostics.AddDiagnostic(Diagnostic.ReportInvalidFunctionDef(context.Start.Line, context.Start.Column, null, paramVisit.Span, typeDefVisit.Span));
-				return null;
+			if (paramCtx != null) {
+				var visit = InternalVisitParameterDefinition(paramCtx);
+
+				if (visit == null)
+					return null;
+
+				paramVisit = visit;
 			}
 
 			if (!(typeDefVisit is TypeDefinitionSyntax typeDef)) {
@@ -868,10 +883,11 @@ namespace InterpreterLib.Syntax {
 
 			var keywToken = Token(keywCtx.Symbol);
 			var identToken = Token(identCtx.Symbol);
+			var lParenToken = Token(lParenCtx.Symbol);
+			var rParenToken = Token(rParenCtx.Symbol);
 
-			var declSyntax = new FunctionDeclarationSyntax(keywToken, identToken, parameters, typeDef, body);
+			var declSyntax = new FunctionDeclarationSyntax(keywToken, identToken, lParenToken, paramVisit, rParenToken, typeDef, body);
 
-			functionDeclarations.Add(declSyntax);
 			return declSyntax;
 		}
 	}

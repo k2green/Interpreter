@@ -21,13 +21,14 @@ statement : returnStatement | baseStatement | BREAK | CONTINUE;
 definedIdentifier: IDENTIFIER typeDefinition;
 seperatedDefinedIdentifier: definedIdentifier COMMA;
 
-returnStatement : RETURN binaryExpression;
+returnStatement : RETURN binaryExpression
+				| RETURN;
 
-parametersDefinition: L_PARENTHESIS seperatedDefinedIdentifier+ last=definedIdentifier R_PARENTHESIS
-					| L_PARENTHESIS last=definedIdentifier R_PARENTHESIS
-					| L_PARENTHESIS R_PARENTHESIS;
+parameterDefinition	: definedIdentifier COMMA parameterDefinition
+					| definedIdentifier;
 
-functionDefinition: FUNCTION IDENTIFIER parametersDefinition typeDefinition statement;
+functionDefinition: FUNCTION IDENTIFIER L_PARENTHESIS parameterDefinition R_PARENTHESIS typeDefinition statement
+				  | FUNCTION IDENTIFIER L_PARENTHESIS R_PARENTHESIS typeDefinition statement;
 
 block : L_BRACE statement* R_BRACE;
 
@@ -63,9 +64,10 @@ binaryExpression: left=binaryExpression op=CARAT right=binaryExpression
 				| atom=unaryExpression;
 				
 
-seperatedExpression: binaryExpression COMMA;
-functionCall: funcName=IDENTIFIER L_PARENTHESIS seperatedExpression+ last=binaryExpression R_PARENTHESIS
-			| funcName=IDENTIFIER L_PARENTHESIS last=binaryExpression R_PARENTHESIS
+expressionParameter	: binaryExpression COMMA expressionParameter
+					| binaryExpression;
+
+functionCall: funcName=IDENTIFIER L_PARENTHESIS expressionParameter R_PARENTHESIS
 			| funcName=IDENTIFIER L_PARENTHESIS R_PARENTHESIS;
 /*
  * Lexer Rules

@@ -21,14 +21,26 @@ namespace InterpreterLib.Syntax.Tree.Global {
 
 		public TokenSyntax KeywToken { get; }
 		public TokenSyntax Identifier { get; }
-		public ParameterDefinitionSyntax Parameters { get; }
+		public TokenSyntax LeftParenthesis { get; }
+		public SeperatedSyntaxList<TypedIdentifierSyntax> Parameters { get; }
+		public TokenSyntax RightParenthesis { get; }
 		public TypeDefinitionSyntax ReturnType { get; }
 		public StatementSyntax Body { get; }
 
-		public FunctionDeclarationSyntax(TokenSyntax keywToken, TokenSyntax identifier, ParameterDefinitionSyntax parameters, TypeDefinitionSyntax returnType, StatementSyntax body) {
+		public FunctionDeclarationSyntax(
+			TokenSyntax keywToken, 
+			TokenSyntax identifier,
+			TokenSyntax leftParenthesis,
+			SeperatedSyntaxList<TypedIdentifierSyntax> parameters,
+			TokenSyntax rightParenthesis,
+			TypeDefinitionSyntax returnType, 
+			StatementSyntax body
+			) {
 			KeywToken = keywToken;
 			Identifier = identifier;
+			LeftParenthesis = leftParenthesis;
 			Parameters = parameters;
+			RightParenthesis = rightParenthesis;
 			ReturnType = returnType;
 			Body = body;
 		}

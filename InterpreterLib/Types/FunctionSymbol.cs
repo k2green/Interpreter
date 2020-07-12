@@ -10,6 +10,7 @@ namespace InterpreterLib.Types {
 		public override string Name { get; }
 		public ImmutableArray<ParameterSymbol> Parameters { get; }
 		public TypeSymbol ReturnType { get; }
+		public LabelSymbol EndLabel => new LabelSymbol("FunctionEnd");
 
 		public FunctionSymbol(string name, ImmutableArray<ParameterSymbol> parameters, TypeSymbol returnType) {
 			Name = name;
