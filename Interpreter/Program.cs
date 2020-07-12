@@ -25,9 +25,5 @@ namespace Interpreter {
 			else
 				Console.WriteLine(res.Value);
 		}
-
-		public static void Text(BindingEnvironment env) {
-			env.PrintText();
-		}
 	}
 }

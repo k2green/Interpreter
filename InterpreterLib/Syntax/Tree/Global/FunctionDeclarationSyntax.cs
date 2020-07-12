@@ -10,7 +10,10 @@ namespace InterpreterLib.Syntax.Tree.Global {
 			get {
 				yield return KeywToken;
 				yield return Identifier;
-				yield return Parameters;
+
+				foreach (var param in Parameters)
+					yield return param;
+
 				yield return ReturnType;
 				yield return Body;
 			}

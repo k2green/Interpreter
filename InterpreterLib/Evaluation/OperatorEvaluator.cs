@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace InterpreterLib {
+namespace InterpreterLib.Diagnostics {
 	internal static class OperatorEvaluator {
 
 		public static object EvaluateAddition(object left, object right, BinaryOperator op) {

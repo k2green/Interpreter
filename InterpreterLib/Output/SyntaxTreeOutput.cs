@@ -62,9 +62,6 @@ namespace InterpreterLib.Output {
 				case SyntaxType.TypedIdentifier:
 					OutputTypedIdentifier((TypedIdentifierSyntax)node, prefix);
 					break;
-				case SyntaxType.ParameterDefinition:
-					OutputParameterDefinition((ParameterDefinitionSyntax)node, prefix);
-					break;
 				case SyntaxType.CompilationUnit:
 					OutputCompilationUnit((CompilationUnitSyntax)node, prefix);
 					break;
@@ -113,24 +110,21 @@ namespace InterpreterLib.Output {
 			builder.AddFragment(new OutputFragment(node.Definition.NameToken.ToString(), TypeColour));
 		}
 
-		private void OutputParameterDefinition(ParameterDefinitionSyntax node, string prefix) {
-			var paramCount = node.Parameters.Count;
-
-			for (int index = 0; index < paramCount; index++) {
-				Output(node.Parameters[index], prefix);
-
-				if(index < paramCount - 1)
-					builder.AddFragment(new OutputFragment(", ", DefaultColour));
-			}
-		}
-
 		private void OutputFunctionDeclaration(FunctionDeclarationSyntax node, string prefix) {
 			builder.AddFragment(new OutputFragment(prefix, DefaultColour));
 			builder.AddFragment(new OutputFragment($"{node.KeywToken} ", StatementColour));
 			builder.AddFragment(new OutputFragment(node.Identifier.ToString(), FunctionNameColour));
 			builder.AddFragment(new OutputFragment("(", DefaultColour));
 
-			Output(node.Parameters, string.Empty);
+			var paramCount = node.Parameters.Count;
+			for (int index = 0; index < paramCount; index++) {
+				var parameter = node.Parameters[index];
+
+				Output(parameter, string.Empty);
+
+				if (index < paramCount - 1)
+					builder.AddFragment(new OutputFragment(", ", DefaultColour));
+			}
 
 			builder.AddFragment(new OutputFragment(") {", DefaultColour));
 			builder.NewLine();

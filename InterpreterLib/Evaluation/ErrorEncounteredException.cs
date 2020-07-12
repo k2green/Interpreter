@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.Serialization;
 
-namespace InterpreterLib {
+namespace InterpreterLib.Diagnostics {
 	internal class ErrorEncounteredException : Exception {
 		public ErrorEncounteredException() {
 		}

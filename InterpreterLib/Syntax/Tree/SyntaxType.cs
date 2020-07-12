@@ -20,7 +20,6 @@ namespace InterpreterLib.Syntax.Tree {
 		Block,
 		FunctionCall,
 		TypedIdentifier,
-		ParameterDefinition,
 		FunctionDeclaration,
 		CompilationUnit,
 		GlobalStatement,

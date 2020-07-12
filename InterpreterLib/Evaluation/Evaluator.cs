@@ -6,7 +6,7 @@ using InterpreterLib.Types;
 using InterpreterLib.Binding.Tree.Statements;
 using InterpreterLib.Binding.Tree.Expressions;
 
-namespace InterpreterLib {
+namespace InterpreterLib.Diagnostics {
 	internal class Evaluator {
 
 		private DiagnosticContainer diagnostics;

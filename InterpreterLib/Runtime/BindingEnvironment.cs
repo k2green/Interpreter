@@ -101,15 +101,5 @@ namespace InterpreterLib.Runtime {
 			var output = new ProgramOutput(BoundProgram);
 			output.Document.Output((frag) => printAction(frag.Text, frag.TextColour), newlineAction);
 		}
-
-		public void PrintText() {
-			if (GlobalScope != null) {
-				BoundTreeDisplayVisitor display = new BoundTreeDisplayVisitor();
-
-				if (!diagnostics.Any() && GlobalScope.Root != null) {
-					display.GetText(GlobalScope.Root);
-				}
-			}
-		}
 	}
 }
