@@ -23,5 +23,15 @@ namespace InterpreterLib.Binding.Tree.Statements {
 			ContinueLabel = continueLabel;
 			AddContinue = addContinue;
 		}
+
+		public override string ToString() {
+			var builder = new StringBuilder();
+
+			builder.Append("while(").Append(Condition.ToString()).Append(") {").Append(Environment.NewLine);
+			builder.Append(Body.ToString()).Append(Environment.NewLine);
+			builder.Append("}");
+
+			return builder.ToString();
+		}
 	}
 }

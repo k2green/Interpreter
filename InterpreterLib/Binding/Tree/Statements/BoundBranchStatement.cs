@@ -12,5 +12,7 @@ namespace InterpreterLib.Binding.Tree.Statements {
 		public BoundBranchStatement(LabelSymbol label) {
 			Label = label;
 		}
+
+		public override string ToString() => $"goto {Label.Name}";
 	}
 }

@@ -18,5 +18,7 @@ namespace InterpreterLib.Binding.Tree.Statements {
 			Condition = condition;
 			BranchIfTrue = check;
 		}
+
+		public override string ToString() => $"goto {Label.Name} {(BranchIfTrue ? "if" : "unless")} {Condition.ToString()}";
 	}
 }

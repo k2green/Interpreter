@@ -216,7 +216,9 @@ namespace InterpreterLib.Diagnostics {
 				case BinaryOperatorType.Modulus:
 					return (int)left % (int)right;
 				case BinaryOperatorType.Equality:
-					return EvaluateEqualityOperation(left, right, op);
+					return OperatorEvaluator.EvaluateEquality(left, right, op);
+				case BinaryOperatorType.NegatveEquality:
+					return !OperatorEvaluator.EvaluateEquality(left, right, op);
 				case BinaryOperatorType.LogicalAnd:
 					return (bool)left && (bool)right;
 				case BinaryOperatorType.LogicalOr:
@@ -261,23 +263,8 @@ namespace InterpreterLib.Diagnostics {
 			}
 		}
 
-		private bool EvaluateEqualityOperation(object left, object right, BinaryOperator op) {
-			if (op.LeftType == TypeSymbol.Integer && op.RightType == TypeSymbol.Integer)
-				return ((int)left) == ((int)right);
-
-			if (op.LeftType == TypeSymbol.Boolean && op.RightType == TypeSymbol.Boolean)
-				return ((bool)left) == ((bool)right);
-
-			return false;
-		}
-
 		private object EvaluateLiteral(BoundLiteral literal) {
 			return literal.Value;
-		}
-
-		private object EvaluateError(BoundError error) {
-			// If there is an error in the binding, we use an exception to bail out of the evaluation
-			throw new ErrorEncounteredException();
 		}
 
 		private object EvaluateExpressionStatement(BoundExpressionStatement statement) {

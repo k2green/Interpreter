@@ -43,17 +43,18 @@ ifElseStatement : pureIfStatement ELSE falseBranch=statement;
 whileStatement: WHILE L_PARENTHESIS binaryExpression R_PARENTHESIS body=statement;
 
 variableDeclarationStatement: DECL_VARIABLE definedIdentifier
-							| DECL_VARIABLE assignmentExpression;
+							| DECL_VARIABLE definedAssignment;
 
-assignmentOperand : ifElseStatement | binaryExpression;
-assignmentExpression : IDENTIFIER typeDefinition? ASSIGNMENT_OPERATOR assignmentOperand;
+assignmentOperand : binaryExpression;
+assignmentExpression : IDENTIFIER ASSIGNMENT_OPERATOR assignmentOperand;
+definedAssignment : IDENTIFIER typeDefinition ASSIGNMENT_OPERATOR assignmentOperand | assignmentExpression;
 
 
 	/*
 	 * Expressions
 	 */
 
-literal : DOUBLE | INTEGER | BOOLEAN | functionCall | IDENTIFIER | STRING;
+literal : DOUBLE | INTEGER | BOOLEAN | functionCall | IDENTIFIER | STRING | CHAR_LITERAL;
 
 unaryExpression : L_PARENTHESIS binaryExpression R_PARENTHESIS
 				| op=(ADDITIVE_OP | BANG) unaryExpression
@@ -88,9 +89,10 @@ fragment INTEGER_TYPE: 'int';
 fragment DOUBLE_TYPE: 'double';
 fragment BOOLEAN_TYPE: 'bool';
 fragment STRING_TYPE: 'string';
+fragment CHARACTER_TYPE: 'char';
 fragment VOID_TYPE: 'void';
 
-fragment EQUALITY_OPERATOR: '==';
+fragment EQUALITY_OPERATOR: '==' | '!=';
 fragment GREATER: '>=';
 fragment LESSER: '<=';
 fragment GREATER_STRICT: '>';
@@ -99,6 +101,7 @@ fragment LESSER_STRICT: '<';
 fragment MOD_OPERATOR : 'mod';
 
 STRING : '"' .*? '"';
+CHAR_LITERAL: '\'' . '\'';
 
 WHITESPACE : [ \t\r\n]+ -> channel(HIDDEN);
 
@@ -108,7 +111,7 @@ TYPE_DELIMETER : ':';
 BREAK: 'b' 'r' 'e' 'a' 'k';
 CONTINUE : 'c' 'o' 'n' 't' 'i' 'n' 'u' 'e';
 RETURN : 'r' 'e' 't' 'u' 'r' 'n' ;
-TYPE_NAME : INTEGER_TYPE | DOUBLE_TYPE | BOOLEAN_TYPE | STRING_TYPE | VOID_TYPE;
+TYPE_NAME : INTEGER_TYPE | DOUBLE_TYPE | BOOLEAN_TYPE | STRING_TYPE | VOID_TYPE | CHARACTER_TYPE;
 
 BOOLEAN: TRUE | FALSE;
 DOUBLE: '.' DIGIT+ | DIGIT+ '.' DIGIT+;

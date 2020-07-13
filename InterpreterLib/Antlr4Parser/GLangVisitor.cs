@@ -123,6 +123,18 @@ public interface IGLangVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitIfStatement([NotNull] GLangParser.IfStatementContext context);
 	/// <summary>
+	/// Visit a parse tree produced by <see cref="GLangParser.pureIfStatement"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitPureIfStatement([NotNull] GLangParser.PureIfStatementContext context);
+	/// <summary>
+	/// Visit a parse tree produced by <see cref="GLangParser.ifElseStatement"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitIfElseStatement([NotNull] GLangParser.IfElseStatementContext context);
+	/// <summary>
 	/// Visit a parse tree produced by <see cref="GLangParser.whileStatement"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
@@ -135,11 +147,23 @@ public interface IGLangVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitVariableDeclarationStatement([NotNull] GLangParser.VariableDeclarationStatementContext context);
 	/// <summary>
+	/// Visit a parse tree produced by <see cref="GLangParser.assignmentOperand"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitAssignmentOperand([NotNull] GLangParser.AssignmentOperandContext context);
+	/// <summary>
 	/// Visit a parse tree produced by <see cref="GLangParser.assignmentExpression"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
 	Result VisitAssignmentExpression([NotNull] GLangParser.AssignmentExpressionContext context);
+	/// <summary>
+	/// Visit a parse tree produced by <see cref="GLangParser.definedAssignment"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitDefinedAssignment([NotNull] GLangParser.DefinedAssignmentContext context);
 	/// <summary>
 	/// Visit a parse tree produced by <see cref="GLangParser.literal"/>.
 	/// </summary>

@@ -152,10 +152,6 @@ namespace InterpreterLib.Binding.Tree {
 				return new BoundBlock(rewrittenStatements.ToImmutable());
 		}
 
-		protected virtual BoundNode RewriteError(BoundError error) {
-			throw new NotImplementedException();
-		}
-
 		protected virtual BoundStatement RewriteForStatement(BoundForStatement statement) {
 			var assignment = RewriteStatement(statement.Assignment);
 			var cond = RewriteExpression(statement.Condition);

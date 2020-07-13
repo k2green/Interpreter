@@ -14,5 +14,15 @@ namespace InterpreterLib.Binding.Tree.Expressions {
 			Value = value;
 			ValueType = type;
 		}
+
+		public override string ToString() {
+			var outString = Value.ToString();
+
+			if (ValueType == TypeSymbol.String) {
+				outString = StringFormat(outString);
+			}
+
+			return outString;
+		}
 	}
 }

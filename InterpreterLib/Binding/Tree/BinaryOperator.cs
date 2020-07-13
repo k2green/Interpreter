@@ -38,5 +38,7 @@ namespace InterpreterLib.Binding.Tree {
 
 			return null;
 		}
+
+		public override string ToString() => TokenText;
 	}
 }

@@ -11,5 +11,7 @@ namespace InterpreterLib.Binding.Tree.Statements {
 		public BoundErrorStatement(Diagnostic diagnostic) {
 			Diagnostic = diagnostic;
 		}
+
+		public override string ToString() => "Error";
 	}
 }

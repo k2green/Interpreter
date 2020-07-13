@@ -216,6 +216,30 @@ public partial class GLangBaseListener : IGLangListener {
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitIfStatement([NotNull] GLangParser.IfStatementContext context) { }
 	/// <summary>
+	/// Enter a parse tree produced by <see cref="GLangParser.pureIfStatement"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterPureIfStatement([NotNull] GLangParser.PureIfStatementContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="GLangParser.pureIfStatement"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitPureIfStatement([NotNull] GLangParser.PureIfStatementContext context) { }
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="GLangParser.ifElseStatement"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterIfElseStatement([NotNull] GLangParser.IfElseStatementContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="GLangParser.ifElseStatement"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitIfElseStatement([NotNull] GLangParser.IfElseStatementContext context) { }
+	/// <summary>
 	/// Enter a parse tree produced by <see cref="GLangParser.whileStatement"/>.
 	/// <para>The default implementation does nothing.</para>
 	/// </summary>
@@ -240,6 +264,18 @@ public partial class GLangBaseListener : IGLangListener {
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitVariableDeclarationStatement([NotNull] GLangParser.VariableDeclarationStatementContext context) { }
 	/// <summary>
+	/// Enter a parse tree produced by <see cref="GLangParser.assignmentOperand"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterAssignmentOperand([NotNull] GLangParser.AssignmentOperandContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="GLangParser.assignmentOperand"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitAssignmentOperand([NotNull] GLangParser.AssignmentOperandContext context) { }
+	/// <summary>
 	/// Enter a parse tree produced by <see cref="GLangParser.assignmentExpression"/>.
 	/// <para>The default implementation does nothing.</para>
 	/// </summary>
@@ -251,6 +287,18 @@ public partial class GLangBaseListener : IGLangListener {
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitAssignmentExpression([NotNull] GLangParser.AssignmentExpressionContext context) { }
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="GLangParser.definedAssignment"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterDefinedAssignment([NotNull] GLangParser.DefinedAssignmentContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="GLangParser.definedAssignment"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitDefinedAssignment([NotNull] GLangParser.DefinedAssignmentContext context) { }
 	/// <summary>
 	/// Enter a parse tree produced by <see cref="GLangParser.literal"/>.
 	/// <para>The default implementation does nothing.</para>

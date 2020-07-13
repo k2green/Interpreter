@@ -17,5 +17,21 @@ namespace InterpreterLib.Binding.Tree.Statements {
 			TrueBranch = trueBranch;
 			FalseBranch = falseBranch;
 		}
+
+		public override string ToString() {
+			var builder = new StringBuilder();
+
+			builder.Append("if(").Append(Condition.ToString()).Append(") {").Append(Environment.NewLine);
+			builder.Append(TrueBranch.ToString()).Append(Environment.NewLine);
+			builder.Append("}");
+
+			if(FalseBranch != null) {
+				builder.Append(" else {").Append(Environment.NewLine);
+				builder.Append(FalseBranch.ToString()).Append(Environment.NewLine);
+				builder.Append("}");
+			}
+
+			return builder.ToString();
+		}
 	}
 }

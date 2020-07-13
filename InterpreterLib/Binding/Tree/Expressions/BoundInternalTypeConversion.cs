@@ -16,5 +16,7 @@ namespace InterpreterLib.Binding.Tree.Expressions {
 			ConversionSymbol = conversionSymbol;
 			Expression = expression;
 		}
+
+		public override string ToString() => ConversionSymbol.ToType.ToString() + "(" + Expression.ToString() + ")";
 	}
 }

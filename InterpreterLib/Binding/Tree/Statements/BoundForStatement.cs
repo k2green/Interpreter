@@ -25,5 +25,18 @@ namespace InterpreterLib.Binding.Tree.Statements {
 			BreakLabel = breakLabel;
 			ContinueLabel = continueLabel;
 		}
+
+		public override string ToString() {
+			var builder = new StringBuilder();
+
+			builder.Append("for(");
+			builder.Append(Assignment.ToString()).Append(", ");
+			builder.Append(Condition.ToString()).Append(", ");
+			builder.Append(Step.ToString()).Append(") {").Append(Environment.NewLine);
+			builder.Append(Body.ToString()).Append(Environment.NewLine);
+			builder.Append(Condition.ToString()).Append("}");
+
+			return builder.ToString();
+		}
 	}
 }

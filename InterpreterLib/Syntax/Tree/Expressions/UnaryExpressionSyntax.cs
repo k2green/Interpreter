@@ -26,8 +26,8 @@ namespace InterpreterLib.Syntax.Tree.Expressions {
 		public override string ToString() {
 			var builder = new StringBuilder();
 
-			builder.Append(OpToken).Append(" ");
-			builder.Append(Expression);
+			builder.Append(OpToken).Append("(");
+			builder.Append(Expression).Append(")");
 
 			return builder.ToString();
 		}

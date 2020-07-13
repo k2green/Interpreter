@@ -12,5 +12,7 @@ namespace InterpreterLib.Binding.Tree.Expressions {
 		public BoundVariableExpression(VariableSymbol variable) {
 			Variable = variable;
 		}
+
+		public override string ToString() => Variable.Name;
 	}
 }

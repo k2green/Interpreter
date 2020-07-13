@@ -13,5 +13,7 @@ namespace InterpreterLib.Binding.Tree.Statements {
 		public BoundExpressionStatement(BoundExpression expression) {
 			Expression = expression;
 		}
+
+		public override string ToString() => Expression.ToString();
 	}
 }

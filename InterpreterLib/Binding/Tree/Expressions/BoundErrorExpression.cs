@@ -14,5 +14,7 @@ namespace InterpreterLib.Binding.Tree.Expressions {
 		public BoundErrorExpression(Diagnostic diagnostic) {
 			Diagnostic = diagnostic;
 		}
+
+		public override string ToString() => "Error";
 	}
 }

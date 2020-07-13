@@ -14,5 +14,7 @@ namespace InterpreterLib.Binding.Tree.Expressions {
 			Op = op;
 			Operand = operand;
 		}
+
+		public override string ToString() => $"{Op}({Operand})";
 	}
 }

@@ -12,5 +12,7 @@ namespace InterpreterLib.Binding.Tree.Expressions {
 		public BoundTypeDefinition(TypeSymbol valueType) {
 			ValueType = valueType;
 		}
+
+		public override string ToString() => $": {ValueType.Name}";
 	}
 }

@@ -15,6 +15,8 @@ using System.Threading;
 using InterpreterLib.Syntax.Tree.Global;
 using System.Drawing;
 using InterpreterLib.Output;
+using System.IO;
+using InterpreterLib.Binding.ControlFlow;
 
 namespace InterpreterLib.Runtime {
 	public sealed class BindingEnvironment {
@@ -87,6 +89,11 @@ namespace InterpreterLib.Runtime {
 			if (BoundProgram == null)
 				return new DiagnosticResult<object>(diagnostics, null);
 
+			var block = !BoundProgram.Statement.Statements.Any() && BoundProgram.FunctionBodies.Any()
+						? BoundProgram.FunctionBodies.Values.Last()
+						: BoundProgram.Statement;
+
+			OutputGraph("graph.gv", block);
 			Evaluator evaluator = new Evaluator(boundProgram, variables);
 
 			var evalResult = evaluator.Evaluate();
@@ -100,6 +107,19 @@ namespace InterpreterLib.Runtime {
 
 			var output = new ProgramOutput(BoundProgram);
 			output.Document.Output((frag) => printAction(frag.Text, frag.TextColour), newlineAction);
+		}
+
+		private void OutputGraph(string pathName, BoundBlock block) {
+			var appPath = Environment.GetCommandLineArgs()[0];
+			var appDir = Path.GetDirectoryName(appPath);
+			var filePath = Path.Combine(appDir, pathName);
+
+			var cfg = ControlFlowGraph.CreateGraph(block);
+
+			Console.WriteLine(filePath);
+
+			using (StreamWriter writer = new StreamWriter(filePath))
+				cfg.WriteTo(writer);
 		}
 	}
 }

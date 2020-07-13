@@ -10,6 +10,7 @@ namespace InterpreterLib.Binding.Tree {
 		LesserThan,
 		StrictGreaterThan,
 		StrinLesserThan,
-		Concatonate
+		Concatonate,
+		NegatveEquality
 	}
 }

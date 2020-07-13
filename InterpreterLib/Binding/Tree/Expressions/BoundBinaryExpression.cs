@@ -15,5 +15,7 @@ namespace InterpreterLib.Binding.Tree.Expressions {
 			Op = op;
 			RightExpression = rightExpression;
 		}
+
+		public override string ToString() => $"{LeftExpression.ToString()} {Op.ToString()} {RightExpression.ToString()}";
 	}
 }

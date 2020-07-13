@@ -21,6 +21,7 @@ namespace InterpreterLib.Binding.Tree {
 			AddBinaryOperator("mod", BinaryOperatorType.Modulus, NumericDefinitions);
 
 			AddBinaryOperator("==", BinaryOperatorType.Equality, EqualityDifinitions);
+			AddBinaryOperator("!=", BinaryOperatorType.NegatveEquality, EqualityDifinitions);
 
 			AddBinaryOperator(">=", BinaryOperatorType.GreaterThan, ComparisonDefinitions);
 			AddBinaryOperator("<=", BinaryOperatorType.LesserThan, ComparisonDefinitions);

@@ -115,12 +115,6 @@ namespace InterpreterLib.Binding {
 			return new DiagnosticResult<BoundProgram>(diagnostics, program);
 		}
 
-		private BoundNode Error(Diagnostic diagnostic) {
-			Diagnostics.AddDiagnostic(diagnostic);
-
-			return new BoundError(diagnostic);
-		}
-
 		private BoundStatement ErrorStatement(Diagnostic diagnostic) {
 			Diagnostics.AddDiagnostic(diagnostic);
 
@@ -570,7 +564,7 @@ namespace InterpreterLib.Binding {
 				var statSyntax = syntax.Statements[index];
 				BoundStatement statement;
 
-				if (Function.ReturnType != TypeSymbol.Void && index == paramCount - 1 && statSyntax is IfStatementSyntax ifSyntax) {
+				if (isFunctionBody && Function.ReturnType != TypeSymbol.Void && index == paramCount - 1 && statSyntax is IfStatementSyntax ifSyntax) {
 					statement = BindIfStatement(ifSyntax, true);
 
 					hasReturn = statement.Type != NodeType.Error;
@@ -616,7 +610,7 @@ namespace InterpreterLib.Binding {
 			return new BoundBranchStatement(breakContinueLabels.Peek().Item2);
 		}
 
-		public BoundNode BindFunctionDeclaration(FunctionDeclarationSyntax syntax) {
+		public BoundStatement BindFunctionDeclaration(FunctionDeclarationSyntax syntax) {
 			string funcName = syntax.Identifier.ToString();
 			var parameters = ImmutableArray.CreateBuilder<ParameterSymbol>();
 			var returnType = TypeSymbol.FromString(syntax.ReturnType.NameToken.ToString());
@@ -630,21 +624,21 @@ namespace InterpreterLib.Binding {
 				var span = parameter.Definition.NameToken.Span;
 
 				if (typeBind == null)
-					return Error(Diagnostic.ReportInvalidParameterDefinition(line, column, span));
+					return ErrorStatement(Diagnostic.ReportInvalidParameterDefinition(line, column, span));
 
 				if (typeBind == TypeSymbol.Void)
-					return Error(Diagnostic.ReportVoidType(parameter.Definition.NameToken.Location, span));
+					return ErrorStatement(Diagnostic.ReportVoidType(parameter.Definition.NameToken.Location, span));
 
 				parameters.Add(new ParameterSymbol(parameterName, typeBind));
 			}
 
 			if (returnType == null)
-				return Error(Diagnostic.ReportInvalidReturnType(syntax.ReturnType.Location, syntax.ReturnType.Span));
+				return ErrorStatement(Diagnostic.ReportInvalidReturnType(syntax.ReturnType.Location, syntax.ReturnType.Span));
 
 			var functionSymbol = new FunctionSymbol(funcName, parameters.ToImmutable(), returnType);
 
 			if (!scope.TryDefineFunction(functionSymbol))
-				return Error(Diagnostic.ReportCannotRedefineFunction(syntax.Identifier.Location.Line, syntax.Identifier.Location.Column, syntax.Identifier.Span));
+				return ErrorStatement(Diagnostic.ReportCannotRedefineFunction(syntax.Identifier.Location.Line, syntax.Identifier.Location.Column, syntax.Identifier.Span));
 
 			if (functionBodies.ContainsKey(functionSymbol))
 				functionBodies.Remove(functionSymbol);

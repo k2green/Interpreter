@@ -178,64 +178,79 @@ namespace InterpreterLib.Syntax {
 			return new TypeDefinitionSyntax(new TokenSyntax(delimeterCtx.Symbol), new TokenSyntax(nameCtx.Symbol));
 		}
 
-		public override SyntaxNode VisitAssignmentExpression([NotNull] GLangParser.AssignmentExpressionContext context) {
-			var identifierCtx = context.IDENTIFIER();
-			var typeDefCtx = context.typeDefinition();
-			var operatorCtx = context.ASSIGNMENT_OPERATOR();
-			var expressionCtx = context.binaryExpression();
-
+		private AssignmentExpressionSyntax VisitAssignmentExpression(ITerminalNode identifierCtx, ITerminalNode operatorCtx, GLangParser.AssignmentOperandContext operandCtx, TextLocation location, TextSpan span) {
 			if (identifierCtx == null) {
-				diagnostics.AddDiagnostic(Diagnostic.ReportMissingToken(context.Start.Line, context.Start.Column, new TextSpan(context.Start.StartIndex, context.Stop.StopIndex), "identifier"));
+				diagnostics.AddDiagnostic(Diagnostic.ReportMissingToken(location.Line, location.Column, span, "identifier"));
 				return null;
 			}
 
 			if (operatorCtx == null) {
-				diagnostics.AddDiagnostic(Diagnostic.ReportMissingToken(context.Start.Line, context.Start.Column, new TextSpan(context.Start.StartIndex, context.Stop.StopIndex), "assignment operator"));
+				diagnostics.AddDiagnostic(Diagnostic.ReportMissingToken(location.Line, location.Column, span, "assignment operator"));
 				return null;
 			}
 
-			if (expressionCtx == null) {
-				diagnostics.AddDiagnostic(Diagnostic.ReportMissingToken(context.Start.Line, context.Start.Column, new TextSpan(context.Start.StartIndex, context.Stop.StopIndex), "expression"));
+			if (operandCtx == null) {
+				diagnostics.AddDiagnostic(Diagnostic.ReportMissingToken(location.Line, location.Column, span, "expression"));
 				return null;
 			}
 
-			TypeDefinitionSyntax typeDef = null;
-			if (typeDefCtx != null) {
-				var visit = Visit(typeDefCtx);
+			var visitOperand = Visit(operandCtx);
 
-				if (visit == null)
-					return null;
-
-				if (!(visit is TypeDefinitionSyntax)) {
-					var prev = new TextSpan(identifierCtx.Symbol.StartIndex, identifierCtx.Symbol.StopIndex);
-					var next = new TextSpan(operatorCtx.Symbol.StartIndex, operatorCtx.Symbol.StopIndex);
-
-					diagnostics.AddDiagnostic(Diagnostic.ReportInvalidTypeDefinition(typeDefCtx.Start.Line, typeDefCtx.Start.Column, prev, visit.Span, next));
-					return null;
-				}
-
-				typeDef = (TypeDefinitionSyntax)visit;
-			}
-
-			var visitExpr = Visit(expressionCtx);
-
-			if (visitExpr == null)
+			if (visitOperand == null)
 				return null;
 
-			if (!(visitExpr is ExpressionSyntax)) {
+			if (!(visitOperand is ExpressionSyntax exprSyntax)) {
 				var prev = new TextSpan(operatorCtx.Symbol.StartIndex, operatorCtx.Symbol.StopIndex);
 
-				diagnostics.AddDiagnostic(Diagnostic.ReportInvalidAssignmentOperand(expressionCtx.Start.Line, expressionCtx.Start.Column, prev, visitExpr.Span));
+				diagnostics.AddDiagnostic(Diagnostic.ReportInvalidAssignmentOperand(operandCtx.Start.Line, operandCtx.Start.Column, prev, visitOperand.Span));
 				return null;
 			}
 
-			return new AssignmentExpressionSyntax(Token(identifierCtx.Symbol), typeDef, Token(operatorCtx.Symbol), (ExpressionSyntax)visitExpr);
+			return new AssignmentExpressionSyntax(Token(identifierCtx.Symbol), null, Token(operatorCtx.Symbol), exprSyntax);
+		}
+
+		public override SyntaxNode VisitAssignmentExpression([NotNull] GLangParser.AssignmentExpressionContext context) {
+			var identifierCtx = context.IDENTIFIER();
+			var operatorCtx = context.ASSIGNMENT_OPERATOR();
+			var operandCtx = context.assignmentOperand();
+
+			var location = new TextLocation(context.Start.Line, context.Start.Column);
+			var span = new TextSpan(context.Start.StartIndex, context.Stop.StopIndex);
+
+			return VisitAssignmentExpression(identifierCtx, operatorCtx, operandCtx, location, span);
+		}
+
+		public override SyntaxNode VisitDefinedAssignment([NotNull] GLangParser.DefinedAssignmentContext context) {
+			var identifierCtx = context.IDENTIFIER();
+			var operatorCtx = context.ASSIGNMENT_OPERATOR();
+			var typeDefCtx = context.ASSIGNMENT_OPERATOR();
+			var operandCtx = context.assignmentOperand();
+			var assignmentCtx = context.assignmentExpression();
+
+			var location = new TextLocation(context.Start.Line, context.Start.Column);
+			var span = new TextSpan(context.Start.StartIndex, context.Stop.StopIndex);
+
+			if (assignmentCtx != null)
+				return Visit(assignmentCtx);
+
+			if (typeDefCtx == null) {
+				diagnostics.AddDiagnostic(Diagnostic.ReportMissingToken(operandCtx.Start.Line, operandCtx.Start.Column, span, "Type definition"));
+				return null;
+			}
+
+			var visitAssign = VisitAssignmentExpression(identifierCtx, operatorCtx, operandCtx, location, span);
+			var visitTypeDef = Visit(typeDefCtx);
+
+			if (visitAssign == null || visitTypeDef == null || !(visitTypeDef is TypeDefinitionSyntax typeDefSyntax))
+				return null;
+
+			return new AssignmentExpressionSyntax(visitAssign.IdentifierToken, typeDefSyntax, visitAssign.OperatorToken, visitAssign.Expression);
 		}
 
 		public override SyntaxNode VisitVariableDeclarationStatement([NotNull] GLangParser.VariableDeclarationStatementContext context) {
 			var keywordCtx = context.DECL_VARIABLE();
 			var identifierCtx = context.definedIdentifier();
-			var assignmentCtx = context.assignmentExpression();
+			var assignmentCtx = context.definedAssignment();
 
 			bool hasDirectDecl = identifierCtx != null;
 			bool isAssignmentDecl = assignmentCtx != null;
@@ -264,12 +279,11 @@ namespace InterpreterLib.Syntax {
 				if (defVisit == null)
 					return null;
 
-				if (!(defVisit is TypedIdentifierSyntax)) {
+				if (!(defVisit is TypedIdentifierSyntax def)) {
 					diagnostics.AddDiagnostic(Diagnostic.ReportMalformedDeclaration(identifierCtx.Start.Line, identifierCtx.Start.Column, defVisit.Span));
 					return null;
 				}
 
-				var def = (TypedIdentifierSyntax)defVisit;
 				return new VariableDeclarationSyntax(Token(keywordCtx.Symbol), def.Identifier, def.Definition, null, null);
 			} else {
 				var assignVisit = Visit(assignmentCtx);
@@ -335,13 +349,30 @@ namespace InterpreterLib.Syntax {
 		}
 
 		public override SyntaxNode VisitIfStatement([NotNull] GLangParser.IfStatementContext context) {
+			var ifElseCtx = context.ifElseStatement();
+			var pureIfCtx = context.pureIfStatement();
+
+			if (!OnlyOne(ifElseCtx != null, pureIfCtx != null)) {
+				var span = new TextSpan(context.Start.StartIndex, context.Stop.StopIndex);
+				var diagnostic = Diagnostic.ReportInvalidIfStatement(context.Start.Line, context.Start.Column, span);
+				diagnostics.AddDiagnostic(diagnostic);
+			}
+
+			if (ifElseCtx != null)
+				return Visit(ifElseCtx);
+
+			if (pureIfCtx != null)
+				return Visit(pureIfCtx);
+
+			return null;
+		}
+
+		public override SyntaxNode VisitPureIfStatement([NotNull] GLangParser.PureIfStatementContext context) {
 			var ifKeywCtx = context.IF();
 			var lParenCtx = context.L_PARENTHESIS();
 			var conditionCtx = context.binaryExpression();
 			var rParenCtx = context.R_PARENTHESIS();
 			var trueCtx = context.trueBranch;
-			var elseCtx = context.ELSE();
-			var falseCtx = context.falseBranch;
 
 			if (ifKeywCtx == null || conditionCtx == null || lParenCtx == null || rParenCtx == null || trueCtx == null) {
 				var diagnostic = Diagnostic.ReportInvalidIfStatement(context.Start.Line, context.Start.Column, new TextSpan(context.Start.StartIndex, context.Stop.StopIndex));
@@ -358,28 +389,6 @@ namespace InterpreterLib.Syntax {
 				return null;
 			}
 
-			if (elseCtx == null ^ falseCtx == null) {
-				var prev = new TextSpan(trueCtx.Start.StartIndex, trueCtx.Stop.StopIndex);
-				TextSpan Span;
-
-				if (elseCtx != null)
-					Span = new TextSpan(elseCtx.Symbol.StartIndex, elseCtx.Symbol.StopIndex);
-				else
-					Span = new TextSpan(falseCtx.Start.StartIndex, falseCtx.Stop.StopIndex);
-
-				diagnostics.AddDiagnostic(Diagnostic.ReportInvalidIfStatement(context.Start.Line, context.Start.Column, prev, Span, null));
-				return null;
-			}
-
-			if (elseCtx != null && !elseCtx.GetText().Equals("else")) {
-				var prev = new TextSpan(trueCtx.Start.StartIndex, trueCtx.Stop.StopIndex);
-				var span = new TextSpan(elseCtx.Symbol.StartIndex, elseCtx.Symbol.StopIndex);
-				var next = new TextSpan(falseCtx.Start.StartIndex, falseCtx.Stop.StopIndex);
-
-				diagnostics.AddDiagnostic(Diagnostic.ReportInvalidIfStatement(elseCtx.Symbol.Line, elseCtx.Symbol.Column, prev, span, next));
-				return null;
-			}
-
 			var condVisit = Visit(conditionCtx);
 			var trueVisit = Visit(trueCtx);
 
@@ -390,40 +399,50 @@ namespace InterpreterLib.Syntax {
 				var prev = new TextSpan(lParenCtx.Symbol.StartIndex, lParenCtx.Symbol.StopIndex);
 				var next = new TextSpan(rParenCtx.Symbol.StartIndex, rParenCtx.Symbol.StopIndex);
 
-				diagnostics.AddDiagnostic(Diagnostic.ReportInvalidIfStatement(elseCtx.Symbol.Line, elseCtx.Symbol.Column, prev, condVisit.Span, next));
+				diagnostics.AddDiagnostic(Diagnostic.ReportInvalidIfStatement(conditionCtx.Start.Line, conditionCtx.Start.Column, prev, condVisit.Span, next));
 				return null;
 			}
 
 			if (!(trueVisit is StatementSyntax trueStat)) {
 				var prev = new TextSpan(rParenCtx.Symbol.StartIndex, rParenCtx.Symbol.StopIndex);
-				TextSpan? next = null;
 
-				if (elseCtx != null)
-					next = new TextSpan(elseCtx.Symbol.StartIndex, elseCtx.Symbol.StopIndex);
-
-				diagnostics.AddDiagnostic(Diagnostic.ReportInvalidIfStatement(context.Start.Line, context.Start.Column, prev, trueVisit.Span, next));
+				diagnostics.AddDiagnostic(Diagnostic.ReportInvalidIfStatement(context.Start.Line, context.Start.Column, prev, trueVisit.Span, null));
 				return null;
 			}
 
-			TokenSyntax elseToken = null;
-			StatementSyntax falseStatement = null;
+			return new IfStatementSyntax(Token(ifKeywCtx.Symbol), Token(lParenCtx.Symbol), condition, Token(rParenCtx.Symbol), trueStat, null, null);
+		}
 
-			if (elseCtx != null) {
-				elseToken = Token(elseCtx.Symbol);
-				var falseVisit = Visit(falseCtx);
+		public override SyntaxNode VisitIfElseStatement([NotNull] GLangParser.IfElseStatementContext context) {
+			var ifCtx = context.pureIfStatement();
+			var elseCtx = context.ELSE();
+			var falseCtx = context.statement();
 
-				if (falseVisit == null)
-					return null;
-
-				if (!(falseVisit is StatementSyntax)) {
-					diagnostics.AddDiagnostic(Diagnostic.ReportInvalidIfStatement(context.Start.Line, context.Start.Column, elseToken.Span, falseVisit.Span, null));
-					return null;
-				}
-
-				falseStatement = (StatementSyntax)falseVisit;
+			if (ifCtx == null) {
+				var span = new TextSpan(context.Start.StartIndex, context.Stop.StopIndex);
+				diagnostics.AddDiagnostic(Diagnostic.ReportInvalidIfStatement(context.Start.Line, context.Start.Column, null, span, null));
+				return null;
 			}
 
-			return new IfStatementSyntax(Token(ifKeywCtx.Symbol), Token(lParenCtx.Symbol), condition, Token(rParenCtx.Symbol), trueStat, elseToken, falseStatement);
+			var ifVisit = Visit(ifCtx);
+
+			if (ifVisit == null || !(ifVisit is IfStatementSyntax ifSyntax))
+				return null;
+
+			if (elseCtx == null || !elseCtx.GetText().Equals("else") || falseCtx == null) {
+				var prev = new TextSpan(ifCtx.Start.StartIndex, ifCtx.Stop.StopIndex);
+				var span = new TextSpan(ifCtx.Stop.StopIndex, context.Stop.StopIndex);
+				diagnostics.AddDiagnostic(Diagnostic.ReportInvalidIfStatement(context.Start.Line, context.Start.Column, prev, span, null));
+				return null;
+			}
+
+			var elseToken = Token(elseCtx.Symbol);
+			var falseVisit = Visit(falseCtx);
+
+			if (falseVisit == null || !(falseVisit is StatementSyntax statement))
+				return null;
+
+			return new IfStatementSyntax(ifSyntax.IfToken, ifSyntax.LeftParenToken, ifSyntax.Condition, ifSyntax.RightParenToken, ifSyntax.TrueBranch, elseToken, statement);
 		}
 
 		public override SyntaxNode VisitWhileStatement([NotNull] GLangParser.WhileStatementContext context) {

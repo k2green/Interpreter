@@ -123,5 +123,9 @@ namespace InterpreterLib.Diagnostics {
 
 			throw new Exception("Unhandled bonary operation case");
 		}
+
+		internal static bool EvaluateEquality(object left, object right, BinaryOperator op) {
+			return left.Equals(right);
+		}
 	}
 }

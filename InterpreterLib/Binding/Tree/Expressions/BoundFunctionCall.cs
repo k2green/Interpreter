@@ -19,5 +19,20 @@ namespace InterpreterLib.Binding.Tree.Expressions {
 			Function = function;
 			Parameters = parameters;
 		}
+
+		public override string ToString() {
+			var builder = new StringBuilder();
+			builder.Append(Function.Name).Append("(");
+
+			var paramCount = Parameters.Length;
+			for (int index = 0; index < paramCount; index++) {
+				builder.Append(Parameters[index].ToString());
+
+				if (index < paramCount - 1)
+					builder.Append(", ");
+			}
+
+			return builder.Append(")").ToString();
+		}
 	}
 }

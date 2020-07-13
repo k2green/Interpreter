@@ -16,5 +16,7 @@ namespace InterpreterLib.Binding.Tree.Statements {
 			Variable = variable;
 			Initialiser = initialiser;
 		}
+
+		public override string ToString() => $"{(Variable.IsReadOnly ? "val" : "var")} {Variable.Name}: {Variable.ValueType} = {(Initialiser == null ? "" : Initialiser.ToString())}";
 	}
 }

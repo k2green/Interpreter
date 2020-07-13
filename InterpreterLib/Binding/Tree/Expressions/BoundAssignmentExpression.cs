@@ -14,5 +14,7 @@ namespace InterpreterLib.Binding.Tree.Expressions {
 			Expression = expression;
 			Identifier = variable;
 		}
+
+		public override string ToString() => Identifier.Name + "=" + Expression.ToString();
 	}
 }
