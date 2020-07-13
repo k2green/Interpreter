@@ -157,7 +157,7 @@ namespace InterpreterLib {
 			return new Diagnostic(line, column, "Syntax error: Invalid typed parameter", null, offendingText, null);
 		}
 
-		internal static Diagnostic ReportInvalidParameterType(TextLocation location, ValueTypeSymbol valueType, ValueTypeSymbol requiredType, TextSpan offendingText) {
+		internal static Diagnostic ReportInvalidParameterType(TextLocation location, TypeSymbol valueType, TypeSymbol requiredType, TextSpan offendingText) {
 			return new Diagnostic(location.Line, location.Column, $"Parameter type {valueType} is not {requiredType}", null, offendingText, null);
 		}
 
@@ -169,7 +169,7 @@ namespace InterpreterLib {
 			return ReportInvalidFunctionDef(line, column, null, offendingText, null);
 		}
 
-		internal static Diagnostic ReportInvalidType(TextLocation location, TextSpan previousText, TextSpan offendingText, TextSpan nextText, ValueTypeSymbol requiredType) {
+		internal static Diagnostic ReportInvalidType(TextLocation location, TextSpan previousText, TextSpan offendingText, TextSpan nextText, TypeSymbol requiredType) {
 			return new Diagnostic(location.Line, location.Column, $"Invalid type. Required type: {requiredType}", previousText, offendingText, nextText);
 		}
 
@@ -189,7 +189,7 @@ namespace InterpreterLib {
 			return new Diagnostic(location.Line, location.Column, "Unknown variable type", prevText, offendingText, null);
 		}
 
-		internal static Diagnostic ReportCannotCast(TextLocation location, TextSpan prevText, TextSpan offendingText, ValueTypeSymbol fromType, ValueTypeSymbol toType) {
+		internal static Diagnostic ReportCannotCast(TextLocation location, TextSpan prevText, TextSpan offendingText, TypeSymbol fromType, TypeSymbol toType) {
 			return new Diagnostic(location.Line, location.Column, $"Cannot implicitly convert {fromType} to {toType}", prevText, offendingText, null);
 		}
 
@@ -205,11 +205,11 @@ namespace InterpreterLib {
 			return new Diagnostic(location.Line, location.Column, "Cannot redefine vadriable", null, offendingText, null);
 		}
 
-		internal static Diagnostic ReportInvalidOperator(TextLocation location, TextSpan prevText, TextSpan offendingText, TextSpan nextText, ValueTypeSymbol valueType1, ValueTypeSymbol valueType2) {
+		internal static Diagnostic ReportInvalidOperator(TextLocation location, TextSpan prevText, TextSpan offendingText, TextSpan nextText, TypeSymbol valueType1, TypeSymbol valueType2) {
 			return new Diagnostic(location.Line, location.Column, $"Operator is invalid for types {valueType1} and {valueType2}", prevText, offendingText, nextText);
 		}
 
-		internal static Diagnostic ReportInvalidOperator(TextLocation location, TextSpan prevText, TextSpan offendingText, ValueTypeSymbol valueType) {
+		internal static Diagnostic ReportInvalidOperator(TextLocation location, TextSpan prevText, TextSpan offendingText, TypeSymbol valueType) {
 			return new Diagnostic(location.Line, location.Column, $"Operator is invalid for type {valueType}", prevText, offendingText, null);
 		}
 
@@ -237,7 +237,7 @@ namespace InterpreterLib {
 			return new Diagnostic(location.Line, location.Column, $"Void functions cannot return a value", null, offendingText, null);
 		}
 
-		internal static Diagnostic ReportInvalidReturnExpressionType(TextLocation location, TextSpan offendingText, ValueTypeSymbol valueType, ValueTypeSymbol returnType) {
+		internal static Diagnostic ReportInvalidReturnExpressionType(TextLocation location, TextSpan offendingText, TypeSymbol valueType, TypeSymbol returnType) {
 			return new Diagnostic(location.Line, location.Column, $"Function returns {returnType}, but {valueType} was returned instead", null, offendingText, null);
 		}
 

@@ -360,7 +360,7 @@ namespace InterpreterLib.Binding {
 			var identifierText = syntax.IdentifierToken.Token.Text;
 
 			bool isreadOnly;
-			ValueTypeSymbol type = null;
+			TypeSymbol type = null;
 			BoundExpression initialiser = null;
 
 			switch (declText) {
@@ -389,9 +389,9 @@ namespace InterpreterLib.Binding {
 			}
 
 			if (syntax.Definition != null) {
-				type = ValueTypeSymbol.FromString(syntax.Definition.NameToken.ToString());
+				type = TypeSymbol.FromString(syntax.Definition.NameToken.ToString());
 
-				if (type == null) {
+				if (type == null;) {
 					var diagnostic = Diagnostic.ReportUnknownTypeKeyword(syntax.Definition.Location, syntax.Definition.DelimeterToken.Span, syntax.Definition.NameToken.Span);
 					return ErrorStatement(diagnostic);
 				}

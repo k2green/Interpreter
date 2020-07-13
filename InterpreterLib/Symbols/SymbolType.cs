@@ -8,6 +8,7 @@ namespace InterpreterLib.Symbols {
 		Function,
 		Parameter,
 		Label,
-		TypeConversion
+		TypeConversion,
+		Tuple
 	}
 }

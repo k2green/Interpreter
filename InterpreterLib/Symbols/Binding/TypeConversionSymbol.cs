@@ -19,7 +19,7 @@ namespace InterpreterLib.Symbols.Binding {
 			new TypeConversionSymbol(ValueTypeSymbol.Character, ValueTypeSymbol.String)
 		};
 
-		public static bool TryFind(ValueTypeSymbol fromType, ValueTypeSymbol toType, out TypeConversionSymbol outputSymbol) {
+		public static bool TryFind(TypeSymbol fromType, TypeSymbol toType, out TypeConversionSymbol outputSymbol) {
 			outputSymbol = null;
 
 			foreach (var symbol in conversions) {
@@ -33,10 +33,10 @@ namespace InterpreterLib.Symbols.Binding {
 		}
 
 		public override string Name { get; }
-		public ValueTypeSymbol FromType { get; }
-		public ValueTypeSymbol ToType { get; }
+		public TypeSymbol FromType { get; }
+		public TypeSymbol ToType { get; }
 
-		private TypeConversionSymbol(ValueTypeSymbol fromType, ValueTypeSymbol toType) {
+		private TypeConversionSymbol(TypeSymbol fromType, TypeSymbol toType) {
 			FromType = fromType;
 			ToType = toType;
 
@@ -46,7 +46,7 @@ namespace InterpreterLib.Symbols.Binding {
 		public override bool Equals(object obj) {
 			if (!(obj is TypeConversionSymbol symbol)) return false;
 
-			return FromType == symbol.FromType && ToType == symbol.ToType;
+			return FromType.Equals(symbol.FromType) && ToType.Equals(symbol.ToType);
 		}
 
 		public override int GetHashCode() {

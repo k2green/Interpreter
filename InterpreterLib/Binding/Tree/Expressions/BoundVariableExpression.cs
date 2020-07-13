@@ -5,7 +5,7 @@ using InterpreterLib.Symbols.Types;
 namespace InterpreterLib.Binding.Tree.Expressions {
 	internal sealed class BoundVariableExpression : BoundExpression {
 
-		public override ValueTypeSymbol ValueType => Variable.ValueType;
+		public override TypeSymbol ValueType => Variable.ValueType;
 
 		public override NodeType Type => NodeType.Variable;
 

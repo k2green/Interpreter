@@ -14,7 +14,7 @@ namespace InterpreterLib.Binding.Tree.Expressions {
 		public FunctionSymbol Function { get; }
 		public ImmutableArray<BoundExpression> Parameters { get; }
 
-		public override ValueTypeSymbol ValueType => Function.ReturnType;
+		public override TypeSymbol ValueType => Function.ReturnType;
 
 		public BoundFunctionCall(FunctionSymbol function, ImmutableArray<BoundExpression> parameters) {
 			Function = function;

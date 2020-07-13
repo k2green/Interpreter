@@ -4,15 +4,15 @@ using System.Collections.Generic;
 using System.Text;
 
 namespace InterpreterLib.Symbols.Binding {
-	public class VariableSymbol : Symbol {
+	public class VariableSymbol<T> : Symbol where T : TypeSymbol {
 
 		public override string Name { get; }
 		public bool IsReadOnly { get; }
-		public ValueTypeSymbol ValueType { get; }
+		public T ValueType { get; }
 
 		public override SymbolType Type => SymbolType.Variable;
 
-		public VariableSymbol(string name, bool isReadOnly, ValueTypeSymbol valueType) {
+		public VariableSymbol(string name, bool isReadOnly, T valueType) {
 			Name = name;
 			IsReadOnly = isReadOnly;
 			ValueType = valueType;
@@ -21,9 +21,9 @@ namespace InterpreterLib.Symbols.Binding {
 		public override string ToString() => $"{Name} : {ValueType}";
 
 		public override bool Equals(object obj) {
-			if (!(obj is VariableSymbol symbol)) return false;
+			if (!(obj is VariableSymbol<T> symbol)) return false;
 
-			return Name.Equals(symbol.Name) && IsReadOnly == symbol.IsReadOnly && ValueType == symbol.ValueType;
+			return Name.Equals(symbol.Name) && IsReadOnly == symbol.IsReadOnly && ValueType.Equals(symbol.ValueType);
 		}
 
 		public override int GetHashCode() {

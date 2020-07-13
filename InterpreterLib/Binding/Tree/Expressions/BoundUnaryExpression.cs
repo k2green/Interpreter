@@ -4,7 +4,7 @@ using InterpreterLib.Symbols.Types;
 namespace InterpreterLib.Binding.Tree.Expressions {
 	internal sealed class BoundUnaryExpression : BoundExpression {
 
-		public override ValueTypeSymbol ValueType => Op.OutputType;
+		public override TypeSymbol ValueType => Op.OutputType;
 
 		public override NodeType Type => NodeType.UnaryExpression;
 

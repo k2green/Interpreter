@@ -4,7 +4,7 @@ using System.Reflection;
 using System.Linq;
 
 namespace InterpreterLib.Symbols.Types {
-	public class ValueTypeSymbol : Symbol {
+	public class ValueTypeSymbol : TypeSymbol {
 		public static readonly ValueTypeSymbol Integer = new ValueTypeSymbol("int");
 		public static readonly ValueTypeSymbol Byte = new ValueTypeSymbol("byte");
 		public static readonly ValueTypeSymbol Double = new ValueTypeSymbol("double");
@@ -19,12 +19,17 @@ namespace InterpreterLib.Symbols.Types {
 				.Select(f => (ValueTypeSymbol)f.GetValue(null));
 		}
 
-		public static ValueTypeSymbol FromString(string input) {
-			foreach (var symbol in GetAll())
-				if (symbol.Name.Equals(input))
-					return symbol;
+		public static bool TryGetFromString(string input, out ValueTypeSymbol outSymbol) {
 
-			return null;
+			foreach (var symbol in GetAll()) {
+				if (symbol.Name.Equals(input)) {
+					outSymbol = symbol;
+					return true;
+				}
+			}
+
+			outSymbol = null;
+			return false;
 		}
 
 		public static bool GetType(string typeStr, out ValueTypeSymbol symbol) {
@@ -49,10 +54,9 @@ namespace InterpreterLib.Symbols.Types {
 		public override string ToString() => Name;
 
 		public override bool Equals(object obj) {
-			if (!(obj is ValueTypeSymbol)) return false;
+			if (!(obj is ValueTypeSymbol symbol)) return false;
 
-			ValueTypeSymbol symbol = (ValueTypeSymbol)obj;
-			return this == symbol;
+			return Name.Equals(symbol.Name);
 		}
 
 		public override int GetHashCode() {

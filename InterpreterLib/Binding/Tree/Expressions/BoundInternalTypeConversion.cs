@@ -6,7 +6,7 @@ using System.Text;
 
 namespace InterpreterLib.Binding.Tree.Expressions {
 	internal sealed class BoundInternalTypeConversion : BoundExpression {
-		public override ValueTypeSymbol ValueType => ConversionSymbol.ToType;
+		public override TypeSymbol ValueType => ConversionSymbol.ToType;
 
 		public override NodeType Type => NodeType.InternalTypeConversion;
 

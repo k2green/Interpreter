@@ -7,7 +7,7 @@ namespace InterpreterLib.Binding.Tree.Expressions {
 	internal sealed class BoundLiteral : BoundExpression {
 
 		public object Value { get; }
-		public override ValueTypeSymbol ValueType { get; }
+		public override TypeSymbol ValueType { get; }
 		public override NodeType Type => NodeType.Literal;
 
 		public BoundLiteral(object value) {

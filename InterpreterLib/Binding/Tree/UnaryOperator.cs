@@ -6,12 +6,12 @@ namespace InterpreterLib.Binding.Tree {
 
 		public string TokenText { get; }
 		public UnaryOperatorType OperatorType { get; }
-		public ValueTypeSymbol OperandType;
-		public ValueTypeSymbol OutputType;
+		public TypeSymbol OperandType;
+		public TypeSymbol OutputType;
 
-		public UnaryOperator(string tokenText, UnaryOperatorType operatorType, ValueTypeSymbol operandType) : this(tokenText, operatorType, operandType, operandType) { }
+		public UnaryOperator(string tokenText, UnaryOperatorType operatorType, TypeSymbol operandType) : this(tokenText, operatorType, operandType, operandType) { }
 
-		public UnaryOperator(string tokenText, UnaryOperatorType operatorType, ValueTypeSymbol operandType, ValueTypeSymbol outputType) {
+		public UnaryOperator(string tokenText, UnaryOperatorType operatorType, TypeSymbol operandType, TypeSymbol outputType) {
 			TokenText = tokenText;
 			OperatorType = operatorType;
 			OperandType = operandType;
@@ -28,7 +28,7 @@ namespace InterpreterLib.Binding.Tree {
 			}
 		}
 
-		public static UnaryOperator Bind(string opText, ValueTypeSymbol inputType) {
+		public static UnaryOperator Bind(string opText, TypeSymbol inputType) {
 			foreach (UnaryOperator op in Operators) {
 				if (op.TokenText.Equals(opText) && op.OperandType.Equals(inputType))
 					return op;

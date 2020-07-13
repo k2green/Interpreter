@@ -9,7 +9,7 @@ namespace InterpreterLib.Binding.Tree.Expressions {
 		public VariableSymbol Identifier { get; }
 		public BoundExpression Expression { get; }
 
-		public override ValueTypeSymbol ValueType => Expression.ValueType;
+		public override TypeSymbol ValueType => Expression.ValueType;
 
 		public BoundAssignmentExpression(VariableSymbol variable, BoundExpression expression) {
 			Expression = expression;

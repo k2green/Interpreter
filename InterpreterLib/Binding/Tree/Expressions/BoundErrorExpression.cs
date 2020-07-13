@@ -3,7 +3,7 @@ using System;
 
 namespace InterpreterLib.Binding.Tree.Expressions {
 	internal sealed class BoundErrorExpression : BoundExpression {
-		public override ValueTypeSymbol ValueType => throw new Exception("Error values should not be accessed");
+		public override TypeSymbol ValueType => throw new Exception("Error values should not be accessed");
 
 		public override NodeType Type => NodeType.Error;
 

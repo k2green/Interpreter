@@ -15,7 +15,7 @@ namespace InterpreterLib.Binding.Tree {
 			AddUnaryOperator("!", UnaryOperatorType.LogicalNot, ValueTypeSymbol.Boolean);
 		}
 
-		private void AddUnaryOperator(string token, UnaryOperatorType type, params ValueTypeSymbol[] allowedTypes) {
+		private void AddUnaryOperator(string token, UnaryOperatorType type, params TypeSymbol[] allowedTypes) {
 			foreach(var allowedType in allowedTypes) {
 				operators.Add(new UnaryOperator(token, type, allowedType));
 			}
