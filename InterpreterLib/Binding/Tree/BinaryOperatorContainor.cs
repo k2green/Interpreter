@@ -63,10 +63,13 @@ namespace InterpreterLib.Binding.Tree {
 			Tuple.Create(TypeSymbol.Double, TypeSymbol.String, TypeSymbol.String),
 			Tuple.Create(TypeSymbol.Byte, TypeSymbol.String, TypeSymbol.String),
 			Tuple.Create(TypeSymbol.Boolean, TypeSymbol.String, TypeSymbol.String),
+			Tuple.Create(TypeSymbol.Character, TypeSymbol.String, TypeSymbol.String),
 			Tuple.Create(TypeSymbol.String, TypeSymbol.Integer, TypeSymbol.String),
 			Tuple.Create(TypeSymbol.String, TypeSymbol.Double, TypeSymbol.String),
 			Tuple.Create(TypeSymbol.String, TypeSymbol.Byte, TypeSymbol.String),
-			Tuple.Create(TypeSymbol.String, TypeSymbol.Boolean, TypeSymbol.String)
+			Tuple.Create(TypeSymbol.String, TypeSymbol.Boolean, TypeSymbol.String),
+			Tuple.Create(TypeSymbol.String, TypeSymbol.Character, TypeSymbol.String),
+			Tuple.Create(TypeSymbol.Character, TypeSymbol.Character, TypeSymbol.String)
 		};
 
 		private static Tuple<TypeSymbol, TypeSymbol, TypeSymbol>[] ComparisonDefinitions = {

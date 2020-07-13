@@ -131,7 +131,7 @@ namespace InterpreterLib.Binding.ControlFlow {
 			private BoundExpression Negate(BoundExpression condition) {
 				if (condition is BoundLiteral literal) {
 					var value = (bool)literal.Value;
-					return new BoundLiteral(!value, TypeSymbol.Boolean);
+					return new BoundLiteral(!value);
 				}
 
 				var op = UnaryOperator.Bind("!", TypeSymbol.Boolean);

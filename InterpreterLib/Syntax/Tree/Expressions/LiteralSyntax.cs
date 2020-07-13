@@ -14,11 +14,14 @@ namespace InterpreterLib.Syntax.Tree.Expressions {
 		}
 
 		public TokenSyntax LiteralToken { get; }
+		public object Value { get; }
+
 		public override TextLocation Location => LiteralToken.Location;
 		public override TextSpan Span => LiteralToken.Span;
 
-		public LiteralSyntax(TokenSyntax literalToken) {
+		public LiteralSyntax(TokenSyntax literalToken, object value) {
 			LiteralToken = literalToken;
+			Value = value;
 		}
 
 		public override string ToString() {

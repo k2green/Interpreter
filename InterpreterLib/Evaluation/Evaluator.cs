@@ -234,7 +234,7 @@ namespace InterpreterLib.Diagnostics {
 				case BinaryOperatorType.StrinLesserThan:
 					return OperatorEvaluator.EvaluateStrictLesserThan(left, right, op);
 				case BinaryOperatorType.Concatonate:
-					return (string)left + (string)right;
+					return OperatorEvaluator.EvaluateConcatonation(left, right);
 				default:
 					throw new Exception("Invalid operator");
 			}

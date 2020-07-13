@@ -177,20 +177,7 @@ namespace InterpreterLib.Binding {
 		}
 
 		private BoundExpression BindLiteral(LiteralSyntax syntax) {
-			var literalText = syntax.LiteralToken.Token.Text;
-
-			if (int.TryParse(literalText, out int intVal))
-				return new BoundLiteral(intVal, TypeSymbol.Integer);
-
-			if (double.TryParse(literalText, out double doubleVal))
-				return new BoundLiteral(doubleVal, TypeSymbol.Double);
-
-			if (bool.TryParse(literalText, out bool boolVal))
-				return new BoundLiteral(boolVal, TypeSymbol.Boolean);
-
-			var stringText = syntax.ToString();
-			var text = stringText.Substring(1, stringText.Length - 2);
-			return new BoundLiteral(text, TypeSymbol.String);
+			return new BoundLiteral(syntax.Value);
 		}
 
 		private BoundExpression BindVariableExpression(VariableSyntax syntax) {

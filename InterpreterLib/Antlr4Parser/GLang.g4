@@ -54,7 +54,7 @@ definedAssignment : IDENTIFIER typeDefinition ASSIGNMENT_OPERATOR assignmentOper
 	 * Expressions
 	 */
 
-literal : DOUBLE | INTEGER | BOOLEAN | functionCall | IDENTIFIER | STRING | CHAR_LITERAL;
+literal : DOUBLE | INTEGER | BOOLEAN | functionCall | IDENTIFIER | STRING | CHAR_LITERAL | BYTE;
 
 unaryExpression : L_PARENTHESIS binaryExpression R_PARENTHESIS
 				| op=(ADDITIVE_OP | BANG) unaryExpression
@@ -90,6 +90,7 @@ fragment DOUBLE_TYPE: 'double';
 fragment BOOLEAN_TYPE: 'bool';
 fragment STRING_TYPE: 'string';
 fragment CHARACTER_TYPE: 'char';
+fragment BYTE_TYPE: 'byte';
 fragment VOID_TYPE: 'void';
 
 fragment EQUALITY_OPERATOR: '==' | '!=';
@@ -111,10 +112,11 @@ TYPE_DELIMETER : ':';
 BREAK: 'b' 'r' 'e' 'a' 'k';
 CONTINUE : 'c' 'o' 'n' 't' 'i' 'n' 'u' 'e';
 RETURN : 'r' 'e' 't' 'u' 'r' 'n' ;
-TYPE_NAME : INTEGER_TYPE | DOUBLE_TYPE | BOOLEAN_TYPE | STRING_TYPE | VOID_TYPE | CHARACTER_TYPE;
+TYPE_NAME : INTEGER_TYPE | DOUBLE_TYPE | BOOLEAN_TYPE | STRING_TYPE | VOID_TYPE | CHARACTER_TYPE | BYTE_TYPE;
 
 BOOLEAN: TRUE | FALSE;
 DOUBLE: '.' DIGIT+ | DIGIT+ '.' DIGIT+;
+BYTE : DIGIT+ ('b' | 'B');
 INTEGER: DIGIT+;
 
 DECL_VARIABLE : VAL | VAR;

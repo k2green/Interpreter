@@ -127,5 +127,9 @@ namespace InterpreterLib.Diagnostics {
 		internal static bool EvaluateEquality(object left, object right, BinaryOperator op) {
 			return left.Equals(right);
 		}
+
+		internal static object EvaluateConcatonation(object left, object right) {
+			return new StringBuilder().Append(left).Append(right).ToString();
+		}
 	}
 }

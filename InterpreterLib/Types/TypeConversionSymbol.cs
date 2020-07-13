@@ -14,7 +14,8 @@ namespace InterpreterLib.Types {
 			new TypeConversionSymbol(TypeSymbol.Integer, TypeSymbol.String),
 			new TypeConversionSymbol(TypeSymbol.Double, TypeSymbol.String),
 			new TypeConversionSymbol(TypeSymbol.Byte, TypeSymbol.String),
-			new TypeConversionSymbol(TypeSymbol.Boolean, TypeSymbol.String)
+			new TypeConversionSymbol(TypeSymbol.Boolean, TypeSymbol.String),
+			new TypeConversionSymbol(TypeSymbol.Character, TypeSymbol.String)
 		};
 
 		public static bool TryFind(TypeSymbol fromType, TypeSymbol toType, out TypeConversionSymbol outputSymbol) {

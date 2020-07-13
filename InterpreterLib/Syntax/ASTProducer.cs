@@ -48,9 +48,11 @@ namespace InterpreterLib.Syntax {
 			bool hasIdentifier = context.IDENTIFIER() != null;
 			bool hasString = context.STRING() != null;
 			bool hasFunctionCall = context.functionCall() != null;
+			bool hasChar = context.CHAR_LITERAL() != null;
+			bool hasByte = context.BYTE() != null;
 
 			// Returns an error if there isn'n exactly one token
-			if (!(OnlyOne(hasInt, hasIdentifier, hasBool, hasString, hasDouble, hasFunctionCall))) {
+			if (!(OnlyOne(hasInt, hasIdentifier, hasBool, hasString, hasDouble, hasFunctionCall, hasChar, hasByte))) {
 				var span = new TextSpan(context.Start.StartIndex, context.Stop.StopIndex);
 				diagnostics.AddDiagnostic(Diagnostic.ReportInvalidLiteral(context.Start.Line, context.Start.Column, span));
 
@@ -58,23 +60,44 @@ namespace InterpreterLib.Syntax {
 			}
 
 			// Return a literal of variable Syntax depending on which token exists
-			if (hasDouble)
-				return new LiteralSyntax(new TokenSyntax(context.DOUBLE().Symbol));
+			if (hasDouble) {
+				var token = Token(context.DOUBLE().Symbol);
+				return new LiteralSyntax(token, double.Parse(token.ToString()));
+			}
 
-			if (hasInt)
-				return new LiteralSyntax(new TokenSyntax(context.INTEGER().Symbol));
+			if (hasInt) {
+				var token = Token(context.INTEGER().Symbol);
+				return new LiteralSyntax(token, int.Parse(token.ToString()));
+			}
 
-			if (hasFunctionCall)
-				return Visit(context.functionCall());
+			if (hasByte) {
+				var token = Token(context.BYTE().Symbol);
+				var tokenText = token.ToString();
+				return new LiteralSyntax(token, byte.Parse(tokenText.Substring(0, tokenText.Length - 1)));
+			}
 
-			if (hasBool)
-				return new LiteralSyntax(new TokenSyntax(context.BOOLEAN().Symbol));
+			if (hasBool) {
+				var token = Token(context.BOOLEAN().Symbol);
+				return new LiteralSyntax(token, bool.Parse(token.ToString()));
+			}
+
+			if (hasString) {
+				var token = Token(context.STRING().Symbol);
+				var tokenText = token.ToString();
+				return new LiteralSyntax(token, tokenText.Substring(1, tokenText.Length - 2));
+			}
+
+			if (hasChar) {
+				var token = Token(context.CHAR_LITERAL().Symbol);
+				var tokenText = token.ToString();
+				return new LiteralSyntax(token, tokenText[1]);
+			}
 
 			if (hasIdentifier)
 				return new VariableSyntax(new TokenSyntax(context.IDENTIFIER().Symbol));
 
-			if (hasString)
-				return new LiteralSyntax(new TokenSyntax(context.STRING().Symbol));
+			if (hasFunctionCall)
+				return Visit(context.functionCall());
 
 			// As a last resort, returns an error.
 			return null;
