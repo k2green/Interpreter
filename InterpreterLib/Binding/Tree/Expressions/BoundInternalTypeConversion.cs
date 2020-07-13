@@ -1,11 +1,12 @@
-﻿using System;
+﻿using InterpreterLib.Symbols.Binding;
+using InterpreterLib.Symbols.Types;
+using System;
 using System.Collections.Generic;
 using System.Text;
-using InterpreterLib.Types;
 
 namespace InterpreterLib.Binding.Tree.Expressions {
 	internal sealed class BoundInternalTypeConversion : BoundExpression {
-		public override TypeSymbol ValueType => ConversionSymbol.ToType;
+		public override ValueTypeSymbol ValueType => ConversionSymbol.ToType;
 
 		public override NodeType Type => NodeType.InternalTypeConversion;
 

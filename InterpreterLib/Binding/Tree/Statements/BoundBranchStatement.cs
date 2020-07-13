@@ -1,7 +1,4 @@
-﻿using InterpreterLib.Types;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using InterpreterLib.Symbols.Binding;
 
 namespace InterpreterLib.Binding.Tree.Statements {
 	internal sealed class BoundBranchStatement : BoundStatement {

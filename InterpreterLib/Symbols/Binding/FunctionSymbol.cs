@@ -1,18 +1,19 @@
-﻿using System;
+﻿using InterpreterLib.Symbols.Types;
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Text;
 
-namespace InterpreterLib.Types {
+namespace InterpreterLib.Symbols.Binding {
 	public sealed class FunctionSymbol : Symbol {
 
 		public override SymbolType Type => SymbolType.Function;
 		public override string Name { get; }
 		public ImmutableArray<ParameterSymbol> Parameters { get; }
-		public TypeSymbol ReturnType { get; }
+		public ValueTypeSymbol ReturnType { get; }
 		public LabelSymbol EndLabel => new LabelSymbol("FunctionEnd");
 
-		public FunctionSymbol(string name, ImmutableArray<ParameterSymbol> parameters, TypeSymbol returnType) {
+		public FunctionSymbol(string name, ImmutableArray<ParameterSymbol> parameters, ValueTypeSymbol returnType) {
 			Name = name;
 			Parameters = parameters;
 			ReturnType = returnType;

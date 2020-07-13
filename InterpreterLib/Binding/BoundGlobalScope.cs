@@ -1,7 +1,7 @@
 ﻿using InterpreterLib.Binding.Tree;
 using InterpreterLib.Binding.Tree.Statements;
+using InterpreterLib.Symbols.Binding;
 using InterpreterLib.Syntax.Tree.Global;
-using InterpreterLib.Types;
 using System.Collections.Generic;
 
 namespace InterpreterLib.Binding {

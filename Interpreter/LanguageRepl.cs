@@ -1,5 +1,4 @@
-﻿using InterpreterLib.Types;
-using InterpreterLib.Runtime;
+﻿using InterpreterLib.Runtime;
 using InterpreterLib.Syntax;
 using System;
 using System.Collections.Generic;
@@ -10,6 +9,7 @@ using System.Drawing;
 using InterpreterLib.Syntax.Tree;
 using InterpreterLib;
 using InterpreterLib.Output;
+using InterpreterLib.Symbols.Binding;
 
 namespace Interpreter {
 	public sealed class LanguageRepl : Repl {
@@ -174,6 +174,9 @@ namespace Interpreter {
 					return true;
 				case "exit":
 					running = false;
+					return true;
+				case "graphpath":
+					Console.WriteLine(BindingEnvironment.GraphPath);
 					return true;
 				default:
 					return false;

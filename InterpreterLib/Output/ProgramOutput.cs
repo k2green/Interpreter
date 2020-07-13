@@ -2,7 +2,8 @@
 using InterpreterLib.Binding.Tree;
 using InterpreterLib.Binding.Tree.Expressions;
 using InterpreterLib.Binding.Tree.Statements;
-using InterpreterLib.Types;
+using InterpreterLib.Symbols.Binding;
+using InterpreterLib.Symbols.Types;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -200,12 +201,12 @@ namespace InterpreterLib.Output {
 			Color col = DefaultColour;
 			string outString = node.Value.ToString();
 
-			if (node.ValueType == TypeSymbol.String) {
+			if (node.ValueType == ValueTypeSymbol.String) {
 				col = StringColour;
 				outString = "\"" + outString + "\"";
-			} else if (node.ValueType == TypeSymbol.Integer || node.ValueType == TypeSymbol.Double || node.ValueType == TypeSymbol.Byte) {
+			} else if (node.ValueType == ValueTypeSymbol.Integer || node.ValueType == ValueTypeSymbol.Double || node.ValueType == ValueTypeSymbol.Byte) {
 				col = NumberColour;
-			} else if (node.ValueType == TypeSymbol.Boolean) {
+			} else if (node.ValueType == ValueTypeSymbol.Boolean) {
 				col = BooleanColour;
 			}
 

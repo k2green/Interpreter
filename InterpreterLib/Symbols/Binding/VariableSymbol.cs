@@ -1,17 +1,18 @@
-﻿using System;
+﻿using InterpreterLib.Symbols.Types;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace InterpreterLib.Types {
+namespace InterpreterLib.Symbols.Binding {
 	public class VariableSymbol : Symbol {
 
 		public override string Name { get; }
 		public bool IsReadOnly { get; }
-		public TypeSymbol ValueType { get; }
+		public ValueTypeSymbol ValueType { get; }
 
 		public override SymbolType Type => SymbolType.Variable;
 
-		public VariableSymbol(string name, bool isReadOnly, TypeSymbol valueType) {
+		public VariableSymbol(string name, bool isReadOnly, ValueTypeSymbol valueType) {
 			Name = name;
 			IsReadOnly = isReadOnly;
 			ValueType = valueType;

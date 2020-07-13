@@ -1,4 +1,4 @@
-﻿using InterpreterLib.Types;
+﻿using InterpreterLib.Symbols.Types;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -7,30 +7,30 @@ namespace InterpreterLib.Binding.Tree.Expressions {
 	internal sealed class BoundLiteral : BoundExpression {
 
 		public object Value { get; }
-		public override TypeSymbol ValueType { get; }
+		public override ValueTypeSymbol ValueType { get; }
 		public override NodeType Type => NodeType.Literal;
 
 		public BoundLiteral(object value) {
 			Value = value;
 
 			if (Value is int)
-				ValueType = TypeSymbol.Integer;
+				ValueType = ValueTypeSymbol.Integer;
 			else if(Value is double)
-				ValueType = TypeSymbol.Double;
+				ValueType = ValueTypeSymbol.Double;
 			else if (Value is byte)
-				ValueType = TypeSymbol.Byte;
+				ValueType = ValueTypeSymbol.Byte;
 			else if (Value is bool)
-				ValueType = TypeSymbol.Boolean;
+				ValueType = ValueTypeSymbol.Boolean;
 			else if (Value is string)
-				ValueType = TypeSymbol.String;
+				ValueType = ValueTypeSymbol.String;
 			else if (Value is char)
-				ValueType = TypeSymbol.Character;
+				ValueType = ValueTypeSymbol.Character;
 		}
 
 		public override string ToString() {
 			var outString = Value.ToString();
 
-			if (ValueType == TypeSymbol.String) {
+			if (ValueType == ValueTypeSymbol.String) {
 				outString = StringFormat(outString);
 			}
 

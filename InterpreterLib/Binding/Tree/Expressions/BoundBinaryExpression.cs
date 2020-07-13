@@ -1,9 +1,9 @@
-﻿using InterpreterLib.Types;
+﻿using InterpreterLib.Symbols.Types;
 
 namespace InterpreterLib.Binding.Tree.Expressions {
 	internal sealed class BoundBinaryExpression : BoundExpression {
 
-		public override TypeSymbol ValueType => Op.OutputType;
+		public override ValueTypeSymbol ValueType => Op.OutputType;
 		public override NodeType Type => NodeType.BinaryExpression;
 
 		public BoundExpression LeftExpression { get; }

@@ -1,9 +1,5 @@
 ﻿using InterpreterLib.Binding.Tree.Expressions;
-using InterpreterLib.Binding.Tree.Statements;
-using InterpreterLib.Types;
-using System;
-using System.Collections.Generic;
-using System.Text;
+using InterpreterLib.Symbols.Binding;
 
 namespace InterpreterLib.Binding.Tree.Statements {
 	internal sealed class BoundConditionalBranchStatement : BoundStatement {

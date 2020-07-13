@@ -1,4 +1,5 @@
-﻿using InterpreterLib.Types;
+﻿using InterpreterLib.Symbols;
+using InterpreterLib.Symbols.Binding;
 using System;
 using System.Collections.Generic;
 using System.Linq;

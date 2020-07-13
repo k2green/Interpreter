@@ -1,4 +1,5 @@
-﻿using InterpreterLib.Types;
+﻿using InterpreterLib.Symbols.Binding;
+using InterpreterLib.Symbols.Types;
 
 namespace InterpreterLib.Binding.Tree.Expressions {
 	internal sealed class BoundAssignmentExpression : BoundExpression {
@@ -8,7 +9,7 @@ namespace InterpreterLib.Binding.Tree.Expressions {
 		public VariableSymbol Identifier { get; }
 		public BoundExpression Expression { get; }
 
-		public override TypeSymbol ValueType => Expression.ValueType;
+		public override ValueTypeSymbol ValueType => Expression.ValueType;
 
 		public BoundAssignmentExpression(VariableSymbol variable, BoundExpression expression) {
 			Expression = expression;

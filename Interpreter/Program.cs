@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Linq;
 using System.Collections.Generic;
-using InterpreterLib.Types;
 using InterpreterLib.Runtime;
 using InterpreterLib.Syntax;
+using InterpreterLib.Symbols.Binding;
 
 namespace Interpreter {
 	class Program {

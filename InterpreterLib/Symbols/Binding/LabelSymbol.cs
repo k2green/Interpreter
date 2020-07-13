@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace InterpreterLib.Types {
+namespace InterpreterLib.Symbols.Binding {
 	public class LabelSymbol : Symbol {
 
 		public override SymbolType Type => SymbolType.Label;

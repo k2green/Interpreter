@@ -1,4 +1,4 @@
-﻿using InterpreterLib.Types;
+﻿using InterpreterLib.Symbols.Types;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -8,13 +8,13 @@ namespace InterpreterLib.Binding.Tree {
 
 		public string TokenText { get; }
 		public BinaryOperatorType OperatorType { get; }
-		public TypeSymbol LeftType;
-		public TypeSymbol RightType;
-		public TypeSymbol OutputType;
+		public ValueTypeSymbol LeftType;
+		public ValueTypeSymbol RightType;
+		public ValueTypeSymbol OutputType;
 
-		public BinaryOperator(string tokenText, BinaryOperatorType operatorType, TypeSymbol inputType, TypeSymbol outputType) : this(tokenText, operatorType, inputType, inputType, outputType) { }
+		public BinaryOperator(string tokenText, BinaryOperatorType operatorType, ValueTypeSymbol inputType, ValueTypeSymbol outputType) : this(tokenText, operatorType, inputType, inputType, outputType) { }
 
-		public BinaryOperator(string tokenText, BinaryOperatorType operatorType, TypeSymbol leftType, TypeSymbol rightType, TypeSymbol outputType) {
+		public BinaryOperator(string tokenText, BinaryOperatorType operatorType, ValueTypeSymbol leftType, ValueTypeSymbol rightType, ValueTypeSymbol outputType) {
 			TokenText = tokenText;
 			OperatorType = operatorType;
 			LeftType = leftType;
@@ -30,7 +30,7 @@ namespace InterpreterLib.Binding.Tree {
 				return operators;
 			} }
 
-		public static BinaryOperator Bind(string opText, TypeSymbol leftType, TypeSymbol rightType) {
+		public static BinaryOperator Bind(string opText, ValueTypeSymbol leftType, ValueTypeSymbol rightType) {
 			foreach (BinaryOperator op in Operators) {
 				if (op.TokenText.Equals(opText) && op.LeftType == leftType && op.RightType == rightType)
 					return op;

@@ -2,9 +2,10 @@
 using InterpreterLib.Binding.Tree;
 using System;
 using System.Collections.Generic;
-using InterpreterLib.Types;
 using InterpreterLib.Binding.Tree.Statements;
 using InterpreterLib.Binding.Tree.Expressions;
+using InterpreterLib.Symbols.Binding;
+using InterpreterLib.Symbols.Types;
 
 namespace InterpreterLib.Diagnostics {
 	internal class Evaluator {
@@ -140,14 +141,14 @@ namespace InterpreterLib.Diagnostics {
 		}
 
 		private object EvaluateInternalTypeConversion(BoundInternalTypeConversion expression) {
-			if (expression.ConversionSymbol.ToType == TypeSymbol.String) {
+			if (expression.ConversionSymbol.ToType == ValueTypeSymbol.String) {
 				return EvaluateExpression(expression.Expression).ToString();
 			}
 
-			if (expression.ConversionSymbol.ToType == TypeSymbol.Double)
+			if (expression.ConversionSymbol.ToType == ValueTypeSymbol.Double)
 				return Convert.ToDouble(EvaluateExpression(expression.Expression));
 
-			if (expression.ConversionSymbol.ToType == TypeSymbol.Integer)
+			if (expression.ConversionSymbol.ToType == ValueTypeSymbol.Integer)
 				return Convert.ToInt32(EvaluateExpression(expression.Expression));
 
 			throw new Exception($"Unhandled type conversion {expression.ConversionSymbol}");
@@ -249,13 +250,13 @@ namespace InterpreterLib.Diagnostics {
 				case UnaryOperatorType.LogicalNot:
 					return !((bool)operandValue);
 				case UnaryOperatorType.Negation:
-					if (expression.Op.OutputType == TypeSymbol.Integer)
+					if (expression.Op.OutputType == ValueTypeSymbol.Integer)
 						return -((int)operandValue);
 
-					if (expression.Op.OutputType == TypeSymbol.Double)
+					if (expression.Op.OutputType == ValueTypeSymbol.Double)
 						return -((double)operandValue);
 
-					if (expression.Op.OutputType == TypeSymbol.Byte)
+					if (expression.Op.OutputType == ValueTypeSymbol.Byte)
 						return -((byte)operandValue);
 					throw new Exception("Unimplemented unary operation");
 				default:

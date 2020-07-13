@@ -1,4 +1,4 @@
-﻿using InterpreterLib.Types;
+﻿using InterpreterLib.Symbols.Binding;
 using System;
 using System.Collections.Generic;
 using System.Text;

@@ -1,16 +1,17 @@
-﻿using System;
+﻿using InterpreterLib.Symbols.Types;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace InterpreterLib.Types {
+namespace InterpreterLib.Symbols.Binding {
 	public sealed class ParameterSymbol : Symbol {
 
 		public override SymbolType Type => SymbolType.Parameter;
 
 		public override string Name { get; }
-		public TypeSymbol ValueType { get; }
+		public ValueTypeSymbol ValueType { get; }
 
-		public ParameterSymbol(string name, TypeSymbol valueType) {
+		public ParameterSymbol(string name, ValueTypeSymbol valueType) {
 			Name = name;
 			ValueType = valueType;
 		}

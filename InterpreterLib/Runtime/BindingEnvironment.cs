@@ -4,7 +4,6 @@ using InterpreterLib.Binding;
 using InterpreterLib.Binding.Lowering;
 using InterpreterLib.Binding.Tree;
 using InterpreterLib.Binding.Tree.Statements;
-using InterpreterLib.Types;
 using InterpreterLib.Diagnostics;
 using InterpreterLib.Syntax;
 using InterpreterLib.Syntax.Tree;
@@ -17,6 +16,7 @@ using System.Drawing;
 using InterpreterLib.Output;
 using System.IO;
 using InterpreterLib.Binding.ControlFlow;
+using InterpreterLib.Symbols.Binding;
 
 namespace InterpreterLib.Runtime {
 	public sealed class BindingEnvironment {
@@ -24,6 +24,16 @@ namespace InterpreterLib.Runtime {
 		private readonly bool chainDiagnostics;
 		private BindingEnvironment previous;
 		private CompilationUnitSyntax SyntaxRoot;
+
+		public static string GraphPath {
+			get {
+				var appPath = Environment.GetCommandLineArgs()[0];
+				var appDir = Path.GetDirectoryName(appPath);
+				var filePath = Path.Combine(appDir, "graph.gv");
+
+				return filePath;
+			}
+		}
 
 		private BoundProgram boundProgram;
 		internal BoundProgram BoundProgram {
@@ -93,7 +103,7 @@ namespace InterpreterLib.Runtime {
 						? BoundProgram.FunctionBodies.Values.Last()
 						: BoundProgram.Statement;
 
-			OutputGraph("graph.gv", block);
+			OutputGraph(block);
 			Evaluator evaluator = new Evaluator(boundProgram, variables);
 
 			var evalResult = evaluator.Evaluate();
@@ -109,16 +119,10 @@ namespace InterpreterLib.Runtime {
 			output.Document.Output((frag) => printAction(frag.Text, frag.TextColour), newlineAction);
 		}
 
-		private void OutputGraph(string pathName, BoundBlock block) {
-			var appPath = Environment.GetCommandLineArgs()[0];
-			var appDir = Path.GetDirectoryName(appPath);
-			var filePath = Path.Combine(appDir, pathName);
-
+		private void OutputGraph(BoundBlock block) {
 			var cfg = ControlFlowGraph.CreateGraph(block);
 
-			Console.WriteLine(filePath);
-
-			using (StreamWriter writer = new StreamWriter(filePath))
+			using (StreamWriter writer = new StreamWriter(GraphPath))
 				cfg.WriteTo(writer);
 		}
 	}

@@ -1,11 +1,11 @@
-﻿using InterpreterLib.Types;
-using InterpreterLib.Runtime;
+﻿using InterpreterLib.Runtime;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using InterpreterLib.Syntax.Tree;
+using InterpreterLib.Symbols.Binding;
 
 namespace Interpreter {
 	public abstract class Repl {

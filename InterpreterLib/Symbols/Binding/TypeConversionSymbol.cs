@@ -1,0 +1,58 @@
+﻿using InterpreterLib.Symbols.Types;
+using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace InterpreterLib.Symbols.Binding {
+	internal class TypeConversionSymbol : Symbol {
+		public override SymbolType Type => SymbolType.TypeConversion;
+
+		private static TypeConversionSymbol[] conversions = {
+			new TypeConversionSymbol(ValueTypeSymbol.Integer, ValueTypeSymbol.Double),
+			new TypeConversionSymbol(ValueTypeSymbol.Byte, ValueTypeSymbol.Double),
+			new TypeConversionSymbol(ValueTypeSymbol.Byte, ValueTypeSymbol.Integer),
+
+			new TypeConversionSymbol(ValueTypeSymbol.Integer, ValueTypeSymbol.String),
+			new TypeConversionSymbol(ValueTypeSymbol.Double, ValueTypeSymbol.String),
+			new TypeConversionSymbol(ValueTypeSymbol.Byte, ValueTypeSymbol.String),
+			new TypeConversionSymbol(ValueTypeSymbol.Boolean, ValueTypeSymbol.String),
+			new TypeConversionSymbol(ValueTypeSymbol.Character, ValueTypeSymbol.String)
+		};
+
+		public static bool TryFind(ValueTypeSymbol fromType, ValueTypeSymbol toType, out TypeConversionSymbol outputSymbol) {
+			outputSymbol = null;
+
+			foreach (var symbol in conversions) {
+				if (symbol.FromType == fromType && symbol.ToType == toType) {
+					outputSymbol = symbol;
+					return true;
+				}
+			}
+
+			return false;
+		}
+
+		public override string Name { get; }
+		public ValueTypeSymbol FromType { get; }
+		public ValueTypeSymbol ToType { get; }
+
+		private TypeConversionSymbol(ValueTypeSymbol fromType, ValueTypeSymbol toType) {
+			FromType = fromType;
+			ToType = toType;
+
+			Name = $"{FromType} => {ToType}";
+		}
+
+		public override bool Equals(object obj) {
+			if (!(obj is TypeConversionSymbol symbol)) return false;
+
+			return FromType == symbol.FromType && ToType == symbol.ToType;
+		}
+
+		public override int GetHashCode() {
+			return HashCode.Combine(FromType, ToType);
+		}
+
+		public override string ToString() => Name;
+	}
+}

@@ -2,7 +2,6 @@
 using InterpreterLib.Binding.Tree;
 using InterpreterLib.Binding.Tree.Expressions;
 using InterpreterLib.Binding.Tree.Statements;
-using InterpreterLib.Types;
 using InterpreterLib.Syntax.Tree;
 using InterpreterLib.Syntax.Tree.Expressions;
 using InterpreterLib.Syntax.Tree.Global;
@@ -12,6 +11,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Collections.Immutable;
 using InterpreterLib.Syntax;
+using InterpreterLib.Symbols.Binding;
+using InterpreterLib.Symbols.Types;
 
 namespace InterpreterLib.Binding {
 	internal sealed class Binder : GLangBaseVisitor<BoundNode> {
@@ -231,7 +232,7 @@ namespace InterpreterLib.Binding {
 			var expression = BindExpression(syntax.Expression);
 			var prev = new TextSpan(syntax.IdentifierToken.Span.Start, syntax.OperatorToken.Span.End);
 
-			if (expression.ValueType == TypeSymbol.Void) {
+			if (expression.ValueType == ValueTypeSymbol.Void) {
 				var diagnostic = Diagnostic.ReportVoidType(syntax.Expression.Location, prev, syntax.Expression.Span);
 				return ErrorExpression(diagnostic);
 			}
@@ -329,7 +330,7 @@ namespace InterpreterLib.Binding {
 					if (expression.Type == NodeType.Error)
 						return new BoundExpressionStatement(expression);
 
-					if (Function.ReturnType == TypeSymbol.Void) {
+					if (Function.ReturnType == ValueTypeSymbol.Void) {
 						var exprDiag = Diagnostic.ReportInvalidReturnExpression(syntax.Location, syntax.Span);
 						return ErrorStatement(exprDiag);
 					}
@@ -359,7 +360,7 @@ namespace InterpreterLib.Binding {
 			var identifierText = syntax.IdentifierToken.Token.Text;
 
 			bool isreadOnly;
-			TypeSymbol type = null;
+			ValueTypeSymbol type = null;
 			BoundExpression initialiser = null;
 
 			switch (declText) {
@@ -383,19 +384,19 @@ namespace InterpreterLib.Binding {
 
 				var prev = new TextSpan(syntax.KeywordToken.Span.Start, syntax.OperatorToken.Span.End);
 
-				if (initialiser.ValueType == TypeSymbol.Void)
+				if (initialiser.ValueType == ValueTypeSymbol.Void)
 					return ErrorStatement(Diagnostic.ReportVoidType(syntax.Initialiser.Location, prev, syntax.Initialiser.Span));
 			}
 
 			if (syntax.Definition != null) {
-				type = TypeSymbol.FromString(syntax.Definition.NameToken.ToString());
+				type = ValueTypeSymbol.FromString(syntax.Definition.NameToken.ToString());
 
 				if (type == null) {
 					var diagnostic = Diagnostic.ReportUnknownTypeKeyword(syntax.Definition.Location, syntax.Definition.DelimeterToken.Span, syntax.Definition.NameToken.Span);
 					return ErrorStatement(diagnostic);
 				}
 
-				if (type == TypeSymbol.Void) {
+				if (type == ValueTypeSymbol.Void) {
 					var location = syntax.Definition.NameToken.Location;
 					var prev = new TextSpan(syntax.KeywordToken.Span.Start, syntax.Definition.DelimeterToken.Span.End);
 
@@ -408,7 +409,7 @@ namespace InterpreterLib.Binding {
 				return ErrorStatement(Diagnostic.ReportCannotCast(syntax.Definition.Location, prev, syntax.Initialiser.Span, initialiser.ValueType, type));
 			}
 
-			if (initialiser != null && initialiser.ValueType == TypeSymbol.Void)
+			if (initialiser != null && initialiser.ValueType == ValueTypeSymbol.Void)
 				return ErrorStatement(Diagnostic.ReportVoidType(syntax.Initialiser.Location, syntax.Definition.DelimeterToken.Span, syntax.Definition.NameToken.Span));
 
 			type = type ?? initialiser.ValueType;
@@ -463,11 +464,11 @@ namespace InterpreterLib.Binding {
 				}
 			}
 
-			if (boundCondition.ValueType != TypeSymbol.Boolean) {
+			if (boundCondition.ValueType != ValueTypeSymbol.Boolean) {
 				var prev = new TextSpan(syntax.IfToken.Span.Start, syntax.LeftParenToken.Span.End);
 				var next = new TextSpan(syntax.RightParenToken.Span.Start, syntax.RightParenToken.Span.End);
 
-				var diagnostic = Diagnostic.ReportInvalidType(syntax.Condition.Location, prev, syntax.Condition.Span, next, TypeSymbol.Boolean);
+				var diagnostic = Diagnostic.ReportInvalidType(syntax.Condition.Location, prev, syntax.Condition.Span, next, ValueTypeSymbol.Boolean);
 				return ErrorStatement(diagnostic);
 			}
 
@@ -490,11 +491,11 @@ namespace InterpreterLib.Binding {
 			if (body.Type == NodeType.Error)
 				return body;
 
-			if (condition.ValueType != TypeSymbol.Boolean) {
+			if (condition.ValueType != ValueTypeSymbol.Boolean) {
 				var prev = new TextSpan(syntax.WhileToken.Span.Start, syntax.LeftParenToken.Span.End);
 				var next = new TextSpan(syntax.RightParenToken.Span.Start, syntax.RightParenToken.Span.End);
 
-				var diagnostic = Diagnostic.ReportInvalidType(syntax.Condition.Location, prev, syntax.Condition.Span, next, TypeSymbol.Boolean);
+				var diagnostic = Diagnostic.ReportInvalidType(syntax.Condition.Location, prev, syntax.Condition.Span, next, ValueTypeSymbol.Boolean);
 				return ErrorStatement(diagnostic);
 			}
 
@@ -528,11 +529,11 @@ namespace InterpreterLib.Binding {
 			if (body.Type == NodeType.Error)
 				return body;
 
-			if (condition.ValueType != TypeSymbol.Boolean) {
+			if (condition.ValueType != ValueTypeSymbol.Boolean) {
 				var prev = new TextSpan(syntax.ForToken.Span.Start, syntax.LeftParenToken.Span.End);
 				var next = new TextSpan(syntax.Comma1.Span.Start, syntax.Comma1.Span.End);
 
-				var diagnostic = Diagnostic.ReportInvalidType(syntax.Condition.Location, prev, syntax.Condition.Span, next, TypeSymbol.Boolean);
+				var diagnostic = Diagnostic.ReportInvalidType(syntax.Condition.Location, prev, syntax.Condition.Span, next, ValueTypeSymbol.Boolean);
 				return ErrorStatement(diagnostic);
 			}
 
@@ -551,7 +552,7 @@ namespace InterpreterLib.Binding {
 				var statSyntax = syntax.Statements[index];
 				BoundStatement statement;
 
-				if (isFunctionBody && Function.ReturnType != TypeSymbol.Void && index == paramCount - 1 && statSyntax is IfStatementSyntax ifSyntax) {
+				if (isFunctionBody && Function.ReturnType != ValueTypeSymbol.Void && index == paramCount - 1 && statSyntax is IfStatementSyntax ifSyntax) {
 					statement = BindIfStatement(ifSyntax, true);
 
 					hasReturn = statement.Type != NodeType.Error;
@@ -570,7 +571,7 @@ namespace InterpreterLib.Binding {
 
 			var immutable = statements.ToImmutable();
 
-			if (isFunctionBody && Function.ReturnType != TypeSymbol.Void) {
+			if (isFunctionBody && Function.ReturnType != ValueTypeSymbol.Void) {
 				if (immutable.Length > 0 && immutable.Last() is BoundExpressionStatement lastStatement && lastStatement.Expression.ValueType == Function.ReturnType)
 					hasReturn = true;
 
@@ -600,11 +601,11 @@ namespace InterpreterLib.Binding {
 		public BoundStatement BindFunctionDeclaration(FunctionDeclarationSyntax syntax) {
 			string funcName = syntax.Identifier.ToString();
 			var parameters = ImmutableArray.CreateBuilder<ParameterSymbol>();
-			var returnType = TypeSymbol.FromString(syntax.ReturnType.NameToken.ToString());
+			var returnType = ValueTypeSymbol.FromString(syntax.ReturnType.NameToken.ToString());
 
 			foreach (var parameter in syntax.Parameters) {
 				string parameterName = parameter.Identifier.ToString();
-				var typeBind = TypeSymbol.FromString(parameter.Definition.NameToken.ToString());
+				var typeBind = ValueTypeSymbol.FromString(parameter.Definition.NameToken.ToString());
 
 				int line = parameter.Definition.NameToken.Location.Line;
 				int column = parameter.Definition.NameToken.Location.Column;
@@ -613,7 +614,7 @@ namespace InterpreterLib.Binding {
 				if (typeBind == null)
 					return ErrorStatement(Diagnostic.ReportInvalidParameterDefinition(line, column, span));
 
-				if (typeBind == TypeSymbol.Void)
+				if (typeBind == ValueTypeSymbol.Void)
 					return ErrorStatement(Diagnostic.ReportVoidType(parameter.Definition.NameToken.Location, span));
 
 				parameters.Add(new ParameterSymbol(parameterName, typeBind));

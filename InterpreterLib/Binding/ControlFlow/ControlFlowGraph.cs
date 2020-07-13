@@ -1,7 +1,8 @@
 ﻿using InterpreterLib.Binding.Tree;
 using InterpreterLib.Binding.Tree.Expressions;
 using InterpreterLib.Binding.Tree.Statements;
-using InterpreterLib.Types;
+using InterpreterLib.Symbols.Binding;
+using InterpreterLib.Symbols.Types;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -134,7 +135,7 @@ namespace InterpreterLib.Binding.ControlFlow {
 					return new BoundLiteral(!value);
 				}
 
-				var op = UnaryOperator.Bind("!", TypeSymbol.Boolean);
+				var op = UnaryOperator.Bind("!", ValueTypeSymbol.Boolean);
 				return new BoundUnaryExpression(op, condition);
 			}
 

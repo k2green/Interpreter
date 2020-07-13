@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace InterpreterLib.Types {
+namespace InterpreterLib.Symbols {
 	public enum SymbolType {
 		Variable, Type,
 		Function,
