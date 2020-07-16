@@ -21,6 +21,7 @@ namespace Interpreter {
 		protected bool running;
 
 		protected bool multiLine;
+		protected bool evaluate;
 
 		protected Dictionary<VariableSymbol, object> variables;
 		protected BindingEnvironment environment;

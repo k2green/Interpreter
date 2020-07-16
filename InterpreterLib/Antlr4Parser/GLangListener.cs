@@ -272,6 +272,36 @@ public interface IGLangListener : IParseTreeListener {
 	/// <param name="context">The parse tree.</param>
 	void ExitExpression([NotNull] GLangParser.ExpressionContext context);
 	/// <summary>
+	/// Enter a parse tree produced by <see cref="GLangParser.indexedIdentifier"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterIndexedIdentifier([NotNull] GLangParser.IndexedIdentifierContext context);
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="GLangParser.indexedIdentifier"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitIndexedIdentifier([NotNull] GLangParser.IndexedIdentifierContext context);
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="GLangParser.accessorExpression"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterAccessorExpression([NotNull] GLangParser.AccessorExpressionContext context);
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="GLangParser.accessorExpression"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitAccessorExpression([NotNull] GLangParser.AccessorExpressionContext context);
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="GLangParser.accessorAtom"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterAccessorAtom([NotNull] GLangParser.AccessorAtomContext context);
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="GLangParser.accessorAtom"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitAccessorAtom([NotNull] GLangParser.AccessorAtomContext context);
+	/// <summary>
 	/// Enter a parse tree produced by <see cref="GLangParser.tuple"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>

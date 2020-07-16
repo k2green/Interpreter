@@ -26,6 +26,8 @@ namespace InterpreterLib.Syntax.Tree {
 		Continue,
 		Break,
 		Return,
-		Tuple
+		Tuple,
+		VariableIndexer,
+		Accessor
 	}
 }

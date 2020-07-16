@@ -3,8 +3,8 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace InterpreterLib.Syntax.Tree.Statements {
-	internal sealed class FunctionCallSyntax : ExpressionSyntax {
+namespace InterpreterLib.Syntax.Tree.Expressions {
+	internal sealed class FunctionCallSyntax : AccessorExpressionSyntax {
 		public override SyntaxType Type => SyntaxType.FunctionCall;
 
 		public override IEnumerable<SyntaxNode> Children {

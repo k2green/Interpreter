@@ -324,6 +324,42 @@ public partial class GLangBaseListener : IGLangListener {
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitExpression([NotNull] GLangParser.ExpressionContext context) { }
 	/// <summary>
+	/// Enter a parse tree produced by <see cref="GLangParser.indexedIdentifier"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterIndexedIdentifier([NotNull] GLangParser.IndexedIdentifierContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="GLangParser.indexedIdentifier"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitIndexedIdentifier([NotNull] GLangParser.IndexedIdentifierContext context) { }
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="GLangParser.accessorExpression"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterAccessorExpression([NotNull] GLangParser.AccessorExpressionContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="GLangParser.accessorExpression"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitAccessorExpression([NotNull] GLangParser.AccessorExpressionContext context) { }
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="GLangParser.accessorAtom"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterAccessorAtom([NotNull] GLangParser.AccessorAtomContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="GLangParser.accessorAtom"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitAccessorAtom([NotNull] GLangParser.AccessorAtomContext context) { }
+	/// <summary>
 	/// Enter a parse tree produced by <see cref="GLangParser.tuple"/>.
 	/// <para>The default implementation does nothing.</para>
 	/// </summary>

@@ -33,11 +33,6 @@ namespace Interpreter {
 		protected override void EvaluateInput(string input) {
 			tree = new SyntaxTree(input);
 
-			if (environment == null)
-				environment = BindingEnvironment.CreateEnvironment(tree, false);
-			else
-				environment = environment.ContinueWith(tree);
-
 			if (tree.Diagnostics.Any()) {
 				PrintDiagnostic(tree.Diagnostics);
 			} else if (showTree) {
@@ -45,12 +40,20 @@ namespace Interpreter {
 				treeOutput.Output(Console.Write, Console.WriteLine);
 			}
 
-			if (environment != null) {
-				if (environment != null && showProgram)
-					environment.PrintProgram(Console.Write, Console.WriteLine);
+			if (evaluate) {
+				if (environment == null)
+					environment = BindingEnvironment.CreateEnvironment(tree, false);
+				else
+					environment = environment.ContinueWith(tree);
 
-				Console.ForegroundColor = DEFAULT_COLOR;
-				Evaluate(environment, variables);
+
+				if (environment != null) {
+					if (environment != null && showProgram)
+						environment.PrintProgram(Console.Write, Console.WriteLine);
+
+					Console.ForegroundColor = DEFAULT_COLOR;
+					Evaluate(environment, variables);
+				}
 			}
 		}
 

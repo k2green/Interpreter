@@ -81,6 +81,10 @@ namespace InterpreterLib {
 			return new Diagnostic(line, column, "Syntax error: Invalid if statement", previousText, offendingText, nextText);
 		}
 
+		internal static Diagnostic ReportInvalidAccessor(int line, int column, TextSpan span) {
+			throw new NotImplementedException();
+		}
+
 		internal static Diagnostic ReportInvalidIfStatement(int line, int column, TextSpan offendingText) {
 			return ReportInvalidIfStatement(line, column, null, offendingText, null);
 		}
@@ -95,6 +99,10 @@ namespace InterpreterLib {
 
 		internal static Diagnostic ReportInvalidForStatement(int line, int column, TextSpan? previousText, TextSpan offendingText, TextSpan? nextText) {
 			return new Diagnostic(line, column, "Syntax error: Invalid for statement", previousText, offendingText, nextText);
+		}
+
+		internal static Diagnostic ReportInvalidIndexer(int line, int column, TextSpan span) {
+			throw new NotImplementedException();
 		}
 
 		internal static Diagnostic ReportInvalidForStatement(int line, int column, TextSpan offendingText) {

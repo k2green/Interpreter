@@ -45,14 +45,13 @@ namespace InterpreterLib.Syntax {
 			bool hasInt = context.INTEGER() != null;
 			bool hasDouble = context.DOUBLE() != null;
 			bool hasBool = context.BOOLEAN() != null;
-			bool hasIdentifier = context.IDENTIFIER() != null;
 			bool hasString = context.STRING() != null;
-			bool hasFunctionCall = context.functionCall() != null;
 			bool hasChar = context.CHAR_LITERAL() != null;
 			bool hasByte = context.BYTE() != null;
+			bool hasAccessor = context.accessorExpression() != null;
 
 			// Returns an error if there isn'n exactly one token
-			if (!(OnlyOne(hasInt, hasIdentifier, hasBool, hasString, hasDouble, hasFunctionCall, hasChar, hasByte))) {
+			if (!(OnlyOne(hasInt, hasBool, hasString, hasDouble, hasChar, hasByte, hasAccessor))) {
 				var span = new TextSpan(context.Start.StartIndex, context.Stop.StopIndex);
 				diagnostics.AddDiagnostic(Diagnostic.ReportInvalidLiteral(context.Start.Line, context.Start.Column, span));
 
@@ -93,14 +92,92 @@ namespace InterpreterLib.Syntax {
 				return new LiteralSyntax(token, tokenText[1]);
 			}
 
-			if (hasIdentifier)
-				return new VariableSyntax(new TokenSyntax(context.IDENTIFIER().Symbol));
-
-			if (hasFunctionCall)
-				return Visit(context.functionCall());
+			if (hasAccessor) {
+				return Visit(context.accessorExpression());
+			}
 
 			// As a last resort, returns an error.
 			return null;
+		}
+
+		public override SyntaxNode VisitAccessorExpression([NotNull] GLangParser.AccessorExpressionContext context) {
+			var atomCtx = context.accessorAtom();
+			var delimeterCtx = context.DOT();
+			var restCtx = context.accessorExpression();
+
+			var hasDelimeter = delimeterCtx != null && delimeterCtx.GetText().Equals(".");
+
+			if(atomCtx == null || (hasDelimeter ^ restCtx != null)) {
+				return null;
+			}
+
+			var atomVisit = Visit(atomCtx);
+
+			if(atomVisit == null || !(atomVisit is AccessorExpressionSyntax atom)) {
+				return null;
+			}
+
+			var commaToken = delimeterCtx == null ? null : Token(delimeterCtx.Symbol);
+			AccessorSyntax restAccessor = null;
+
+			if(restCtx != null) {
+				var restVisit = Visit(restCtx);
+
+				if(restVisit == null || !(restVisit is AccessorSyntax rAcc)) {
+					return null;
+				}
+
+				restAccessor = rAcc;
+			}
+
+			return new AccessorSyntax(atom, commaToken, restAccessor);
+		}
+
+		public override SyntaxNode VisitAccessorAtom([NotNull] GLangParser.AccessorAtomContext context) {
+			var identifierCtx = context.IDENTIFIER();
+			var callCtx = context.functionCall();
+			var indexerCtx = context.indexedIdentifier();
+
+			if (!(OnlyOne(identifierCtx != null, callCtx != null, indexerCtx != null))) {
+				var span = new TextSpan(context.Start.StartIndex, context.Stop.StopIndex);
+				diagnostics.AddDiagnostic(Diagnostic.ReportInvalidAccessor(context.Start.Line, context.Start.Column, span));
+				return null;
+			}
+
+			if (identifierCtx != null)
+				return new VariableSyntax(Token(identifierCtx.Symbol));
+
+			if (callCtx != null)
+				return Visit(callCtx);
+
+			if (indexerCtx != null)
+				return Visit(indexerCtx);
+
+			return null;
+		}
+
+		public override SyntaxNode VisitIndexedIdentifier([NotNull] GLangParser.IndexedIdentifierContext context) {
+			var identifierCtx = context.IDENTIFIER();
+			var lBracket = context.L_BRACKET();
+			var expressionCtx = context.binaryExpression();
+			var rBracket = context.R_BRACKET();
+
+			bool hasLBracket = lBracket != null && lBracket.GetText().Equals("[");
+			bool hasRBracket = rBracket != null && rBracket.GetText().Equals("]");
+
+			if (identifierCtx == null || !hasLBracket || expressionCtx == null || !hasRBracket) {
+				var span = new TextSpan(context.Start.StartIndex, context.Stop.StopIndex);
+				diagnostics.AddDiagnostic(Diagnostic.ReportInvalidIndexer(context.Start.Line, context.Start.Column, span));
+
+				return null;
+			}
+
+			var expressionVisit = Visit(expressionCtx);
+
+			if (expressionVisit == null || !(expressionVisit is ExpressionSyntax expression))
+				return null;
+
+			return new VariableIndexerSyntax(Token(identifierCtx.Symbol), Token(lBracket.Symbol), expression, Token(rBracket.Symbol));
 		}
 
 		public override SyntaxNode VisitUnaryExpression([NotNull] GLangParser.UnaryExpressionContext context) {

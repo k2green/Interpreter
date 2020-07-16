@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 
 namespace InterpreterLib.Syntax.Tree.Expressions {
-	internal sealed class VariableSyntax : ExpressionSyntax {
+	internal sealed class VariableSyntax : AccessorExpressionSyntax {
 		public override SyntaxType Type => SyntaxType.Variable;
 
 		public override IEnumerable<SyntaxNode> Children { get { yield return IdentifierToken; } }

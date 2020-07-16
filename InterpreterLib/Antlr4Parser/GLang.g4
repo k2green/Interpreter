@@ -57,11 +57,12 @@ definedAssignment : IDENTIFIER typeDefinition ASSIGNMENT_OPERATOR assignmentOper
 literal : DOUBLE | INTEGER | BOOLEAN | accessorExpression | STRING | CHAR_LITERAL | BYTE;
 expression: tuple | binaryExpression;
 
+indexedIdentifier: IDENTIFIER L_BRACKET binaryExpression R_BRACKET;
 
 accessorExpression: accessorAtom DOT accessorExpression
 				  | accessorAtom;
 				  
-accessorAtom: IDENTIFIER L_BRACKET binaryExpression R_BRACKET
+accessorAtom: indexedIdentifier
 			| functionCall
 			| IDENTIFIER;
 
@@ -129,6 +130,8 @@ BOOLEAN: TRUE | FALSE;
 DOUBLE: '.' DIGIT+ | DIGIT+ '.' DIGIT+;
 BYTE : DIGIT+ ('b' | 'B');
 INTEGER: DIGIT+;
+
+DOT : '.';
 
 DECL_VARIABLE : VAL | VAR;
 IF : 'i' 'f';

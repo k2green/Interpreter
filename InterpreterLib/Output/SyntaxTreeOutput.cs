@@ -11,7 +11,7 @@ namespace InterpreterLib.Output {
 	public class SyntaxTreeOutput : OutputBase<SyntaxTree> {
 
 		public SyntaxTreeOutput(SyntaxTree tree) : base(tree) {
-			if(tree.Root != null) {
+			if (tree.Root != null) {
 				Output(tree.Root, string.Empty);
 			}
 		}
@@ -80,20 +80,44 @@ namespace InterpreterLib.Output {
 				case SyntaxType.Tuple:
 					OutputTuple((TupleSyntax)node, prefix);
 					break;
+				case SyntaxType.VariableIndexer:
+					OutputVariableIndexer((VariableIndexerSyntax)node, prefix);
+					break;
+				case SyntaxType.Accessor:
+					OutputAccessor((AccessorSyntax)node, prefix);
+					break;
 				default: throw new NotImplementedException();
 			}
+		}
+
+		private void OutputAccessor(AccessorSyntax node, string prefix) {
+			Output(node.Item, prefix);
+
+			if (!node.IsLast) {
+				builder.AddFragment(new OutputFragment(".", DefaultColour));
+				Output(node.Rest, string.Empty);
+			}
+		}
+
+		private void OutputVariableIndexer(VariableIndexerSyntax node, string prefix) {
+			builder.AddFragment(new OutputFragment(prefix, DefaultColour));
+			builder.AddFragment(new OutputFragment(node.Identifier.Token.Text, VariableColour));
+			builder.AddFragment(new OutputFragment("[", DefaultColour));
+			Output(node.Expression, string.Empty);
+			builder.AddFragment(new OutputFragment("]", DefaultColour));
 		}
 
 		private void OutputTuple(TupleSyntax node, string prefix) {
 			builder.AddFragment(new OutputFragment($"{prefix}(", DefaultColour));
 
-			foreach(var item in node.Items) {
+			foreach (var item in node.Items) {
 				bool isLast = item == node.Items.Last();
 				Output(item, string.Empty);
 
 				if (!isLast)
 					builder.AddFragment(new OutputFragment(", ", DefaultColour));
 			}
+			builder.AddFragment(new OutputFragment(")", DefaultColour));
 		}
 
 		private void OutputReturn(ReturnSyntax node, string prefix) {
@@ -109,7 +133,7 @@ namespace InterpreterLib.Output {
 			builder.AddFragment(new OutputFragment("Compilation Unit", StatementColour));
 			builder.NewLine();
 
-			foreach(var statement in node.Statements) {
+			foreach (var statement in node.Statements) {
 				Output(statement, prefix + IndentString);
 				builder.NewLine();
 			}
@@ -168,10 +192,10 @@ namespace InterpreterLib.Output {
 			builder.AddFragment(new OutputFragment("(", DefaultColour));
 
 			var paramCount = node.Parameters.Count;
-			for(int index = 0; index < paramCount; index++) {
+			for (int index = 0; index < paramCount; index++) {
 				Output(node.Parameters[index], string.Empty);
 
-				if(index < paramCount - 1)
+				if (index < paramCount - 1)
 					builder.AddFragment(new OutputFragment(", ", DefaultColour));
 			}
 

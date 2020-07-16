@@ -177,6 +177,24 @@ public interface IGLangVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitExpression([NotNull] GLangParser.ExpressionContext context);
 	/// <summary>
+	/// Visit a parse tree produced by <see cref="GLangParser.indexedIdentifier"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitIndexedIdentifier([NotNull] GLangParser.IndexedIdentifierContext context);
+	/// <summary>
+	/// Visit a parse tree produced by <see cref="GLangParser.accessorExpression"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitAccessorExpression([NotNull] GLangParser.AccessorExpressionContext context);
+	/// <summary>
+	/// Visit a parse tree produced by <see cref="GLangParser.accessorAtom"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitAccessorAtom([NotNull] GLangParser.AccessorAtomContext context);
+	/// <summary>
 	/// Visit a parse tree produced by <see cref="GLangParser.tuple"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
