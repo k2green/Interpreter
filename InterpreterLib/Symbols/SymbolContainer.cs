@@ -12,9 +12,9 @@ namespace InterpreterLib.Symbols {
 			symbols = new Dictionary<string, Symbol>();
 		}
 
-		internal virtual bool TryDefineVariable<T>(VariableSymbol<T> variable) where T : TypeSymbol => TryDefineSymbol(variable);
+		internal virtual bool TryDefineVariable(VariableSymbol variable) => TryDefineSymbol(variable);
 
-		internal virtual bool TryLookupVariable<T>(string name, out VariableSymbol<T> variable) where T : TypeSymbol => TryGetSymbol(name, out variable);
+		internal virtual bool TryLookupVariable(string name, out VariableSymbol variable) => TryLookupSymbol(name, out variable);
 
 		internal virtual bool TryDefineFunction(FunctionSymbol function) => TryDefineSymbol(function);
 

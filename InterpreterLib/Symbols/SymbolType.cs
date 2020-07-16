@@ -9,6 +9,7 @@ namespace InterpreterLib.Symbols {
 		Parameter,
 		Label,
 		TypeConversion,
-		Tuple
+		Tuple,
+		Array
 	}
 }

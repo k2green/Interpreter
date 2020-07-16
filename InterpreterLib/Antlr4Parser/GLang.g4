@@ -32,7 +32,7 @@ functionDefinition: FUNCTION IDENTIFIER L_PARENTHESIS parameterDefinition R_PARE
 
 block : L_BRACE statement* R_BRACE;
 
-expressionStatement: assignmentExpression | binaryExpression;
+expressionStatement: assignmentExpression | expression;
 
 forStatement: FOR L_PARENTHESIS declerationOrAssign COMMA binaryExpression COMMA assignmentExpression R_PARENTHESIS statement;
 
@@ -54,7 +54,18 @@ definedAssignment : IDENTIFIER typeDefinition ASSIGNMENT_OPERATOR assignmentOper
 	 * Expressions
 	 */
 
-literal : DOUBLE | INTEGER | BOOLEAN | functionCall | IDENTIFIER | STRING | CHAR_LITERAL | BYTE;
+literal : DOUBLE | INTEGER | BOOLEAN | accessorExpression | STRING | CHAR_LITERAL | BYTE;
+expression: tuple | binaryExpression;
+
+
+accessorExpression: accessorAtom DOT accessorExpression
+				  | accessorAtom;
+				  
+accessorAtom: IDENTIFIER L_BRACKET binaryExpression R_BRACKET
+			| functionCall
+			| IDENTIFIER;
+
+tuple : L_PARENTHESIS seperatedExpression R_PARENTHESIS;
 
 unaryExpression : L_PARENTHESIS binaryExpression R_PARENTHESIS
 				| op=(ADDITIVE_OP | BANG) unaryExpression
@@ -69,10 +80,10 @@ binaryExpression: left=binaryExpression op=CARAT right=binaryExpression
 				| atom=unaryExpression;
 				
 
-expressionParameter	: binaryExpression COMMA expressionParameter
+seperatedExpression	: binaryExpression COMMA seperatedExpression
 					| binaryExpression;
 
-functionCall: funcName=IDENTIFIER L_PARENTHESIS expressionParameter R_PARENTHESIS
+functionCall: funcName=IDENTIFIER L_PARENTHESIS seperatedExpression R_PARENTHESIS
 			| funcName=IDENTIFIER L_PARENTHESIS R_PARENTHESIS;
 /*
  * Lexer Rules
@@ -149,5 +160,7 @@ L_PARENTHESIS : '(';
 R_PARENTHESIS : ')';
 L_BRACE : '{';
 R_BRACE : '}';
+L_BRACKET : '[';
+R_BRACKET : ']';
 
 UNKNOWN: .;

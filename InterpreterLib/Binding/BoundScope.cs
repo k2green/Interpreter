@@ -29,8 +29,8 @@ namespace InterpreterLib.Binding {
 			return Parent.TryLookupSymbol(name, out symbol);
 		}
 
-		public IEnumerable<VariableSymbol<T>> GetVariables<T>() where T : TypeSymbol {
-			return GetSymbols().Where(symbol => symbol is VariableSymbol<T>).Select(symbol => (VariableSymbol<T>)symbol);
+		public IEnumerable<VariableSymbol> GetVariables() {
+			return GetSymbols().Where(symbol => symbol.Type == SymbolType.Variable).Select(symbol => (VariableSymbol)symbol);
 		}
 
 		public IEnumerable<FunctionSymbol> GetFunctions() {

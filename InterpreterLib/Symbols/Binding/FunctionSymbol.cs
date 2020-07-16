@@ -10,10 +10,10 @@ namespace InterpreterLib.Symbols.Binding {
 		public override SymbolType Type => SymbolType.Function;
 		public override string Name { get; }
 		public ImmutableArray<ParameterSymbol> Parameters { get; }
-		public ValueTypeSymbol ReturnType { get; }
+		public TypeSymbol ReturnType { get; }
 		public LabelSymbol EndLabel => new LabelSymbol("FunctionEnd");
 
-		public FunctionSymbol(string name, ImmutableArray<ParameterSymbol> parameters, ValueTypeSymbol returnType) {
+		public FunctionSymbol(string name, ImmutableArray<ParameterSymbol> parameters, TypeSymbol returnType) {
 			Name = name;
 			Parameters = parameters;
 			ReturnType = returnType;

@@ -391,7 +391,7 @@ namespace InterpreterLib.Binding {
 			if (syntax.Definition != null) {
 				type = TypeSymbol.FromString(syntax.Definition.NameToken.ToString());
 
-				if (type == null;) {
+				if (type == null) {
 					var diagnostic = Diagnostic.ReportUnknownTypeKeyword(syntax.Definition.Location, syntax.Definition.DelimeterToken.Span, syntax.Definition.NameToken.Span);
 					return ErrorStatement(diagnostic);
 				}

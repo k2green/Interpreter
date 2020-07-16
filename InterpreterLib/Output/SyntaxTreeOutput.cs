@@ -5,7 +5,7 @@ using InterpreterLib.Syntax.Tree.Statements;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Text;
+using System.Linq;
 
 namespace InterpreterLib.Output {
 	public class SyntaxTreeOutput : OutputBase<SyntaxTree> {
@@ -77,7 +77,22 @@ namespace InterpreterLib.Output {
 				case SyntaxType.Return:
 					OutputReturn((ReturnSyntax)node, prefix);
 					break;
+				case SyntaxType.Tuple:
+					OutputTuple((TupleSyntax)node, prefix);
+					break;
 				default: throw new NotImplementedException();
+			}
+		}
+
+		private void OutputTuple(TupleSyntax node, string prefix) {
+			builder.AddFragment(new OutputFragment($"{prefix}(", DefaultColour));
+
+			foreach(var item in node.Items) {
+				bool isLast = item == node.Items.Last();
+				Output(item, string.Empty);
+
+				if (!isLast)
+					builder.AddFragment(new OutputFragment(", ", DefaultColour));
 			}
 		}
 

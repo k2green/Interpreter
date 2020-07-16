@@ -9,9 +9,9 @@ namespace InterpreterLib.Symbols.Binding {
 		public override SymbolType Type => SymbolType.Parameter;
 
 		public override string Name { get; }
-		public ValueTypeSymbol ValueType { get; }
+		public TypeSymbol ValueType { get; }
 
-		public ParameterSymbol(string name, ValueTypeSymbol valueType) {
+		public ParameterSymbol(string name, TypeSymbol valueType) {
 			Name = name;
 			ValueType = valueType;
 		}

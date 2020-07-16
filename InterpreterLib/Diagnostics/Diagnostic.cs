@@ -241,8 +241,16 @@ namespace InterpreterLib {
 			return new Diagnostic(location.Line, location.Column, $"Function returns {returnType}, but {valueType} was returned instead", null, offendingText, null);
 		}
 
+		internal static Diagnostic ReportInvalidExpression(int line, int column, TextSpan textSpan) {
+			throw new NotImplementedException();
+		}
+
 		internal static Diagnostic ReportNoReturn(TextLocation location, TextSpan offendingText) {
 			return new Diagnostic(location.Line, location.Column, $"Non void functions must return a value", null, offendingText, null);
+		}
+
+		internal static Diagnostic ReportInvalidTuple(int line, int column, TextSpan span) {
+			throw new NotImplementedException();
 		}
 	}
 }

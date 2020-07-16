@@ -312,6 +312,30 @@ public partial class GLangBaseListener : IGLangListener {
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitLiteral([NotNull] GLangParser.LiteralContext context) { }
 	/// <summary>
+	/// Enter a parse tree produced by <see cref="GLangParser.expression"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterExpression([NotNull] GLangParser.ExpressionContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="GLangParser.expression"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitExpression([NotNull] GLangParser.ExpressionContext context) { }
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="GLangParser.tuple"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterTuple([NotNull] GLangParser.TupleContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="GLangParser.tuple"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitTuple([NotNull] GLangParser.TupleContext context) { }
+	/// <summary>
 	/// Enter a parse tree produced by <see cref="GLangParser.unaryExpression"/>.
 	/// <para>The default implementation does nothing.</para>
 	/// </summary>
@@ -336,17 +360,17 @@ public partial class GLangBaseListener : IGLangListener {
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitBinaryExpression([NotNull] GLangParser.BinaryExpressionContext context) { }
 	/// <summary>
-	/// Enter a parse tree produced by <see cref="GLangParser.expressionParameter"/>.
+	/// Enter a parse tree produced by <see cref="GLangParser.seperatedExpression"/>.
 	/// <para>The default implementation does nothing.</para>
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
-	public virtual void EnterExpressionParameter([NotNull] GLangParser.ExpressionParameterContext context) { }
+	public virtual void EnterSeperatedExpression([NotNull] GLangParser.SeperatedExpressionContext context) { }
 	/// <summary>
-	/// Exit a parse tree produced by <see cref="GLangParser.expressionParameter"/>.
+	/// Exit a parse tree produced by <see cref="GLangParser.seperatedExpression"/>.
 	/// <para>The default implementation does nothing.</para>
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
-	public virtual void ExitExpressionParameter([NotNull] GLangParser.ExpressionParameterContext context) { }
+	public virtual void ExitSeperatedExpression([NotNull] GLangParser.SeperatedExpressionContext context) { }
 	/// <summary>
 	/// Enter a parse tree produced by <see cref="GLangParser.functionCall"/>.
 	/// <para>The default implementation does nothing.</para>

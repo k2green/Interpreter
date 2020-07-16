@@ -262,6 +262,26 @@ public interface IGLangListener : IParseTreeListener {
 	/// <param name="context">The parse tree.</param>
 	void ExitLiteral([NotNull] GLangParser.LiteralContext context);
 	/// <summary>
+	/// Enter a parse tree produced by <see cref="GLangParser.expression"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterExpression([NotNull] GLangParser.ExpressionContext context);
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="GLangParser.expression"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitExpression([NotNull] GLangParser.ExpressionContext context);
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="GLangParser.tuple"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterTuple([NotNull] GLangParser.TupleContext context);
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="GLangParser.tuple"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitTuple([NotNull] GLangParser.TupleContext context);
+	/// <summary>
 	/// Enter a parse tree produced by <see cref="GLangParser.unaryExpression"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
@@ -282,15 +302,15 @@ public interface IGLangListener : IParseTreeListener {
 	/// <param name="context">The parse tree.</param>
 	void ExitBinaryExpression([NotNull] GLangParser.BinaryExpressionContext context);
 	/// <summary>
-	/// Enter a parse tree produced by <see cref="GLangParser.expressionParameter"/>.
+	/// Enter a parse tree produced by <see cref="GLangParser.seperatedExpression"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
-	void EnterExpressionParameter([NotNull] GLangParser.ExpressionParameterContext context);
+	void EnterSeperatedExpression([NotNull] GLangParser.SeperatedExpressionContext context);
 	/// <summary>
-	/// Exit a parse tree produced by <see cref="GLangParser.expressionParameter"/>.
+	/// Exit a parse tree produced by <see cref="GLangParser.seperatedExpression"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
-	void ExitExpressionParameter([NotNull] GLangParser.ExpressionParameterContext context);
+	void ExitSeperatedExpression([NotNull] GLangParser.SeperatedExpressionContext context);
 	/// <summary>
 	/// Enter a parse tree produced by <see cref="GLangParser.functionCall"/>.
 	/// </summary>

@@ -9,7 +9,7 @@ namespace InterpreterLib.Syntax.Tree {
 	internal class SeperatedSyntaxList<T> : IEnumerable<T> where T : SyntaxNode {
 		private ImmutableArray<SyntaxNode> nodesAndSeperators;
 
-		public TextSpan Span => nodesAndSeperators.Length > 0 ? new TextSpan(nodesAndSeperators.First().Span.Start, nodesAndSeperators.Last().Span.End) : new TextSpan(0,0);
+		public TextSpan Span => nodesAndSeperators.Length > 0 ? new TextSpan(nodesAndSeperators.First().Span.Start, nodesAndSeperators.Last().Span.End) : new TextSpan(0, 0);
 
 		public int Count => (nodesAndSeperators.Length + 1) / 2;
 
@@ -27,12 +27,12 @@ namespace InterpreterLib.Syntax.Tree {
 		}
 
 		IEnumerator IEnumerable.GetEnumerator() {
-			throw new NotImplementedException();
+			return GetEnumerator();
 		}
 
 		public override string ToString() {
 			var builder = new StringBuilder();
-			foreach(var node in nodesAndSeperators) {
+			foreach (var node in nodesAndSeperators) {
 				builder.Append(node.ToString());
 			}
 

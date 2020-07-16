@@ -171,6 +171,18 @@ public interface IGLangVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitLiteral([NotNull] GLangParser.LiteralContext context);
 	/// <summary>
+	/// Visit a parse tree produced by <see cref="GLangParser.expression"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitExpression([NotNull] GLangParser.ExpressionContext context);
+	/// <summary>
+	/// Visit a parse tree produced by <see cref="GLangParser.tuple"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitTuple([NotNull] GLangParser.TupleContext context);
+	/// <summary>
 	/// Visit a parse tree produced by <see cref="GLangParser.unaryExpression"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
@@ -183,11 +195,11 @@ public interface IGLangVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitBinaryExpression([NotNull] GLangParser.BinaryExpressionContext context);
 	/// <summary>
-	/// Visit a parse tree produced by <see cref="GLangParser.expressionParameter"/>.
+	/// Visit a parse tree produced by <see cref="GLangParser.seperatedExpression"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
-	Result VisitExpressionParameter([NotNull] GLangParser.ExpressionParameterContext context);
+	Result VisitSeperatedExpression([NotNull] GLangParser.SeperatedExpressionContext context);
 	/// <summary>
 	/// Visit a parse tree produced by <see cref="GLangParser.functionCall"/>.
 	/// </summary>

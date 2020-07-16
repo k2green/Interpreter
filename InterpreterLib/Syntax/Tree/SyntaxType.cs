@@ -25,6 +25,7 @@ namespace InterpreterLib.Syntax.Tree {
 		GlobalStatement,
 		Continue,
 		Break,
-		Return
+		Return,
+		Tuple
 	}
 }

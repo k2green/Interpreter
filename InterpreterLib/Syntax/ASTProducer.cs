@@ -323,9 +323,52 @@ namespace InterpreterLib.Syntax {
 			}
 		}
 
+
+
+		public override SyntaxNode VisitExpression([NotNull] GLangParser.ExpressionContext context) {
+			var tupleCtx = context.tuple();
+			var expressionCtx = context.binaryExpression();
+
+			if (!(OnlyOne(tupleCtx != null, expressionCtx != null))) {
+				var span = new TextSpan(context.Start.StartIndex, context.Stop.StopIndex);
+				diagnostics.AddDiagnostic(Diagnostic.ReportInvalidExpression(context.Start.Line, context.Start.Column, span));
+				return null;
+			}
+
+			if (tupleCtx != null)
+				return Visit(tupleCtx);
+
+			if (expressionCtx != null)
+				return Visit(expressionCtx);
+
+			return null;
+		}
+
+		public override SyntaxNode VisitTuple([NotNull] GLangParser.TupleContext context) {
+			var lParenCtx = context.L_PARENTHESIS();
+			var expressionsCtx = context.seperatedExpression();
+			var rParenCtx = context.R_PARENTHESIS();
+
+			bool hasLParen = lParenCtx != null && lParenCtx.GetText().Equals("(");
+			bool hasRParen = rParenCtx != null && rParenCtx.GetText().Equals(")");
+
+			if (!hasLParen || expressionsCtx == null || !hasRParen) {
+				var span = new TextSpan(context.Start.StartIndex, context.Stop.StopIndex);
+				diagnostics.AddDiagnostic(Diagnostic.ReportInvalidTuple(context.Start.Line, context.Start.Column, span));
+				return null;
+			}
+
+			var seperatedSyntax = InternalVisitSeperatedExpressions(expressionsCtx);
+
+			if (seperatedSyntax == null)
+				return null;
+
+			return new TupleSyntax(Token(lParenCtx.Symbol), seperatedSyntax, Token(rParenCtx.Symbol));
+		}
+
 		public override SyntaxNode VisitExpressionStatement([NotNull] GLangParser.ExpressionStatementContext context) {
 			var assignmentCtx = context.assignmentExpression();
-			var expressionCtx = context.binaryExpression();
+			var expressionCtx = context.expression();
 
 			if (!OnlyOne(assignmentCtx != null, expressionCtx != null)) {
 				diagnostics.AddDiagnostic(Diagnostic.ReportInvalidExpressionStatement(context.Start.Line, context.Start.Column, new TextSpan(context.Start.StartIndex, context.Stop.StopIndex)));
@@ -613,22 +656,22 @@ namespace InterpreterLib.Syntax {
 			return new BlockSyntax(Token(leftBraceCtx.Symbol), builder.ToImmutable(), Token(rightBraceCtx.Symbol));
 		}
 
-		private SeperatedSyntaxList<ExpressionSyntax> InternalVisitCallParameters([NotNull] GLangParser.ExpressionParameterContext context) {
+		private SeperatedSyntaxList<ExpressionSyntax> InternalVisitSeperatedExpressions([NotNull] GLangParser.SeperatedExpressionContext context) {
 			var builder = ImmutableArray.CreateBuilder<SyntaxNode>();
 
-			if (!InternalVisitCallParameter(context, ref builder))
+			if (!InternalVisitSeperatedExpression(context, ref builder))
 				return null;
 
 			return new SeperatedSyntaxList<ExpressionSyntax>(builder.ToImmutable());
 		}
 
-		private bool InternalVisitCallParameter([NotNull] GLangParser.ExpressionParameterContext context, ref ImmutableArray<SyntaxNode>.Builder builder) {
+		private bool InternalVisitSeperatedExpression([NotNull] GLangParser.SeperatedExpressionContext context, ref ImmutableArray<SyntaxNode>.Builder builder) {
 			var expressionCtx = context.binaryExpression();
 			var commaCtx = context.COMMA();
-			var paramCtx = context.expressionParameter();
+			var restCtx = context.seperatedExpression();
 
 			bool hasComma = commaCtx != null && commaCtx.GetText().Equals(",");
-			bool hasParam = paramCtx != null;
+			bool hasParam = restCtx != null;
 
 			if (expressionCtx == null || (hasComma ^ hasParam)) {
 				var span = new TextSpan(context.Start.StartIndex, context.Stop.StopIndex);
@@ -650,7 +693,7 @@ namespace InterpreterLib.Syntax {
 
 			if (hasComma && hasParam) {
 				builder.Add(Token(commaCtx.Symbol));
-				return InternalVisitCallParameter(paramCtx, ref builder);
+				return InternalVisitSeperatedExpression(restCtx, ref builder);
 			}
 
 			return true;
@@ -659,7 +702,7 @@ namespace InterpreterLib.Syntax {
 		public override SyntaxNode VisitFunctionCall([NotNull] GLangParser.FunctionCallContext context) {
 			var funcIdentifierCtx = context.funcName;
 			var leftParenCtx = context.L_PARENTHESIS();
-			var paramCtx = context.expressionParameter();
+			var paramCtx = context.seperatedExpression();
 			var rightParenCtx = context.R_PARENTHESIS();
 
 			if (funcIdentifierCtx == null || leftParenCtx == null || rightParenCtx == null
@@ -672,7 +715,7 @@ namespace InterpreterLib.Syntax {
 			var parameters = new SeperatedSyntaxList<ExpressionSyntax>(ImmutableArray.Create(new SyntaxNode[] { }));
 
 			if (paramCtx != null) {
-				var visit = InternalVisitCallParameters(paramCtx);
+				var visit = InternalVisitSeperatedExpressions(paramCtx);
 
 				if (visit == null)
 					return null;
