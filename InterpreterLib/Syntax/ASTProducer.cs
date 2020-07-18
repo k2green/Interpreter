@@ -328,37 +328,10 @@ namespace InterpreterLib.Syntax {
 			return VisitAssignmentExpression(identifierCtx, operatorCtx, operandCtx, location, span);
 		}
 
-		public override SyntaxNode VisitDefinedAssignment([NotNull] GLangParser.DefinedAssignmentContext context) {
-			var identifierCtx = context.IDENTIFIER();
-			var operatorCtx = context.ASSIGNMENT_OPERATOR();
-			var typeDefCtx = context.ASSIGNMENT_OPERATOR();
-			var operandCtx = context.assignmentOperand();
-			var assignmentCtx = context.assignmentExpression();
-
-			var location = new TextLocation(context.Start.Line, context.Start.Column);
-			var span = new TextSpan(context.Start.StartIndex, context.Stop.StopIndex);
-
-			if (assignmentCtx != null)
-				return Visit(assignmentCtx);
-
-			if (typeDefCtx == null) {
-				diagnostics.AddDiagnostic(Diagnostic.ReportMissingToken(operandCtx.Start.Line, operandCtx.Start.Column, span, "Type definition"));
-				return null;
-			}
-
-			var visitAssign = VisitAssignmentExpression(identifierCtx, operatorCtx, operandCtx, location, span);
-			var visitTypeDef = Visit(typeDefCtx);
-
-			if (visitAssign == null || visitTypeDef == null || !(visitTypeDef is TypeDefinitionSyntax typeDefSyntax))
-				return null;
-
-			return new AssignmentExpressionSyntax(visitAssign.IdentifierToken, typeDefSyntax, visitAssign.OperatorToken, visitAssign.Expression);
-		}
-
 		public override SyntaxNode VisitVariableDeclarationStatement([NotNull] GLangParser.VariableDeclarationStatementContext context) {
 			var keywordCtx = context.DECL_VARIABLE();
 			var identifierCtx = context.definedIdentifier();
-			var assignmentCtx = context.definedAssignment();
+			var assignmentCtx = context.assignmentExpression();
 
 			bool hasDirectDecl = identifierCtx != null;
 			bool isAssignmentDecl = assignmentCtx != null;
@@ -392,7 +365,7 @@ namespace InterpreterLib.Syntax {
 					return null;
 				}
 
-				return new VariableDeclarationSyntax(Token(keywordCtx.Symbol), def.Identifier, def.Definition, null, null);
+				return new VariableDeclarationSyntax(Token(keywordCtx.Symbol), def, null);
 			} else {
 				var assignVisit = Visit(assignmentCtx);
 
@@ -404,7 +377,7 @@ namespace InterpreterLib.Syntax {
 					return null;
 				}
 
-				return new VariableDeclarationSyntax(Token(keywordCtx.Symbol), assignExpr.IdentifierToken, assignExpr.Definition, assignExpr.OperatorToken, assignExpr.Expression);
+				return new VariableDeclarationSyntax(Token(keywordCtx.Symbol), null, assignExpr);
 			}
 		}
 

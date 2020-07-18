@@ -162,7 +162,20 @@ namespace InterpreterLib.Binding {
 			return new DiagnosticResult<BoundBlock>(Diagnostics, new BoundBlock(statements.ToImmutable()));
 		}
 
-		private BoundExpression BindExpression(ExpressionSyntax expression) {
+		private BoundExpression BindExpression(ExpressionSyntax expression, bool allowVoid = true) {
+			var boundExpression = InternalBindExpression(expression);
+
+			if (boundExpression.Type == NodeType.Error)
+				return boundExpression;
+
+			if(boundExpression.ValueType.Equals(ValueTypeSymbol.Void) && !allowVoid) {
+				return ErrorExpression(Diagnostic.ReportVoidType(expression.Location, expression.Span));
+			}
+
+			return boundExpression;
+		}
+
+		private BoundExpression InternalBindExpression(ExpressionSyntax expression) {
 			switch (expression.Type) {
 				case SyntaxType.Literal:
 					return BindLiteral((LiteralSyntax)expression);
@@ -283,19 +296,9 @@ namespace InterpreterLib.Binding {
 		}
 
 		private BoundExpression BindAssignmentExpression(AssignmentExpressionSyntax syntax) {
-			if (syntax.Definition != null) {
-				var diagnostic = Diagnostic.ReportInvalidAssignmentTypeDef(syntax.Definition.Location, syntax.IdentifierToken.Span, syntax.Definition.Span);
-				return ErrorExpression(diagnostic);
-			}
-
 			string identifierText = syntax.IdentifierToken.Token.Text;
-			var expression = BindExpression(syntax.Expression);
+			var expression = BindExpression(syntax.Expression, false);
 			var prev = new TextSpan(syntax.IdentifierToken.Span.Start, syntax.OperatorToken.Span.End);
-
-			if (expression.ValueType == ValueTypeSymbol.Void) {
-				var diagnostic = Diagnostic.ReportVoidType(syntax.Expression.Location, prev, syntax.Expression.Span);
-				return ErrorExpression(diagnostic);
-			}
 
 			if (!scope.TryLookupVariable(identifierText, out var variable)) {
 				var diagnostic = Diagnostic.ReportUndefinedVariable(syntax.IdentifierToken.Location, syntax.IdentifierToken.Span);
@@ -432,18 +435,18 @@ namespace InterpreterLib.Binding {
 
 		private BoundStatement BindDeclarationStatement(VariableDeclarationSyntax syntax) {
 			var declText = syntax.KeywordToken.Token.Text;
-			var identifierText = syntax.IdentifierToken.Token.Text;
 
-			bool isreadOnly;
+			string varName;
+			bool isReadOnly;
 			TypeSymbol type = null;
 			BoundExpression initialiser = null;
 
 			switch (declText) {
 				case "var":
-					isreadOnly = false;
+					isReadOnly = false;
 					break;
 				case "val":
-					isreadOnly = true;
+					isReadOnly = true;
 					break;
 
 				default:
@@ -451,47 +454,31 @@ namespace InterpreterLib.Binding {
 					return ErrorStatement(diagnostic);
 			}
 
-			if (syntax.Initialiser != null) {
-				initialiser = BindExpression(syntax.Initialiser);
+			if(syntax.Identifier != null) {
+				varName = syntax.Identifier.Identifier.ToString();
+				type = TypeSymbol.FromString(syntax.Identifier.Definition.NameToken.ToString());
+
+				if (type == null)
+					return null;
+
+				if(type.Equals(ValueTypeSymbol.Void)) {
+					return ErrorStatement(Diagnostic.ReportVoidType(syntax.Identifier.Definition.NameToken.Location, syntax.Identifier.Definition.NameToken.Span));
+				}
+			} else {
+				varName = syntax.Initialiser.IdentifierToken.ToString();
+				initialiser = BindExpression(syntax.Initialiser.Expression, false);
 
 				if (initialiser.Type == NodeType.Error)
-					return new BoundExpressionStatement(initialiser);
+					return Convert((BoundErrorExpression)initialiser);
 
-				var prev = new TextSpan(syntax.KeywordToken.Span.Start, syntax.OperatorToken.Span.End);
-
-				if (initialiser.ValueType == ValueTypeSymbol.Void)
-					return ErrorStatement(Diagnostic.ReportVoidType(syntax.Initialiser.Location, prev, syntax.Initialiser.Span));
+				type = initialiser.ValueType;
 			}
 
-			if (syntax.Definition != null) {
-				type = TypeSymbol.FromString(syntax.Definition.NameToken.ToString());
+			var variable = new VariableSymbol(varName, isReadOnly, type);
 
-				if (type == null) {
-					var diagnostic = Diagnostic.ReportUnknownTypeKeyword(syntax.Definition.Location, syntax.Definition.DelimeterToken.Span, syntax.Definition.NameToken.Span);
-					return ErrorStatement(diagnostic);
-				}
-
-				if (type == ValueTypeSymbol.Void) {
-					var location = syntax.Definition.NameToken.Location;
-					var prev = new TextSpan(syntax.KeywordToken.Span.Start, syntax.Definition.DelimeterToken.Span.End);
-
-					return ErrorStatement(Diagnostic.ReportVoidType(location, prev, syntax.Definition.NameToken.Span));
-				}
+			if(!scope.TryDefineVariable(variable)) {
+				return ErrorStatement(Diagnostic.ReportCannotRedefine(syntax.Location, syntax.Span));
 			}
-
-			if (type != null && initialiser != null && initialiser.ValueType != type && !TypeConversionSymbol.TryFind(initialiser.ValueType, type, out _)) {
-				var prev = new TextSpan(syntax.KeywordToken.Span.Start, syntax.OperatorToken.Span.End);
-				return ErrorStatement(Diagnostic.ReportCannotCast(syntax.Definition.Location, prev, syntax.Initialiser.Span, initialiser.ValueType, type));
-			}
-
-			if (initialiser != null && initialiser.ValueType == ValueTypeSymbol.Void)
-				return ErrorStatement(Diagnostic.ReportVoidType(syntax.Initialiser.Location, syntax.Definition.DelimeterToken.Span, syntax.Definition.NameToken.Span));
-
-			type = type ?? initialiser.ValueType;
-			var variable = new VariableSymbol(identifierText, isreadOnly, type);
-
-			if (!scope.TryDefineVariable(variable))
-				return ErrorStatement(Diagnostic.ReportCannotRedefine(syntax.IdentifierToken.Location, syntax.IdentifierToken.Span));
 
 			return new BoundVariableDeclarationStatement(variable, initialiser);
 		}

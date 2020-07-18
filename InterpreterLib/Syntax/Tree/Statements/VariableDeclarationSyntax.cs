@@ -13,25 +13,18 @@ namespace InterpreterLib.Syntax.Tree.Statements {
 		public override IEnumerable<SyntaxNode> Children {
 			get {
 				yield return KeywordToken;
-				yield return IdentifierToken;
-				yield return Definition;
-				yield return OperatorToken;
+				yield return Identifier;
 				yield return Initialiser;
 			}
 		}
 
 		public TokenSyntax KeywordToken { get; }
-		public TokenSyntax IdentifierToken { get; }
-		public TypeDefinitionSyntax Definition { get; }
-		public TokenSyntax OperatorToken { get; }
-		public ExpressionSyntax Initialiser { get; }
+		public TypedIdentifierSyntax Identifier { get; }
+		public AssignmentExpressionSyntax Initialiser { get; }
 
-
-		public VariableDeclarationSyntax(TokenSyntax keywordToken, TokenSyntax identifierToken, TypeDefinitionSyntax definition, TokenSyntax operatorToken, ExpressionSyntax initialiser) {
+		public VariableDeclarationSyntax(TokenSyntax keywordToken, TypedIdentifierSyntax identifier, AssignmentExpressionSyntax initialiser) {
 			KeywordToken = keywordToken;
-			IdentifierToken = identifierToken;
-			Definition = definition;
-			OperatorToken = operatorToken;
+			Identifier = identifier;
 			Initialiser = initialiser;
 		}
 	}

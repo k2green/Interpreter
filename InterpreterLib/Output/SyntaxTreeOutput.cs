@@ -287,19 +287,18 @@ namespace InterpreterLib.Output {
 
 		private void OutputVariableDeclaration(VariableDeclarationSyntax node, string prefix) {
 			builder.AddFragment(new OutputFragment(prefix, DefaultColour));
-			builder.AddFragment(new OutputFragment($"{node.KeywordToken} (", StatementColour));
-			builder.AddFragment(new OutputFragment($"{node.IdentifierToken.ToString()} ", VariableColour));
+			builder.AddFragment(new OutputFragment($"{node.KeywordToken} ", StatementColour));
 
-			if (node.Definition != null) {
+
+			if (node.Identifier != null) {
+				builder.AddFragment(new OutputFragment($"({node.Identifier.ToString()}", VariableColour));
 				builder.AddFragment(new OutputFragment(DelimeterString, DefaultColour));
-				builder.AddFragment(new OutputFragment($"{node.Definition} ", TypeColour));
-			}
+				builder.AddFragment(new OutputFragment($"{node.Identifier})", TypeColour));
+			} else {
+				builder.AddFragment(new OutputFragment(node.Initialiser.IdentifierToken.ToString(), VariableColour));
+				builder.AddFragment(new OutputFragment(" = ", DefaultColour));
 
-			builder.AddFragment(new OutputFragment(")", StatementColour));
-
-			if (node.Initialiser != null) {
-				builder.AddFragment(new OutputFragment(" = ", StatementColour));
-				Output(node.Initialiser, string.Empty);
+				Output(node.Initialiser.Expression, string.Empty) ;
 			}
 		}
 

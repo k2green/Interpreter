@@ -242,16 +242,6 @@ public interface IGLangListener : IParseTreeListener {
 	/// <param name="context">The parse tree.</param>
 	void ExitAssignmentExpression([NotNull] GLangParser.AssignmentExpressionContext context);
 	/// <summary>
-	/// Enter a parse tree produced by <see cref="GLangParser.definedAssignment"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	void EnterDefinedAssignment([NotNull] GLangParser.DefinedAssignmentContext context);
-	/// <summary>
-	/// Exit a parse tree produced by <see cref="GLangParser.definedAssignment"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	void ExitDefinedAssignment([NotNull] GLangParser.DefinedAssignmentContext context);
-	/// <summary>
 	/// Enter a parse tree produced by <see cref="GLangParser.literal"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>

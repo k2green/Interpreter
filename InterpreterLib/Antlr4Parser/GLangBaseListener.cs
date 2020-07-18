@@ -288,18 +288,6 @@ public partial class GLangBaseListener : IGLangListener {
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitAssignmentExpression([NotNull] GLangParser.AssignmentExpressionContext context) { }
 	/// <summary>
-	/// Enter a parse tree produced by <see cref="GLangParser.definedAssignment"/>.
-	/// <para>The default implementation does nothing.</para>
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	public virtual void EnterDefinedAssignment([NotNull] GLangParser.DefinedAssignmentContext context) { }
-	/// <summary>
-	/// Exit a parse tree produced by <see cref="GLangParser.definedAssignment"/>.
-	/// <para>The default implementation does nothing.</para>
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	public virtual void ExitDefinedAssignment([NotNull] GLangParser.DefinedAssignmentContext context) { }
-	/// <summary>
 	/// Enter a parse tree produced by <see cref="GLangParser.literal"/>.
 	/// <para>The default implementation does nothing.</para>
 	/// </summary>

@@ -43,11 +43,10 @@ ifElseStatement : pureIfStatement ELSE falseBranch=statement;
 whileStatement: WHILE L_PARENTHESIS binaryExpression R_PARENTHESIS body=statement;
 
 variableDeclarationStatement: DECL_VARIABLE definedIdentifier
-							| DECL_VARIABLE definedAssignment;
+							| DECL_VARIABLE assignmentExpression;
 
 assignmentOperand : expression;
 assignmentExpression : IDENTIFIER ASSIGNMENT_OPERATOR assignmentOperand;
-definedAssignment : IDENTIFIER typeDefinition ASSIGNMENT_OPERATOR assignmentOperand | assignmentExpression;
 
 
 	/*

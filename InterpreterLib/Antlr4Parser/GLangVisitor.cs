@@ -159,12 +159,6 @@ public interface IGLangVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitAssignmentExpression([NotNull] GLangParser.AssignmentExpressionContext context);
 	/// <summary>
-	/// Visit a parse tree produced by <see cref="GLangParser.definedAssignment"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	/// <return>The visitor result.</return>
-	Result VisitDefinedAssignment([NotNull] GLangParser.DefinedAssignmentContext context);
-	/// <summary>
 	/// Visit a parse tree produced by <see cref="GLangParser.literal"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
