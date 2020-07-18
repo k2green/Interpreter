@@ -10,15 +10,17 @@ namespace InterpreterLib.Symbols.Types {
 		public override SymbolType Type => SymbolType.Tuple;
 		public override string Name => "Tuple";
 		public ImmutableArray<TypeSymbol> Types { get; }
-		public override BoundScope Scope { get; }
+		public override IReadOnlyList<VariableSymbol> Variables => variables;
 
-		public TupleSymbol(ImmutableArray<TypeSymbol> types, BoundScope parentScope, bool isReadOnly = false) {
+		private List<VariableSymbol> variables;
+
+		public TupleSymbol(ImmutableArray<TypeSymbol> types, bool isReadOnly = false) {
 			Types = types;
-			Scope = new BoundScope(parentScope);
+			variables = new List<VariableSymbol>();
 
 			for (var index = 0; index < Types.Length; index++) {
 				var variable = new VariableSymbol($"Item{index + 1}", isReadOnly, Types[index]);
-				Scope.TryDefineVariable(variable);
+				variables.Add(variable);
 			}
 		}
 
@@ -30,6 +32,21 @@ namespace InterpreterLib.Symbols.Types {
 
 		public override int GetHashCode() {
 			return Types.GetHashCode();
+		}
+
+		public override string ToString() {
+			var builder = new StringBuilder();
+
+			builder.Append("(");
+
+			for(int index = 0; index < Types.Length; index++) {
+				builder.Append(Types[index]);
+
+				if (index < Types.Length - 1)
+					builder.Append(", ");
+			}
+
+			return builder.Append(")").ToString();
 		}
 	}
 }

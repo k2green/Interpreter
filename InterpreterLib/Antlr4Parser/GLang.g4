@@ -45,7 +45,7 @@ whileStatement: WHILE L_PARENTHESIS binaryExpression R_PARENTHESIS body=statemen
 variableDeclarationStatement: DECL_VARIABLE definedIdentifier
 							| DECL_VARIABLE definedAssignment;
 
-assignmentOperand : binaryExpression;
+assignmentOperand : expression;
 assignmentExpression : IDENTIFIER ASSIGNMENT_OPERATOR assignmentOperand;
 definedAssignment : IDENTIFIER typeDefinition ASSIGNMENT_OPERATOR assignmentOperand | assignmentExpression;
 
@@ -62,7 +62,8 @@ indexedIdentifier: IDENTIFIER L_BRACKET binaryExpression R_BRACKET;
 accessorExpression: accessorAtom DOT accessorExpression
 				  | accessorAtom;
 				  
-accessorAtom: indexedIdentifier
+accessorAtom: assignmentExpression
+			| indexedIdentifier
 			| functionCall
 			| IDENTIFIER;
 

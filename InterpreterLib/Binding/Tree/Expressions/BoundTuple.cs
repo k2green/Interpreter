@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Text;
@@ -8,22 +9,25 @@ namespace InterpreterLib.Binding.Tree.Expressions {
 	internal sealed class BoundTuple : BoundExpression {
 		public override TypeSymbol ValueType { get; }
 
-		public override NodeType Type => NodeType.Literal;
+		public override NodeType Type => NodeType.Tuple;
 
-		public ImmutableArray<TypeSymbol> Types { get; }
+		public ImmutableArray<BoundExpression> Expressions { get; }
+		public bool IsReadOnly { get; }
 
-		public BoundTuple(ImmutableArray<TypeSymbol> types, BoundScope parentScope) {
-			Types = types;
-			ValueType = new TupleSymbol(types, parentScope);
+		public BoundTuple(ImmutableArray<BoundExpression> expressions, bool isReadOnly = false) {
+			Expressions = expressions;
+			IsReadOnly = isReadOnly;
+			var types = expressions.Select(expr => expr.ValueType).ToImmutableArray();
+			ValueType = new TupleSymbol(types);
 		}
 
 		public override string ToString() {
 			var builder = new StringBuilder().Append("(");
 
-			for (int index = 0; index < Types.Length; index++) {
-				builder.Append(Types[index].ToString());
+			for (int index = 0; index < Expressions.Length; index++) {
+				builder.Append(Expressions[index].ToString());
 
-				if (index < Types.Length - 1)
+				if (index < Expressions.Length - 1)
 					builder.Append(", ");
 			}
 

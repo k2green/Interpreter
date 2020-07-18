@@ -6,6 +6,8 @@ using InterpreterLib.Binding.Tree.Statements;
 using InterpreterLib.Binding.Tree.Expressions;
 using InterpreterLib.Symbols.Binding;
 using InterpreterLib.Symbols.Types;
+using InterpreterLib.Evaluation.Objects;
+using System.Collections.Immutable;
 
 namespace InterpreterLib.Diagnostics {
 	internal class Evaluator {
@@ -102,8 +104,52 @@ namespace InterpreterLib.Diagnostics {
 					return EvaluateFunctionCall((BoundFunctionCall)expression);
 				case NodeType.InternalTypeConversion:
 					return EvaluateInternalTypeConversion((BoundInternalTypeConversion)expression);
+				case NodeType.Tuple:
+					return EvaluateTuple((BoundTuple)expression);
+				case NodeType.Accessor:
+					return EvaluateAccessor((BoundAccessor)expression);
 				default: throw new NotImplementedException();
 			}
+		}
+
+		private object EvaluateTuple(BoundTuple expression) {
+			var tupleSymbol = (TupleSymbol)expression.ValueType;
+			var minLength = Math.Min(expression.Expressions.Length, tupleSymbol.Variables.Count);
+			var variables = new Dictionary<VariableSymbol, object>();
+			var orderBuilder = ImmutableArray.CreateBuilder<VariableSymbol>();
+
+			for (int index = 0; index < minLength; index++) {
+				var evaluate = EvaluateExpression(expression.Expressions[index]);
+				var variable = new VariableSymbol($"Item{index + 1}", expression.IsReadOnly, tupleSymbol.Types[index]);
+
+				variables.Add(variable, evaluate);
+				orderBuilder.Add(variable);
+			}
+
+			return new TupleObject(variables, orderBuilder.ToImmutable());
+		}
+
+		public object EvaluateAccessor(BoundAccessor boundAccessor) {
+			object evaluateItem = EvaluateExpression(boundAccessor.Item);
+
+			if (boundAccessor.Index != null && evaluateItem is IndexableObject indexableObj)
+				evaluateItem = indexableObj.Index(EvaluateExpression(boundAccessor.Index));
+
+			if (!boundAccessor.IsLast) {
+				if (evaluateItem != null && evaluateItem is ScopedObject scopedObj) {
+					locals.Push(scopedObj.Variables);
+
+					var output = EvaluateExpression(boundAccessor.Rest);
+
+					locals.Pop();
+
+					return output;
+				}
+
+				return null;
+			}
+
+			return evaluateItem;
 		}
 
 		private object EvaluateFunctionCall(BoundFunctionCall statement) {

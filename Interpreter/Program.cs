@@ -12,7 +12,7 @@ namespace Interpreter {
 				Environment.Exit(0);
 			};
 
-			var repl = new LanguageRepl(true, false, false, false);
+			var repl = new LanguageRepl(false, true, false, true);
 			repl.Run();
 		}
 

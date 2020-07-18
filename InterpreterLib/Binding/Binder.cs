@@ -128,6 +128,9 @@ namespace InterpreterLib.Binding {
 			return new BoundErrorExpression(diagnostic);
 		}
 
+		private BoundExpression Convert(BoundErrorStatement error) => ErrorExpression(error.Diagnostic);
+		private BoundStatement Convert(BoundErrorExpression error) => ErrorStatement(error.Diagnostic);
+
 		private (LabelSymbol, LabelSymbol) CreateLoopLabels() {
 			var breakLabel = new LabelSymbol($"Break{currentBreakContinueNo}");
 			var continueLabel = new LabelSymbol($"Continue{currentBreakContinueNo}");
@@ -165,6 +168,8 @@ namespace InterpreterLib.Binding {
 					return BindLiteral((LiteralSyntax)expression);
 				case SyntaxType.Variable:
 					return BindVariableExpression((VariableSyntax)expression);
+				case SyntaxType.Accessor:
+					return BindAccessor((AccessorSyntax)expression);
 				case SyntaxType.UnaryExpression:
 					return BindUnaryExpression((UnaryExpressionSyntax)expression);
 				case SyntaxType.BinaryExpression:
@@ -173,6 +178,8 @@ namespace InterpreterLib.Binding {
 					return BindAssignmentExpression((AssignmentExpressionSyntax)expression);
 				case SyntaxType.FunctionCall:
 					return BindFunctionCall((FunctionCallSyntax)expression);
+				case SyntaxType.Tuple:
+					return BindTuple((TupleSyntax)expression);
 				default: throw new Exception($"Encountered unhandled expression syntax {expression.Type}");
 			}
 		}
@@ -188,6 +195,59 @@ namespace InterpreterLib.Binding {
 				return ErrorExpression(Diagnostic.ReportUndefinedVariable(syntax.IdentifierToken.Location, syntax.IdentifierToken.Span));
 
 			return new BoundVariableExpression(variable);
+		}
+
+		private BoundExpression BindAccessor(AccessorSyntax expression) {
+			BoundExpression boundItem;
+			BoundExpression boundIndex = null;
+
+			if (expression.Item.Type == SyntaxType.VariableIndexer) {
+				(boundItem, boundIndex) = BindIndexer((VariableIndexerSyntax)expression.Item);
+			} else {
+				boundItem = BindExpression(expression.Item);
+			}
+
+			if (boundItem.Type == NodeType.Error)
+				return boundItem;
+
+			if (boundIndex != null && boundIndex.Type == NodeType.Error)
+				return boundItem;
+
+
+			if (expression.IsLast) {
+				return new BoundAccessor(boundItem, boundIndex, null);
+			} else {
+				var currentScope = scope;
+
+				if (boundItem.ValueType is AccessibleSymbol accessible) {
+					scope = new BoundScope(scope);
+
+					foreach (var variable in accessible.Variables)
+						scope.TryDefineVariable(variable);
+				}
+
+				var boundRest = BindExpression(expression.Rest);
+
+				scope = currentScope;
+
+				if (boundRest.Type != NodeType.Accessor)
+					return boundRest;
+
+				return new BoundAccessor(boundItem, boundItem, (BoundAccessor)boundRest);
+			}
+		}
+
+		private (BoundExpression, BoundExpression) BindIndexer(VariableIndexerSyntax indexerSyntax) {
+			var itemExpression = BindExpression(indexerSyntax.Expression);
+			var indexExpression = BindExpression(indexerSyntax.Expression);
+
+			if (!indexExpression.ValueType.Equals(ValueTypeSymbol.Integer)) {
+				var prev = new TextSpan(indexerSyntax.Item.Span.Start, indexerSyntax.LeftBracket.Span.End);
+				var next = new TextSpan(indexerSyntax.RightBracket.Span.Start, indexerSyntax.RightBracket.Span.End);
+				indexExpression = ErrorExpression(Diagnostic.ReportInvalidType(indexerSyntax.Expression.Location, prev, indexerSyntax.Expression.Span, next, ValueTypeSymbol.Integer));
+			}
+
+			return (itemExpression, indexExpression);
 		}
 
 		private BoundExpression BindUnaryExpression(UnaryExpressionSyntax syntax) {
@@ -284,6 +344,21 @@ namespace InterpreterLib.Binding {
 			}
 
 			return new BoundFunctionCall(symbol, expressions.ToImmutable());
+		}
+
+		private BoundExpression BindTuple(TupleSyntax expression) {
+			var expressionBuilder = ImmutableArray.CreateBuilder<BoundExpression>();
+
+			foreach (var item in expression.Items) {
+				var expr = BindExpression(item);
+
+				if (expr.Type == NodeType.Error)
+					return expr;
+
+				expressionBuilder.Add(expr);
+			}
+
+			return new BoundTuple(expressionBuilder.ToImmutable());
 		}
 
 		private BoundStatement BindGlobalStatement(GlobalSyntax syntax) {

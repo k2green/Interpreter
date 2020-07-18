@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Text;
 
 namespace InterpreterLib.Syntax.Tree.Expressions {
-	internal sealed class AssignmentExpressionSyntax : ExpressionSyntax {
+	internal sealed class AssignmentExpressionSyntax : AccessorExpressionSyntax {
 		public override SyntaxType Type => SyntaxType.Assignment;
 
 		public override IEnumerable<SyntaxNode> Children {

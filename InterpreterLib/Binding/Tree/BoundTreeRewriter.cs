@@ -17,7 +17,21 @@ namespace InterpreterLib.Binding.Tree {
 				throw new Exception($"Invalid node {node.Type}");
 		}
 
-		protected virtual BoundExpression RewriteExpression(BoundExpression expression) {
+		protected BoundExpression RewriteExpression(BoundExpression expression) {
+			if (expression == null)
+				return null;
+
+			var rewritten = InternalRewriteExpression(expression);
+
+			if(rewritten == null) {
+				Console.WriteLine(expression);
+				throw new Exception("Null error");
+			}
+
+			return rewritten;
+		}
+
+		protected virtual BoundExpression InternalRewriteExpression(BoundExpression expression) {
 			switch (expression.Type) {
 				case NodeType.AssignmentExpression:
 					return RewriteAssignmentExpression((BoundAssignmentExpression)expression);
@@ -31,8 +45,41 @@ namespace InterpreterLib.Binding.Tree {
 					return RewriteVariableExpression((BoundVariableExpression)expression);
 				case NodeType.FunctionCall:
 					return RewriteFunctionCall((BoundFunctionCall)expression);
+				case NodeType.Accessor:
+					return RewriteAccessor((BoundAccessor)expression);
+				case NodeType.Tuple:
+					return RewriteTuple((BoundTuple)expression);
 				default: throw new Exception($"Unexpected expression {expression.Type}");
 			}
+		}
+
+		private BoundExpression RewriteTuple(BoundTuple expression) {
+			var builder = ImmutableArray.CreateBuilder<BoundExpression>();
+			bool isSame = true;
+
+			for (int index = 0; index < expression.Expressions.Length; index++) {
+				var rewrite = RewriteExpression(expression.Expressions[index]);
+				builder.Add(rewrite);
+
+				if (rewrite != expression.Expressions[index])
+					isSame = false;
+			}
+
+			if (isSame)
+				return expression;
+
+			return new BoundTuple(builder.ToImmutable(), expression.IsReadOnly);
+		}
+
+		private BoundExpression RewriteAccessor(BoundAccessor expression) {
+			var newItem = RewriteExpression(expression.Item);
+			var newIndex = RewriteExpression(expression.Index);
+			var newRest = expression.Rest == null ? null : (BoundAccessor)RewriteExpression(expression.Rest);
+
+			if (newItem == expression.Item && newIndex == expression.Index && newRest == expression.Rest)
+				return expression;
+
+			return new BoundAccessor(newItem, newIndex, newRest);
 		}
 
 		protected virtual BoundExpression RewriteLiteral(BoundLiteral literal) {

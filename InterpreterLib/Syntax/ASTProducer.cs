@@ -107,42 +107,46 @@ namespace InterpreterLib.Syntax {
 
 			var hasDelimeter = delimeterCtx != null && delimeterCtx.GetText().Equals(".");
 
-			if(atomCtx == null || (hasDelimeter ^ restCtx != null)) {
+			if (atomCtx == null || (hasDelimeter ^ restCtx != null)) {
 				return null;
 			}
 
 			var atomVisit = Visit(atomCtx);
 
-			if(atomVisit == null || !(atomVisit is AccessorExpressionSyntax atom)) {
+			if (atomVisit == null || !(atomVisit is AccessorExpressionSyntax atom)) {
 				return null;
 			}
 
-			var commaToken = delimeterCtx == null ? null : Token(delimeterCtx.Symbol);
+			var dotToken = delimeterCtx == null ? null : Token(delimeterCtx.Symbol);
 			AccessorSyntax restAccessor = null;
 
-			if(restCtx != null) {
+			if (restCtx != null) {
 				var restVisit = Visit(restCtx);
 
-				if(restVisit == null || !(restVisit is AccessorSyntax rAcc)) {
+				if (restVisit == null || !(restVisit is AccessorSyntax rAcc)) {
 					return null;
 				}
 
 				restAccessor = rAcc;
 			}
 
-			return new AccessorSyntax(atom, commaToken, restAccessor);
+			return new AccessorSyntax(atom, dotToken, restAccessor);
 		}
 
 		public override SyntaxNode VisitAccessorAtom([NotNull] GLangParser.AccessorAtomContext context) {
+			var assignmentCtx = context.assignmentExpression();
 			var identifierCtx = context.IDENTIFIER();
 			var callCtx = context.functionCall();
 			var indexerCtx = context.indexedIdentifier();
 
-			if (!(OnlyOne(identifierCtx != null, callCtx != null, indexerCtx != null))) {
+			if (!(OnlyOne(assignmentCtx != null, identifierCtx != null, callCtx != null, indexerCtx != null))) {
 				var span = new TextSpan(context.Start.StartIndex, context.Stop.StopIndex);
 				diagnostics.AddDiagnostic(Diagnostic.ReportInvalidAccessor(context.Start.Line, context.Start.Column, span));
 				return null;
 			}
+
+			if (assignmentCtx != null)
+				return Visit(assignmentCtx);
 
 			if (identifierCtx != null)
 				return new VariableSyntax(Token(identifierCtx.Symbol));
@@ -157,7 +161,7 @@ namespace InterpreterLib.Syntax {
 		}
 
 		public override SyntaxNode VisitIndexedIdentifier([NotNull] GLangParser.IndexedIdentifierContext context) {
-			var identifierCtx = context.IDENTIFIER();
+			var itemCtx = context.IDENTIFIER();
 			var lBracket = context.L_BRACKET();
 			var expressionCtx = context.binaryExpression();
 			var rBracket = context.R_BRACKET();
@@ -165,19 +169,23 @@ namespace InterpreterLib.Syntax {
 			bool hasLBracket = lBracket != null && lBracket.GetText().Equals("[");
 			bool hasRBracket = rBracket != null && rBracket.GetText().Equals("]");
 
-			if (identifierCtx == null || !hasLBracket || expressionCtx == null || !hasRBracket) {
+			if (itemCtx == null || !hasLBracket || expressionCtx == null || !hasRBracket) {
 				var span = new TextSpan(context.Start.StartIndex, context.Stop.StopIndex);
 				diagnostics.AddDiagnostic(Diagnostic.ReportInvalidIndexer(context.Start.Line, context.Start.Column, span));
 
 				return null;
 			}
 
+			var itemVisit = Visit(itemCtx);
 			var expressionVisit = Visit(expressionCtx);
+
+			if (itemVisit == null || !(itemVisit is ExpressionSyntax item))
+				return null;
 
 			if (expressionVisit == null || !(expressionVisit is ExpressionSyntax expression))
 				return null;
 
-			return new VariableIndexerSyntax(Token(identifierCtx.Symbol), Token(lBracket.Symbol), expression, Token(rBracket.Symbol));
+			return new VariableIndexerSyntax(item, Token(lBracket.Symbol), expression, Token(rBracket.Symbol));
 		}
 
 		public override SyntaxNode VisitUnaryExpression([NotNull] GLangParser.UnaryExpressionContext context) {

@@ -101,7 +101,7 @@ namespace InterpreterLib.Output {
 
 		private void OutputVariableIndexer(VariableIndexerSyntax node, string prefix) {
 			builder.AddFragment(new OutputFragment(prefix, DefaultColour));
-			builder.AddFragment(new OutputFragment(node.Identifier.Token.Text, VariableColour));
+			Output(node.Item, string.Empty);
 			builder.AddFragment(new OutputFragment("[", DefaultColour));
 			Output(node.Expression, string.Empty);
 			builder.AddFragment(new OutputFragment("]", DefaultColour));

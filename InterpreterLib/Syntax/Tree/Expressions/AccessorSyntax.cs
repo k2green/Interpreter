@@ -13,20 +13,20 @@ namespace InterpreterLib.Syntax.Tree.Expressions {
 				yield return Item;
 
 				if (!IsLast) {
-					yield return Comma;
+					yield return Dot;
 					yield return Rest;
 				}
 			}
 		}
 
 		public AccessorExpressionSyntax Item { get; }
-		public TokenSyntax Comma { get; }
+		public TokenSyntax Dot { get; }
 		public AccessorSyntax Rest { get; }
 		public bool IsLast => Rest == null;
 
-		public AccessorSyntax(AccessorExpressionSyntax item, TokenSyntax comma, AccessorSyntax rest) {
+		public AccessorSyntax(AccessorExpressionSyntax item, TokenSyntax dot, AccessorSyntax rest) {
 			Item = item;
-			Comma = comma;
+			Dot = dot;
 			Rest = rest;
 		}
 	}
