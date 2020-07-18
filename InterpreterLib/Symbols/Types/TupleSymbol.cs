@@ -27,7 +27,13 @@ namespace InterpreterLib.Symbols.Types {
 		public override bool Equals(object obj) {
 			if (!(obj is TupleSymbol symbol)) return false;
 
-			return Types.Equals(symbol.Types);
+			if (Types.Length != symbol.Types.Length) return false;
+
+			for (int index = 0; index < Types.Length; index++)
+				if (!Types[index].Equals(symbol.Types[index]))
+					return false;
+
+			return true;
 		}
 
 		public override int GetHashCode() {

@@ -62,6 +62,36 @@ public interface IGLangListener : IParseTreeListener {
 	/// <param name="context">The parse tree.</param>
 	void ExitTypeDefinition([NotNull] GLangParser.TypeDefinitionContext context);
 	/// <summary>
+	/// Enter a parse tree produced by <see cref="GLangParser.tupleDescription"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterTupleDescription([NotNull] GLangParser.TupleDescriptionContext context);
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="GLangParser.tupleDescription"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitTupleDescription([NotNull] GLangParser.TupleDescriptionContext context);
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="GLangParser.seperatedTypeDescription"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterSeperatedTypeDescription([NotNull] GLangParser.SeperatedTypeDescriptionContext context);
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="GLangParser.seperatedTypeDescription"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitSeperatedTypeDescription([NotNull] GLangParser.SeperatedTypeDescriptionContext context);
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="GLangParser.typeDescription"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterTypeDescription([NotNull] GLangParser.TypeDescriptionContext context);
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="GLangParser.typeDescription"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitTypeDescription([NotNull] GLangParser.TypeDescriptionContext context);
+	/// <summary>
 	/// Enter a parse tree produced by <see cref="GLangParser.globalStatement"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>

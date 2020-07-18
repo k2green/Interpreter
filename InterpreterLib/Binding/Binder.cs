@@ -13,6 +13,7 @@ using System.Collections.Immutable;
 using InterpreterLib.Syntax;
 using InterpreterLib.Symbols.Binding;
 using InterpreterLib.Symbols.Types;
+using InterpreterLib.Syntax.Tree.TypeDescriptions;
 
 namespace InterpreterLib.Binding {
 	internal sealed class Binder : GLangBaseVisitor<BoundNode> {
@@ -305,7 +306,7 @@ namespace InterpreterLib.Binding {
 				return ErrorExpression(diagnostic);
 			}
 
-			if (variable.ValueType != expression.ValueType && !TypeConversionSymbol.TryFind(expression.ValueType, variable.ValueType, out _)) {
+			if (!variable.ValueType.Equals(expression.ValueType) && !TypeConversionSymbol.TryFind(expression.ValueType, variable.ValueType, out _)) {
 				var diagnostic = Diagnostic.ReportCannotCast(syntax.Expression.Location, prev, syntax.Expression.Span, variable.ValueType, expression.ValueType);
 				return ErrorExpression(diagnostic);
 			}
@@ -455,8 +456,8 @@ namespace InterpreterLib.Binding {
 			}
 
 			if(syntax.Identifier != null) {
-				varName = syntax.Identifier.Identifier.ToString();
-				type = TypeSymbol.FromString(syntax.Identifier.Definition.NameToken.ToString());
+				varName = syntax.Identifier.IdentifierName.ToString();
+				type = BindTypeDescription(syntax.Identifier.Definition.NameToken);
 
 				if (type == null)
 					return null;
@@ -481,6 +482,35 @@ namespace InterpreterLib.Binding {
 			}
 
 			return new BoundVariableDeclarationStatement(variable, initialiser);
+		}
+
+		private TypeSymbol BindTypeDescription(SyntaxNode syntax, bool isReadOnly = false) {
+			switch (syntax.Type) {
+				case SyntaxType.ValueType:
+					return BindValueType((ValueTypeSyntax)syntax, isReadOnly);
+				case SyntaxType.TupleType:
+					return BindTupleType((TupleTypeSyntax)syntax, isReadOnly);
+				default: return null;
+			}
+		}
+
+		private TypeSymbol BindTupleType(TupleTypeSyntax syntax, bool isReadOnly) {
+			var builder = ImmutableArray.CreateBuilder<TypeSymbol>();
+
+			foreach(var type in syntax.Types) {
+				var boundType = BindTypeDescription(type, isReadOnly);
+
+				if (boundType == null)
+					return null;
+
+				builder.Add(boundType);
+			}
+
+			return new TupleSymbol(builder.ToImmutable());
+		}
+
+		private TypeSymbol BindValueType(ValueTypeSyntax syntax, bool isReadOnly) {
+			return ValueTypeSymbol.FromString(syntax.TypeName.ToString());
 		}
 
 		private BoundStatement BindExpressionStatement(ExpressionStatementSyntax syntax) {
@@ -666,7 +696,7 @@ namespace InterpreterLib.Binding {
 			var returnType = ValueTypeSymbol.FromString(syntax.ReturnType.NameToken.ToString());
 
 			foreach (var parameter in syntax.Parameters) {
-				string parameterName = parameter.Identifier.ToString();
+				string parameterName = parameter.IdentifierName.ToString();
 				var typeBind = ValueTypeSymbol.FromString(parameter.Definition.NameToken.ToString());
 
 				int line = parameter.Definition.NameToken.Location.Line;

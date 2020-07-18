@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Text;
 
 namespace InterpreterLib.Syntax.Tree {
-	internal sealed class TypeDefinitionSyntax : SyntaxNode {
+	internal class TypeDefinitionSyntax : SyntaxNode {
 		public override SyntaxType Type => SyntaxType.TypeDefinition;
 
 		public override IEnumerable<SyntaxNode> Children {
@@ -15,11 +15,11 @@ namespace InterpreterLib.Syntax.Tree {
 		}
 
 		public TokenSyntax DelimeterToken { get; }
-		public TokenSyntax NameToken { get; }
+		public SyntaxNode NameToken { get; }
 		public override TextLocation Location => DelimeterToken.Location;
 		public override TextSpan Span => new TextSpan(DelimeterToken.Span.Start, NameToken.Span.End);
 
-		public TypeDefinitionSyntax(TokenSyntax delimeterToken, TokenSyntax nameToken) {
+		public TypeDefinitionSyntax(TokenSyntax delimeterToken, SyntaxNode nameToken) {
 			DelimeterToken = delimeterToken;
 			NameToken = nameToken;
 		}

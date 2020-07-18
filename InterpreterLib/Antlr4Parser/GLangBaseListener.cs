@@ -72,6 +72,42 @@ public partial class GLangBaseListener : IGLangListener {
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitTypeDefinition([NotNull] GLangParser.TypeDefinitionContext context) { }
 	/// <summary>
+	/// Enter a parse tree produced by <see cref="GLangParser.tupleDescription"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterTupleDescription([NotNull] GLangParser.TupleDescriptionContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="GLangParser.tupleDescription"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitTupleDescription([NotNull] GLangParser.TupleDescriptionContext context) { }
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="GLangParser.seperatedTypeDescription"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterSeperatedTypeDescription([NotNull] GLangParser.SeperatedTypeDescriptionContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="GLangParser.seperatedTypeDescription"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitSeperatedTypeDescription([NotNull] GLangParser.SeperatedTypeDescriptionContext context) { }
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="GLangParser.typeDescription"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterTypeDescription([NotNull] GLangParser.TypeDescriptionContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="GLangParser.typeDescription"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitTypeDescription([NotNull] GLangParser.TypeDescriptionContext context) { }
+	/// <summary>
 	/// Enter a parse tree produced by <see cref="GLangParser.globalStatement"/>.
 	/// <para>The default implementation does nothing.</para>
 	/// </summary>

@@ -155,7 +155,7 @@ namespace InterpreterLib.Output {
 
 		private void OutputTypedIdentifier(TypedIdentifierSyntax node, string prefix) {
 			builder.AddFragment(new OutputFragment(prefix, DefaultColour));
-			builder.AddFragment(new OutputFragment(node.Identifier.ToString(), VariableColour));
+			builder.AddFragment(new OutputFragment(node.IdentifierName.ToString(), VariableColour));
 			builder.AddFragment(new OutputFragment(DelimeterString, DefaultColour));
 			builder.AddFragment(new OutputFragment(node.Definition.NameToken.ToString(), TypeColour));
 		}
@@ -293,7 +293,7 @@ namespace InterpreterLib.Output {
 			if (node.Identifier != null) {
 				builder.AddFragment(new OutputFragment($"({node.Identifier.ToString()}", VariableColour));
 				builder.AddFragment(new OutputFragment(DelimeterString, DefaultColour));
-				builder.AddFragment(new OutputFragment($"{node.Identifier})", TypeColour));
+				builder.AddFragment(new OutputFragment($"{node.Identifier.Definition.NameToken})", TypeColour));
 			} else {
 				builder.AddFragment(new OutputFragment(node.Initialiser.IdentifierToken.ToString(), VariableColour));
 				builder.AddFragment(new OutputFragment(" = ", DefaultColour));

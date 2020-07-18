@@ -5,6 +5,7 @@ using InterpreterLib.Syntax.Tree;
 using InterpreterLib.Syntax.Tree.Expressions;
 using InterpreterLib.Syntax.Tree.Global;
 using InterpreterLib.Syntax.Tree.Statements;
+using InterpreterLib.Syntax.Tree.TypeDescriptions;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -271,7 +272,7 @@ namespace InterpreterLib.Syntax {
 
 		public override SyntaxNode VisitTypeDefinition([NotNull] GLangParser.TypeDefinitionContext context) {
 			var delimeterCtx = context.TYPE_DELIMETER();
-			var nameCtx = context.TYPE_NAME();
+			var typeCtx = context.typeDescription();
 
 			if (delimeterCtx == null || !delimeterCtx.GetText().Equals(":")) {
 				diagnostics.AddDiagnostic(Diagnostic.ReportMissingToken(context.Start.Line, context.Start.Column, new TextSpan(context.Start.StartIndex, context.Stop.StopIndex), "type delimeter"));
@@ -283,7 +284,74 @@ namespace InterpreterLib.Syntax {
 				return null;
 			}
 
-			return new TypeDefinitionSyntax(new TokenSyntax(delimeterCtx.Symbol), new TokenSyntax(nameCtx.Symbol));
+			var descriptionVisit = Visit(typeCtx);
+
+			return new TypeDefinitionSyntax(new TokenSyntax(delimeterCtx.Symbol), descriptionVisit);
+		}
+
+		public override SyntaxNode VisitTypeDescription([NotNull] GLangParser.TypeDescriptionContext context) {
+			if (context.TYPE_NAME() != null)
+				return new ValueTypeSyntax(Token(context.TYPE_NAME().Symbol));
+
+			if (context.tupleDescription() != null)
+				return Visit(context.tupleDescription());
+
+			var span = new TextSpan(context.Start.StartIndex, context.Stop.StopIndex);
+			diagnostics.AddDiagnostic(Diagnostic.ReportInvalidTypeDescription(context.Start.Line, context.Start.Column, span));
+			return null;
+		}
+
+		public override SyntaxNode VisitTupleDescription([NotNull] GLangParser.TupleDescriptionContext context) {
+			var lParenCtx = context.L_PARENTHESIS();
+			var itemsCtx = context.seperatedTypeDescription();
+			var rParenCtx = context.R_PARENTHESIS();
+
+			bool hasLParen = lParenCtx != null && lParenCtx.Symbol.Text.Equals("(");
+			bool hasRParen = rParenCtx != null && rParenCtx.Symbol.Text.Equals(")");
+
+			if (!hasLParen || itemsCtx == null || !hasRParen) {
+				var span = new TextSpan(context.Start.StartIndex, context.Stop.StopIndex);
+				diagnostics.AddDiagnostic(Diagnostic.ReportInvalidTuple(context.Start.Line, context.Start.Column, span));
+				return null;
+			}
+
+			var builder = ImmutableArray.CreateBuilder<SyntaxNode>();
+
+			if (!(VisitSeperatedTypeDescription(itemsCtx, ref builder))) {
+				var span = new TextSpan(context.Start.StartIndex, context.Stop.StopIndex);
+				diagnostics.AddDiagnostic(Diagnostic.ReportInvalidTuple(context.Start.Line, context.Start.Column, span));
+				return null;
+			}
+
+			return new TupleTypeSyntax(Token(lParenCtx.Symbol), new SeperatedSyntaxList<SyntaxNode>(builder.ToImmutable()), Token(rParenCtx.Symbol));
+		}
+
+		private bool VisitSeperatedTypeDescription([NotNull] GLangParser.SeperatedTypeDescriptionContext context, ref ImmutableArray<SyntaxNode>.Builder builder) {
+			var itemCtx = context.typeDescription();
+			var commaCtx = context.COMMA();
+			var restCtx = context.seperatedTypeDescription();
+
+			bool hasComma = commaCtx != null && commaCtx.Symbol.Text.Equals(",");
+
+			if (itemCtx == null || (hasComma ^ restCtx != null)) {
+				var span = new TextSpan(context.Start.StartIndex, context.Stop.StopIndex);
+				diagnostics.AddDiagnostic(Diagnostic.ReportInvalidTuple(context.Start.Line, context.Start.Column, span));
+				return false;
+			}
+
+			var itemVisit = Visit(itemCtx);
+
+			if (itemCtx == null)
+				return false;
+
+			builder.Add(itemVisit);
+
+			if (hasComma && restCtx != null) {
+				builder.Add(Token(commaCtx.Symbol));
+				return VisitSeperatedTypeDescription(restCtx, ref builder);
+			}
+
+			return true;
 		}
 
 		private AssignmentExpressionSyntax VisitAssignmentExpression(ITerminalNode identifierCtx, ITerminalNode operatorCtx, GLangParser.AssignmentOperandContext operandCtx, TextLocation location, TextSpan span) {

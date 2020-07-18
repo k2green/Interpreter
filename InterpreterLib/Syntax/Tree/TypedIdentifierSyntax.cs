@@ -9,20 +9,20 @@ namespace InterpreterLib.Syntax.Tree {
 
 		public override IEnumerable<SyntaxNode> Children {
 			get {
-				yield return Identifier;
+				yield return IdentifierName;
 				yield return Definition;
 			}
 		}
 
-		public override TextLocation Location => Identifier.Location;
+		public override TextLocation Location => IdentifierName.Location;
 
-		public TokenSyntax Identifier { get; }
+		public TokenSyntax IdentifierName { get; }
 		public TypeDefinitionSyntax Definition { get; }
 
-		public override TextSpan Span => new TextSpan(Identifier.Span.Start, Identifier.Span.End);
+		public override TextSpan Span => new TextSpan(IdentifierName.Span.Start, IdentifierName.Span.End);
 
 		public TypedIdentifierSyntax(TokenSyntax identifier, TypeDefinitionSyntax definition) {
-			Identifier = identifier;
+			IdentifierName = identifier;
 			Definition = definition;
 		}
 	}

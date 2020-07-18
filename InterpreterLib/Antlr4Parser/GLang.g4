@@ -7,7 +7,12 @@ grammar GLang;
 compilationUnit : globalStatement+;
 
 declerationOrAssign: variableDeclarationStatement | assignmentExpression;
-typeDefinition: TYPE_DELIMETER TYPE_NAME;
+typeDefinition: TYPE_DELIMETER typeDescription;
+
+tupleDescription : L_PARENTHESIS seperatedTypeDescription R_PARENTHESIS;
+seperatedTypeDescription : typeDescription COMMA seperatedTypeDescription | typeDescription;
+typeDescription	: tupleDescription
+				| TYPE_NAME;
 
 	/*
 	 * Statements
@@ -52,6 +57,7 @@ assignmentExpression : IDENTIFIER ASSIGNMENT_OPERATOR assignmentOperand;
 	/*
 	 * Expressions
 	 */
+	 
 
 literal : DOUBLE | INTEGER | BOOLEAN | accessorExpression | STRING | CHAR_LITERAL | BYTE;
 expression: tuple | binaryExpression;

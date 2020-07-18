@@ -28,6 +28,8 @@ namespace InterpreterLib.Syntax.Tree {
 		Return,
 		Tuple,
 		VariableIndexer,
-		Accessor
+		Accessor,
+		ValueType,
+		TupleType
 	}
 }

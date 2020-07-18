@@ -209,6 +209,10 @@ namespace InterpreterLib {
 			return ReportVoidType(location, null, offendingText);
 		}
 
+		internal static Diagnostic ReportInvalidTypeDescription(int line, int column, TextSpan span) {
+			throw new NotImplementedException();
+		}
+
 		internal static Diagnostic ReportCannotRedefine(TextLocation location, TextSpan offendingText) {
 			return new Diagnostic(location.Line, location.Column, "Cannot redefine vadriable", null, offendingText, null);
 		}
