@@ -82,8 +82,8 @@ binaryExpression: left=binaryExpression op=CARAT right=binaryExpression
 				| atom=unaryExpression;
 				
 
-seperatedExpression	: binaryExpression COMMA seperatedExpression
-					| binaryExpression;
+seperatedExpression	: expression COMMA seperatedExpression
+					| expression;
 
 functionCall: funcName=IDENTIFIER L_PARENTHESIS seperatedExpression R_PARENTHESIS
 			| funcName=IDENTIFIER L_PARENTHESIS R_PARENTHESIS;

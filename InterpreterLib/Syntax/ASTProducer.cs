@@ -751,7 +751,7 @@ namespace InterpreterLib.Syntax {
 		}
 
 		private bool InternalVisitSeperatedExpression([NotNull] GLangParser.SeperatedExpressionContext context, ref ImmutableArray<SyntaxNode>.Builder builder) {
-			var expressionCtx = context.binaryExpression();
+			var expressionCtx = context.expression();
 			var commaCtx = context.COMMA();
 			var restCtx = context.seperatedExpression();
 

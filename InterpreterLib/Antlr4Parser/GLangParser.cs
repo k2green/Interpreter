@@ -2141,8 +2141,8 @@ public partial class GLangParser : Parser {
 	}
 
 	public partial class SeperatedExpressionContext : ParserRuleContext {
-		public BinaryExpressionContext binaryExpression() {
-			return GetRuleContext<BinaryExpressionContext>(0);
+		public ExpressionContext expression() {
+			return GetRuleContext<ExpressionContext>(0);
 		}
 		public ITerminalNode COMMA() { return GetToken(GLangParser.COMMA, 0); }
 		public SeperatedExpressionContext seperatedExpression() {
@@ -2179,7 +2179,7 @@ public partial class GLangParser : Parser {
 			case 1:
 				EnterOuterAlt(_localctx, 1);
 				{
-				State = 262; binaryExpression(0);
+				State = 262; expression();
 				State = 263; Match(COMMA);
 				State = 264; seperatedExpression();
 				}
@@ -2187,7 +2187,7 @@ public partial class GLangParser : Parser {
 			case 2:
 				EnterOuterAlt(_localctx, 2);
 				{
-				State = 266; binaryExpression(0);
+				State = 266; expression();
 				}
 				break;
 			}
@@ -2503,13 +2503,13 @@ public partial class GLangParser : Parser {
 		'\x104', '\x107', '\x3', '\x2', '\x2', '\x2', '\x105', '\x103', '\x3', 
 		'\x2', '\x2', '\x2', '\x105', '\x106', '\x3', '\x2', '\x2', '\x2', '\x106', 
 		'=', '\x3', '\x2', '\x2', '\x2', '\x107', '\x105', '\x3', '\x2', '\x2', 
-		'\x2', '\x108', '\x109', '\x5', '<', '\x1F', '\x2', '\x109', '\x10A', 
+		'\x2', '\x108', '\x109', '\x5', '\x30', '\x19', '\x2', '\x109', '\x10A', 
 		'\a', '\x6', '\x2', '\x2', '\x10A', '\x10B', '\x5', '>', ' ', '\x2', '\x10B', 
-		'\x10E', '\x3', '\x2', '\x2', '\x2', '\x10C', '\x10E', '\x5', '<', '\x1F', 
-		'\x2', '\x10D', '\x108', '\x3', '\x2', '\x2', '\x2', '\x10D', '\x10C', 
-		'\x3', '\x2', '\x2', '\x2', '\x10E', '?', '\x3', '\x2', '\x2', '\x2', 
-		'\x10F', '\x110', '\a', '\x1F', '\x2', '\x2', '\x110', '\x111', '\a', 
-		' ', '\x2', '\x2', '\x111', '\x112', '\x5', '>', ' ', '\x2', '\x112', 
+		'\x10E', '\x3', '\x2', '\x2', '\x2', '\x10C', '\x10E', '\x5', '\x30', 
+		'\x19', '\x2', '\x10D', '\x108', '\x3', '\x2', '\x2', '\x2', '\x10D', 
+		'\x10C', '\x3', '\x2', '\x2', '\x2', '\x10E', '?', '\x3', '\x2', '\x2', 
+		'\x2', '\x10F', '\x110', '\a', '\x1F', '\x2', '\x2', '\x110', '\x111', 
+		'\a', ' ', '\x2', '\x2', '\x111', '\x112', '\x5', '>', ' ', '\x2', '\x112', 
 		'\x113', '\a', '!', '\x2', '\x2', '\x113', '\x118', '\x3', '\x2', '\x2', 
 		'\x2', '\x114', '\x115', '\a', '\x1F', '\x2', '\x2', '\x115', '\x116', 
 		'\a', ' ', '\x2', '\x2', '\x116', '\x118', '\a', '!', '\x2', '\x2', '\x117', 
