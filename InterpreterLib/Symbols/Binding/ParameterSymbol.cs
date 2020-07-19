@@ -20,7 +20,7 @@ namespace InterpreterLib.Symbols.Binding {
 			if (!(obj is ParameterSymbol)) return false;
 
 			ParameterSymbol symbol = (ParameterSymbol)obj;
-			return Name.Equals(symbol.Name) && ValueType == symbol.ValueType;
+			return Name.Equals(symbol.Name) && ValueType.Equals(symbol.ValueType);
 		}
 
 		public override int GetHashCode() {

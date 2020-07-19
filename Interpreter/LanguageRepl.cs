@@ -85,7 +85,8 @@ namespace Interpreter {
 
 		protected override void RenderLine(string line) {
 			if (line.StartsWith("#")) {
-				Console.WriteLine(line);
+				Console.Write(line);
+				Console.WriteLine(new string(' ', Console.WindowWidth - line.Length - 2));
 			} else {
 				tree = new SyntaxTree(line, false);
 				var tokens = tree.Tokens;
@@ -179,7 +180,7 @@ namespace Interpreter {
 					running = false;
 					return true;
 				case "graphpath":
-					Console.WriteLine(BindingEnvironment.GraphPath);
+					Console.WriteLine(BindingEnvironment.GraphDir);
 					return true;
 				default:
 					return false;

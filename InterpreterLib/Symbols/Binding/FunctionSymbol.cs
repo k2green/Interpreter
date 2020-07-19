@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Text;
+using System.Linq;
 
 namespace InterpreterLib.Symbols.Binding {
 	public sealed class FunctionSymbol : Symbol {
@@ -41,6 +42,30 @@ namespace InterpreterLib.Symbols.Binding {
 
 		public override int GetHashCode() {
 			return HashCode.Combine(Name, ParametersHashCode, ReturnType);
+		}
+
+		public string GetGraphFileName() {
+			var builder = new StringBuilder();
+			var paramTypes = Parameters.Select(symbol => symbol.ValueType).ToImmutableArray();
+
+			builder.Append(Name).Append(" ");
+
+			if (paramTypes.Length > 0) {
+				builder.Append("(");
+
+				for (int index = 0; index < paramTypes.Length; index++) {
+					builder.Append(paramTypes[index]);
+
+					if (index < paramTypes.Length - 1)
+						builder.Append(",");
+				}
+
+				builder.Append(") ");
+			}
+
+			builder.Append(ReturnType);
+
+			return builder.ToString();
 		}
 	}
 }

@@ -157,7 +157,7 @@ namespace InterpreterLib.Binding.ControlFlow {
 					foreach (var statement in block.Statements) {
 						blockFromStatement.Add(statement, block);
 
-						if (statement is BoundLabel label)
+						if (statement is BoundLabel label && !blockFromLabel.ContainsKey(label.Label))
 							blockFromLabel.Add(label.Label, block);
 					}
 				}

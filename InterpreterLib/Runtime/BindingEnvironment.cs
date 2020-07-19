@@ -1,11 +1,6 @@
-﻿using Antlr4.Runtime;
-using Antlr4.Runtime.Tree;
-using InterpreterLib.Binding;
-using InterpreterLib.Binding.Lowering;
-using InterpreterLib.Binding.Tree;
+﻿using InterpreterLib.Binding;
 using InterpreterLib.Binding.Tree.Statements;
 using InterpreterLib.Diagnostics;
-using InterpreterLib.Syntax;
 using InterpreterLib.Syntax.Tree;
 using System;
 using System.Collections.Generic;
@@ -25,15 +20,19 @@ namespace InterpreterLib.Runtime {
 		private BindingEnvironment previous;
 		private CompilationUnitSyntax SyntaxRoot;
 
-		public static string GraphPath {
+		public static string GraphDir {
 			get {
 				var appPath = Environment.GetCommandLineArgs()[0];
 				var appDir = Path.GetDirectoryName(appPath);
-				var filePath = Path.Combine(appDir, "graph.gv");
+				var fileDir = Path.Combine(appDir, "Control-flow-graphs");
 
-				return filePath;
+				return fileDir;
 			}
 		}
+
+		public static string MainGraphPath => Path.Combine(GraphDir, "Program.gv");
+		public static string FunctionGraphDir => Path.Combine(GraphDir, "Functions");
+		public static string FunctionGraphPath(FunctionSymbol function) => Path.Combine(FunctionGraphDir, $"{function.GetGraphFileName()}.gv");
 
 		private BoundProgram boundProgram;
 		internal BoundProgram BoundProgram {
@@ -99,11 +98,8 @@ namespace InterpreterLib.Runtime {
 			if (BoundProgram == null)
 				return new DiagnosticResult<object>(diagnostics, null);
 
-			var block = !BoundProgram.Statement.Statements.Any() && BoundProgram.FunctionBodies.Any()
-						? BoundProgram.FunctionBodies.Values.Last()
-						: BoundProgram.Statement;
+			OutputGraphs();
 
-			OutputGraph(block);
 			Evaluator evaluator = new Evaluator(boundProgram, variables);
 
 			var evalResult = evaluator.Evaluate();
@@ -119,11 +115,32 @@ namespace InterpreterLib.Runtime {
 			output.Document.Output((frag) => printAction(frag.Text, frag.TextColour), newlineAction);
 		}
 
-		private void OutputGraph(BoundBlock block) {
-			var cfg = ControlFlowGraph.CreateGraph(block);
+		private void OutputGraphs() {
+			if (BoundProgram == null)
+				return;
 
-			using (StreamWriter writer = new StreamWriter(GraphPath))
-				cfg.WriteTo(writer);
+			var mainDirInfo = new DirectoryInfo(GraphDir);
+
+			if (!mainDirInfo.Exists)
+				mainDirInfo.Create();
+
+			using (var streamWriter = new StreamWriter(MainGraphPath))
+				BoundProgram.CreateMainGraph().WriteTo(streamWriter);
+
+			var funcDirInfo = new DirectoryInfo(FunctionGraphDir);
+
+			if (funcDirInfo.Exists)
+				foreach (var subItem in funcDirInfo.GetFiles())
+					subItem.Delete();
+			else
+				funcDirInfo.Create();
+
+			var functionGraphs = BoundProgram.CreateFunctionGraphs();
+
+			foreach (var funcSymbol in functionGraphs.Keys) {
+				using (var streamWriter = new StreamWriter(FunctionGraphPath(funcSymbol)))
+					functionGraphs[funcSymbol].WriteTo(streamWriter);
+			}
 		}
 	}
 }

@@ -135,6 +135,7 @@ namespace InterpreterLib.Binding {
 		private (LabelSymbol, LabelSymbol) CreateLoopLabels() {
 			var breakLabel = new LabelSymbol($"Break{currentBreakContinueNo}");
 			var continueLabel = new LabelSymbol($"Continue{currentBreakContinueNo}");
+			currentBreakContinueNo++;
 
 			return (breakLabel, continueLabel);
 		}
@@ -348,7 +349,7 @@ namespace InterpreterLib.Binding {
 					var requiredType = symbol.Parameters[index].ValueType;
 					var parameter = BindExpression(paramSyntax);
 
-					if (parameter.ValueType != requiredType && !TypeConversionSymbol.TryFind(parameter.ValueType, requiredType, out _)) {
+					if (!parameter.ValueType.Equals(requiredType) && !TypeConversionSymbol.TryFind(parameter.ValueType, requiredType, out _)) {
 						var diagnostic = Diagnostic.ReportInvalidParameterType(paramSyntax.Location, parameter.ValueType, requiredType, paramSyntax.Span);
 						return ErrorExpression(diagnostic);
 					}
