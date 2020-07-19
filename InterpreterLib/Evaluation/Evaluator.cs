@@ -39,7 +39,7 @@ namespace InterpreterLib.Diagnostics {
 			return new DiagnosticResult<object>(diagnostics, value);
 		}
 
-		private object EvaluateBlock(BoundBlock block) {
+		private object EvaluateBlock(BoundBlock block, bool isFunction = false) {
 			var labelConversions = new Dictionary<LabelSymbol, int>();
 
 			for (int index = 0; index < block.Statements.Length; index++) {
@@ -63,6 +63,11 @@ namespace InterpreterLib.Diagnostics {
 						val = EvaluateExpressionStatement((BoundExpressionStatement)statement);
 						currentIndex++;
 						break;
+					case NodeType.Return:
+						var returnStatement = (BoundReturnStatement)statement;
+						ret = EvaluateReturnStatement(returnStatement);
+						currentIndex = labelConversions[returnStatement.EndLabel];
+						break;
 					case NodeType.ConditionalBranch:
 						var cBranch = (BoundConditionalBranchStatement)statement;
 						if ((bool)EvaluateExpression(cBranch.Condition) == cBranch.BranchIfTrue)
@@ -81,11 +86,18 @@ namespace InterpreterLib.Diagnostics {
 					default: throw new NotImplementedException();
 				}
 
-				if (val != null)
+				if (val != null && !isFunction)
 					ret = val;
 			}
 
 			return ret;
+		}
+
+		private object EvaluateReturnStatement(BoundReturnStatement returnStatement) {
+			if (returnStatement.ReturnExpression == null)
+				return null;
+
+			return EvaluateExpression(returnStatement.ReturnExpression);
 		}
 
 		private object EvaluateExpression(BoundExpression expression) {
@@ -120,7 +132,7 @@ namespace InterpreterLib.Diagnostics {
 
 			for (int index = 0; index < minLength; index++) {
 				var evaluate = EvaluateExpression(expression.Expressions[index]);
-				var variable = new VariableSymbol($"Item{index + 1}", expression.IsReadOnly, tupleSymbol.Types[index]);
+				var variable = tupleSymbol.Variables[index];
 
 				variables.Add(variable, evaluate);
 				orderBuilder.Add(variable);

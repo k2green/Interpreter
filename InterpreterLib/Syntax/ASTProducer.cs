@@ -942,7 +942,7 @@ namespace InterpreterLib.Syntax {
 
 		public override SyntaxNode VisitReturnStatement([NotNull] GLangParser.ReturnStatementContext context) {
 			var keywCtx = context.RETURN();
-			var expressionCtx = context.binaryExpression();
+			var expressionCtx = context.expression();
 
 			if (keywCtx == null || !keywCtx.GetText().Equals("return")) {
 				var span = new TextSpan(context.Start.StartIndex, context.Stop.StopIndex);

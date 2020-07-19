@@ -66,6 +66,46 @@ namespace InterpreterLib.Output {
 				case NodeType.InternalTypeConversion:
 					OutputInternalTypeConversion((BoundInternalTypeConversion)node, prefix);
 					break;
+				case NodeType.Accessor:
+					OutputAccessor((BoundAccessor)node, prefix);
+					break;
+				case NodeType.Tuple:
+					OutputTuple((BoundTuple)node, prefix);
+					break;
+				case NodeType.Return:
+					OutputReturn((BoundReturnStatement)node, prefix);
+					break;
+			}
+		}
+
+		private void OutputReturn(BoundReturnStatement node, string prefix) {
+			builder.AddFragment(new OutputFragment(prefix, DefaultColour));
+			builder.AddFragment(new OutputFragment("return ", StatementColour));
+
+			if (node.ReturnExpression != null)
+				Output(node.ReturnExpression, string.Empty);
+		}
+
+		private void OutputTuple(BoundTuple node, string prefix) {
+			builder.AddFragment(new OutputFragment($"{prefix}(", DefaultColour));
+
+			foreach(var expression in node.Expressions) {
+				Output(expression, string.Empty);
+
+				if(!node.IsLast(expression))
+					builder.AddFragment(new OutputFragment(", ", DefaultColour));
+			}
+
+			builder.AddFragment(new OutputFragment(")", DefaultColour));
+		}
+
+		private void OutputAccessor(BoundAccessor node, string prefix) {
+			builder.AddFragment(new OutputFragment(prefix, DefaultColour));
+			Output(node.Item, string.Empty);
+
+			if (!node.IsLast) {
+				builder.AddFragment(new OutputFragment(".", DefaultColour));
+				Output(node.Rest, string.Empty);
 			}
 		}
 

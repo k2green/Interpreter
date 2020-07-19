@@ -11,16 +11,15 @@ namespace InterpreterLib.Symbols.Binding {
 			new TypeConversionSymbol(ValueTypeSymbol.Integer, ValueTypeSymbol.Double),
 			new TypeConversionSymbol(ValueTypeSymbol.Byte, ValueTypeSymbol.Double),
 			new TypeConversionSymbol(ValueTypeSymbol.Byte, ValueTypeSymbol.Integer),
-
-			new TypeConversionSymbol(ValueTypeSymbol.Integer, ValueTypeSymbol.String),
-			new TypeConversionSymbol(ValueTypeSymbol.Double, ValueTypeSymbol.String),
-			new TypeConversionSymbol(ValueTypeSymbol.Byte, ValueTypeSymbol.String),
-			new TypeConversionSymbol(ValueTypeSymbol.Boolean, ValueTypeSymbol.String),
-			new TypeConversionSymbol(ValueTypeSymbol.Character, ValueTypeSymbol.String)
 		};
 
 		public static bool TryFind(TypeSymbol fromType, TypeSymbol toType, out TypeConversionSymbol outputSymbol) {
 			outputSymbol = null;
+
+			if (toType.Equals(ValueTypeSymbol.String)) {
+				outputSymbol = new TypeConversionSymbol(fromType, toType);
+				return true;
+			}
 
 			foreach (var symbol in conversions) {
 				if (symbol.FromType == fromType && symbol.ToType == toType) {

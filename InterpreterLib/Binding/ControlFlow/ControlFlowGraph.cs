@@ -93,6 +93,11 @@ namespace InterpreterLib.Binding.ControlFlow {
 						var isLast = statement == currentBlock.Statements.Last();
 
 						switch (statement.Type) {
+							case NodeType.Return:
+								var returnStat = (BoundReturnStatement)statement;
+								var endBlock = blockFromLabel[returnStat.EndLabel];
+								Connect(currentBlock, endBlock);
+								break;
 							case NodeType.Branch:
 								var brStat = (BoundBranchStatement)statement;
 								var branchTo = blockFromLabel[brStat.Label];
@@ -178,6 +183,7 @@ namespace InterpreterLib.Binding.ControlFlow {
 							break;
 						case NodeType.ConditionalBranch:
 						case NodeType.Branch:
+						case NodeType.Return:
 							currentStatements.Add(statement);
 							StartBlock();
 							break;

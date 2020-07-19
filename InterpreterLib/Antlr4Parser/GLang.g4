@@ -26,7 +26,7 @@ statement : returnStatement | baseStatement | BREAK | CONTINUE;
 definedIdentifier: IDENTIFIER typeDefinition;
 seperatedDefinedIdentifier: definedIdentifier COMMA;
 
-returnStatement : RETURN binaryExpression
+returnStatement : RETURN expression
 				| RETURN;
 
 parameterDefinition	: definedIdentifier COMMA parameterDefinition
@@ -51,8 +51,13 @@ variableDeclarationStatement: DECL_VARIABLE definedIdentifier
 							| DECL_VARIABLE assignmentExpression;
 
 assignmentOperand : expression;
-assignmentExpression : IDENTIFIER ASSIGNMENT_OPERATOR assignmentOperand;
+assignmentExpression : baseAssignmentExpression;
 
+baseAssignmentExpression : IDENTIFIER ASSIGNMENT_OPERATOR assignmentOperand;
+tupleAssignmentExpression : L_PARENTHESIS seperatedIdentifier
+
+seperatedIdentifier : seperatedIdentifierAtom COMMA seperatedIdentifier | seperatedIdentifierAtom;
+seperatedIdentifierAtom : IDENTIFIER | WILDCARD;
 
 	/*
 	 * Expressions
@@ -125,6 +130,7 @@ CHAR_LITERAL: '\'' . '\'';
 WHITESPACE : [ \t\r\n]+ -> channel(HIDDEN);
 
 COMMA : ',';
+WILDCARD : '_';
 
 TYPE_DELIMETER : ':';
 BREAK: 'b' 'r' 'e' 'a' 'k';

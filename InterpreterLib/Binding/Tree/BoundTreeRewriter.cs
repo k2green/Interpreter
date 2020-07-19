@@ -17,21 +17,7 @@ namespace InterpreterLib.Binding.Tree {
 				throw new Exception($"Invalid node {node.Type}");
 		}
 
-		protected BoundExpression RewriteExpression(BoundExpression expression) {
-			if (expression == null)
-				return null;
-
-			var rewritten = InternalRewriteExpression(expression);
-
-			if(rewritten == null) {
-				Console.WriteLine(expression);
-				throw new Exception("Null error");
-			}
-
-			return rewritten;
-		}
-
-		protected virtual BoundExpression InternalRewriteExpression(BoundExpression expression) {
+		protected virtual BoundExpression RewriteExpression(BoundExpression expression) {
 			switch (expression.Type) {
 				case NodeType.AssignmentExpression:
 					return RewriteAssignmentExpression((BoundAssignmentExpression)expression);
@@ -73,7 +59,7 @@ namespace InterpreterLib.Binding.Tree {
 
 		private BoundExpression RewriteAccessor(BoundAccessor expression) {
 			var newItem = RewriteExpression(expression.Item);
-			var newIndex = RewriteExpression(expression.Index);
+			var newIndex = expression.Index == null ? null : RewriteExpression(expression.Index);
 			var newRest = expression.Rest == null ? null : (BoundAccessor)RewriteExpression(expression.Rest);
 
 			if (newItem == expression.Item && newIndex == expression.Index && newRest == expression.Rest)
@@ -155,8 +141,22 @@ namespace InterpreterLib.Binding.Tree {
 					return RewriteConditionalBranchStatement((BoundConditionalBranchStatement)statement);
 				case NodeType.Branch:
 					return RewriteBranchStatement((BoundBranchStatement)statement);
+				case NodeType.Return:
+					return RewriteReturnStatement((BoundReturnStatement)statement);
 				default: throw new Exception($"Unexpected statement {statement.Type}");
 			}
+		}
+
+		private BoundStatement RewriteReturnStatement(BoundReturnStatement statement) {
+			if (statement.ReturnExpression == null)
+				return statement;
+
+			var exprRewrite = RewriteExpression(statement.ReturnExpression);
+
+			if (exprRewrite == statement.ReturnExpression)
+				return statement;
+
+			return new BoundReturnStatement(exprRewrite, statement.EndLabel);
 		}
 
 		protected virtual BoundStatement RewriteBranchStatement(BoundBranchStatement statement) {

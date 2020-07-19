@@ -157,7 +157,7 @@ namespace InterpreterLib.Output {
 			builder.AddFragment(new OutputFragment(prefix, DefaultColour));
 			builder.AddFragment(new OutputFragment(node.IdentifierName.ToString(), VariableColour));
 			builder.AddFragment(new OutputFragment(DelimeterString, DefaultColour));
-			builder.AddFragment(new OutputFragment(node.Definition.NameToken.ToString(), TypeColour));
+			builder.AddFragment(new OutputFragment(node.Definition.TypeDescription.ToString(), TypeColour));
 		}
 
 		private void OutputFunctionDeclaration(FunctionDeclarationSyntax node, string prefix) {
@@ -293,7 +293,7 @@ namespace InterpreterLib.Output {
 			if (node.Identifier != null) {
 				builder.AddFragment(new OutputFragment($"({node.Identifier.ToString()}", VariableColour));
 				builder.AddFragment(new OutputFragment(DelimeterString, DefaultColour));
-				builder.AddFragment(new OutputFragment($"{node.Identifier.Definition.NameToken})", TypeColour));
+				builder.AddFragment(new OutputFragment($"{node.Identifier.Definition.TypeDescription})", TypeColour));
 			} else {
 				builder.AddFragment(new OutputFragment(node.Initialiser.IdentifierToken.ToString(), VariableColour));
 				builder.AddFragment(new OutputFragment(" = ", DefaultColour));

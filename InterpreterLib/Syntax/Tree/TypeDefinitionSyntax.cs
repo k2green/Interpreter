@@ -10,18 +10,18 @@ namespace InterpreterLib.Syntax.Tree {
 		public override IEnumerable<SyntaxNode> Children {
 			get {
 				yield return DelimeterToken;
-				yield return NameToken;
+				yield return TypeDescription;
 			}
 		}
 
 		public TokenSyntax DelimeterToken { get; }
-		public SyntaxNode NameToken { get; }
+		public SyntaxNode TypeDescription { get; }
 		public override TextLocation Location => DelimeterToken.Location;
-		public override TextSpan Span => new TextSpan(DelimeterToken.Span.Start, NameToken.Span.End);
+		public override TextSpan Span => new TextSpan(DelimeterToken.Span.Start, TypeDescription.Span.End);
 
 		public TypeDefinitionSyntax(TokenSyntax delimeterToken, SyntaxNode nameToken) {
 			DelimeterToken = delimeterToken;
-			NameToken = nameToken;
+			TypeDescription = nameToken;
 		}
 	}
 }

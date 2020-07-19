@@ -169,7 +169,7 @@ namespace InterpreterLib.Binding {
 			if (boundExpression.Type == NodeType.Error)
 				return boundExpression;
 
-			if(boundExpression.ValueType.Equals(ValueTypeSymbol.Void) && !allowVoid) {
+			if (boundExpression.ValueType.Equals(ValueTypeSymbol.Void) && !allowVoid) {
 				return ErrorExpression(Diagnostic.ReportVoidType(expression.Location, expression.Span));
 			}
 
@@ -211,7 +211,7 @@ namespace InterpreterLib.Binding {
 			return new BoundVariableExpression(variable);
 		}
 
-		private BoundExpression BindAccessor(AccessorSyntax expression) {
+		private BoundExpression BindAccessor(AccessorSyntax expression, bool isReadOnly = false, VariableSymbol readonlyVariable = null) {
 			BoundExpression boundItem;
 			BoundExpression boundIndex = null;
 
@@ -223,12 +223,18 @@ namespace InterpreterLib.Binding {
 
 			if (boundItem.Type == NodeType.Error)
 				return boundItem;
+			else if (boundItem.Type == NodeType.FunctionCall)
+				isReadOnly = true;
 
 			if (boundIndex != null && boundIndex.Type == NodeType.Error)
 				return boundItem;
 
-
 			if (expression.IsLast) {
+				if(boundItem.Type == NodeType.AssignmentExpression && isReadOnly) {
+					var variable = readonlyVariable ?? ((BoundAssignmentExpression)boundItem).Identifier;
+					return ErrorExpression(Diagnostic.ReportReadOnlyVariable(expression.Item.Location, expression.Item.Span, variable));
+				}
+
 				return new BoundAccessor(boundItem, boundIndex, null);
 			} else {
 				var currentScope = scope;
@@ -240,7 +246,7 @@ namespace InterpreterLib.Binding {
 						scope.TryDefineVariable(variable);
 				}
 
-				var boundRest = BindExpression(expression.Rest);
+				var boundRest = BindAccessor(expression.Rest, isReadOnly, readonlyVariable);
 
 				scope = currentScope;
 
@@ -304,6 +310,10 @@ namespace InterpreterLib.Binding {
 			if (!scope.TryLookupVariable(identifierText, out var variable)) {
 				var diagnostic = Diagnostic.ReportUndefinedVariable(syntax.IdentifierToken.Location, syntax.IdentifierToken.Span);
 				return ErrorExpression(diagnostic);
+			}
+
+			if (variable.IsReadOnly) {
+				return ErrorExpression(Diagnostic.ReportReadOnlyVariable(syntax.Location, syntax.Span, variable));
 			}
 
 			if (!variable.ValueType.Equals(expression.ValueType) && !TypeConversionSymbol.TryFind(expression.ValueType, variable.ValueType, out _)) {
@@ -407,26 +417,21 @@ namespace InterpreterLib.Binding {
 					var expression = BindExpression(syntax.Expression);
 
 					if (expression.Type == NodeType.Error)
-						return new BoundExpressionStatement(expression);
+						return Convert((BoundErrorExpression)expression);
 
-					if (Function.ReturnType == ValueTypeSymbol.Void) {
+					if (Function.ReturnType.Equals(ValueTypeSymbol.Void)) {
 						var exprDiag = Diagnostic.ReportInvalidReturnExpression(syntax.Location, syntax.Span);
 						return ErrorStatement(exprDiag);
 					}
 
-					if (expression.ValueType == Function.ReturnType) {
-						var bodyBuilder = ImmutableArray.CreateBuilder<BoundStatement>();
-
-						bodyBuilder.Add(new BoundExpressionStatement(expression));
-						bodyBuilder.Add(new BoundBranchStatement(Function.EndLabel));
-
-						return new BoundBlock(bodyBuilder.ToImmutable());
+					if (expression.ValueType.Equals(Function.ReturnType)) {
+						return new BoundReturnStatement(expression, Function.EndLabel);
 					} else {
 						var exprDiag = Diagnostic.ReportInvalidReturnExpressionType(syntax.Location, syntax.Span, expression.ValueType, Function.ReturnType);
 						return ErrorStatement(exprDiag);
 					}
 				} else {
-					return new BoundBranchStatement(Function.EndLabel);
+					return new BoundReturnStatement(null, Function.EndLabel);
 				}
 			}
 
@@ -455,15 +460,15 @@ namespace InterpreterLib.Binding {
 					return ErrorStatement(diagnostic);
 			}
 
-			if(syntax.Identifier != null) {
+			if (syntax.Identifier != null) {
 				varName = syntax.Identifier.IdentifierName.ToString();
-				type = BindTypeDescription(syntax.Identifier.Definition.NameToken);
+				type = BindTypeDescription(syntax.Identifier.Definition.TypeDescription);
 
 				if (type == null)
 					return null;
 
-				if(type.Equals(ValueTypeSymbol.Void)) {
-					return ErrorStatement(Diagnostic.ReportVoidType(syntax.Identifier.Definition.NameToken.Location, syntax.Identifier.Definition.NameToken.Span));
+				if (type.Equals(ValueTypeSymbol.Void)) {
+					return ErrorStatement(Diagnostic.ReportVoidType(syntax.Identifier.Definition.TypeDescription.Location, syntax.Identifier.Definition.TypeDescription.Span));
 				}
 			} else {
 				varName = syntax.Initialiser.IdentifierToken.ToString();
@@ -477,7 +482,7 @@ namespace InterpreterLib.Binding {
 
 			var variable = new VariableSymbol(varName, isReadOnly, type);
 
-			if(!scope.TryDefineVariable(variable)) {
+			if (!scope.TryDefineVariable(variable)) {
 				return ErrorStatement(Diagnostic.ReportCannotRedefine(syntax.Location, syntax.Span));
 			}
 
@@ -497,7 +502,7 @@ namespace InterpreterLib.Binding {
 		private TypeSymbol BindTupleType(TupleTypeSyntax syntax, bool isReadOnly) {
 			var builder = ImmutableArray.CreateBuilder<TypeSymbol>();
 
-			foreach(var type in syntax.Types) {
+			foreach (var type in syntax.Types) {
 				var boundType = BindTypeDescription(type, isReadOnly);
 
 				if (boundType == null)
@@ -652,19 +657,21 @@ namespace InterpreterLib.Binding {
 					statement = BindStatement(statSyntax);
 				}
 
-				if (statSyntax is ReturnSyntax)
-					hasReturn = true;
-
 				if (statement.Type == NodeType.Error)
 					return statement;
 
 				statements.Add(statement);
+
+				if (statement.Type == NodeType.Return) {
+					hasReturn = true;
+					break;
+				}
 			}
 
 			var immutable = statements.ToImmutable();
 
 			if (isFunctionBody && Function.ReturnType != ValueTypeSymbol.Void) {
-				if (immutable.Length > 0 && immutable.Last() is BoundExpressionStatement lastStatement && lastStatement.Expression.ValueType == Function.ReturnType)
+				if (immutable.Length > 0 && immutable.Last() is BoundExpressionStatement lastStatement && lastStatement.Expression.ValueType.Equals(Function.ReturnType))
 					hasReturn = true;
 
 				if (!hasReturn) {
@@ -693,21 +700,21 @@ namespace InterpreterLib.Binding {
 		public BoundStatement BindFunctionDeclaration(FunctionDeclarationSyntax syntax) {
 			string funcName = syntax.Identifier.ToString();
 			var parameters = ImmutableArray.CreateBuilder<ParameterSymbol>();
-			var returnType = ValueTypeSymbol.FromString(syntax.ReturnType.NameToken.ToString());
+			var returnType = BindTypeDescription(syntax.ReturnType.TypeDescription);
 
 			foreach (var parameter in syntax.Parameters) {
 				string parameterName = parameter.IdentifierName.ToString();
-				var typeBind = ValueTypeSymbol.FromString(parameter.Definition.NameToken.ToString());
+				var typeBind = BindTypeDescription(parameter.Definition.TypeDescription);
 
-				int line = parameter.Definition.NameToken.Location.Line;
-				int column = parameter.Definition.NameToken.Location.Column;
-				var span = parameter.Definition.NameToken.Span;
+				int line = parameter.Definition.TypeDescription.Location.Line;
+				int column = parameter.Definition.TypeDescription.Location.Column;
+				var span = parameter.Definition.TypeDescription.Span;
 
 				if (typeBind == null)
 					return ErrorStatement(Diagnostic.ReportInvalidParameterDefinition(line, column, span));
 
-				if (typeBind == ValueTypeSymbol.Void)
-					return ErrorStatement(Diagnostic.ReportVoidType(parameter.Definition.NameToken.Location, span));
+				if (typeBind.Equals(ValueTypeSymbol.Void))
+					return ErrorStatement(Diagnostic.ReportVoidType(parameter.Definition.TypeDescription.Location, span));
 
 				parameters.Add(new ParameterSymbol(parameterName, typeBind));
 			}
@@ -718,7 +725,7 @@ namespace InterpreterLib.Binding {
 			var functionSymbol = new FunctionSymbol(funcName, parameters.ToImmutable(), returnType);
 
 			if (!scope.TryDefineFunction(functionSymbol))
-				return ErrorStatement(Diagnostic.ReportCannotRedefineFunction(syntax.Identifier.Location.Line, syntax.Identifier.Location.Column, syntax.Identifier.Span));
+				return ErrorStatement(Diagnostic.ReportCannotRedefineFunction(syntax.Identifier.Location, syntax.Identifier.Span));
 
 			if (functionBodies.ContainsKey(functionSymbol))
 				functionBodies.Remove(functionSymbol);

@@ -1,5 +1,6 @@
 ﻿using InterpreterLib.Symbols.Types;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Text;
@@ -22,7 +23,7 @@ namespace InterpreterLib.Symbols.Binding {
 		public override bool Equals(object obj) {
 			if (!(obj is FunctionSymbol symbol)) return false;
 
-			if (!Name.Equals(symbol.Name) || ReturnType != symbol.ReturnType)
+			if (!Name.Equals(symbol.Name) || !ReturnType.Equals(symbol.ReturnType))
 				return false;
 
 			if (Parameters.Length != symbol.Parameters.Length)
@@ -36,8 +37,10 @@ namespace InterpreterLib.Symbols.Binding {
 			return true;
 		}
 
+		private int ParametersHashCode => ((IStructuralEquatable)Parameters).GetHashCode(EqualityComparer<ParameterSymbol>.Default);
+
 		public override int GetHashCode() {
-			return HashCode.Combine(Name, ReturnType);
+			return HashCode.Combine(Name, ParametersHashCode, ReturnType);
 		}
 	}
 }

@@ -21,6 +21,8 @@ namespace InterpreterLib.Binding.Tree.Expressions {
 			ValueType = new TupleSymbol(types);
 		}
 
+		public bool IsLast(BoundExpression expression) => Expressions[Expressions.Length - 1].Equals(expression);
+
 		public override string ToString() {
 			var builder = new StringBuilder().Append("(");
 

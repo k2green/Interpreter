@@ -27,6 +27,7 @@
 		FunctionCall,
 		InternalTypeConversion,
 		FunctionDefinition,
-		Tuple
+		Tuple,
+		Return
 	}
 }

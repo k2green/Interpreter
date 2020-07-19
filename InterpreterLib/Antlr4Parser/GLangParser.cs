@@ -826,8 +826,8 @@ public partial class GLangParser : Parser {
 
 	public partial class ReturnStatementContext : ParserRuleContext {
 		public ITerminalNode RETURN() { return GetToken(GLangParser.RETURN, 0); }
-		public BinaryExpressionContext binaryExpression() {
-			return GetRuleContext<BinaryExpressionContext>(0);
+		public ExpressionContext expression() {
+			return GetRuleContext<ExpressionContext>(0);
 		}
 		public ReturnStatementContext(ParserRuleContext parent, int invokingState)
 			: base(parent, invokingState)
@@ -861,7 +861,7 @@ public partial class GLangParser : Parser {
 				EnterOuterAlt(_localctx, 1);
 				{
 				State = 119; Match(RETURN);
-				State = 120; binaryExpression(0);
+				State = 120; expression();
 				}
 				break;
 			case 2:
@@ -2513,7 +2513,7 @@ public partial class GLangParser : Parser {
 		'\x2', 'u', '\x15', '\x3', '\x2', '\x2', '\x2', 'v', 'w', '\x5', '\x14', 
 		'\v', '\x2', 'w', 'x', '\a', '\x6', '\x2', '\x2', 'x', '\x17', '\x3', 
 		'\x2', '\x2', '\x2', 'y', 'z', '\a', '\n', '\x2', '\x2', 'z', '}', '\x5', 
-		'@', '!', '\x2', '{', '}', '\a', '\n', '\x2', '\x2', '|', 'y', '\x3', 
+		'\x34', '\x1B', '\x2', '{', '}', '\a', '\n', '\x2', '\x2', '|', 'y', '\x3', 
 		'\x2', '\x2', '\x2', '|', '{', '\x3', '\x2', '\x2', '\x2', '}', '\x19', 
 		'\x3', '\x2', '\x2', '\x2', '~', '\x7F', '\x5', '\x14', '\v', '\x2', '\x7F', 
 		'\x80', '\a', '\x6', '\x2', '\x2', '\x80', '\x81', '\x5', '\x1A', '\xE', 

@@ -20,7 +20,7 @@ namespace InterpreterLib.Symbols.Types {
 			variables = new List<VariableSymbol>();
 
 			for (var index = 0; index < Types.Length; index++) {
-				var variable = new VariableSymbol($"Item{index + 1}", isReadOnly, Types[index]);
+				var variable = new VariableSymbol($"item{index + 1}", isReadOnly, Types[index]);
 				variables.Add(variable);
 			}
 		}

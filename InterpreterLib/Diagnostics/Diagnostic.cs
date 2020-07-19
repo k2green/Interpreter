@@ -1,5 +1,6 @@
 ﻿using InterpreterLib.Binding;
 using InterpreterLib.Binding.Tree;
+using InterpreterLib.Symbols.Binding;
 using InterpreterLib.Symbols.Types;
 using InterpreterLib.Syntax;
 using System;
@@ -165,16 +166,36 @@ namespace InterpreterLib {
 			return new Diagnostic(line, column, "Syntax error: Invalid typed parameter", null, offendingText, null);
 		}
 
-		internal static Diagnostic ReportInvalidParameterType(TextLocation location, TypeSymbol valueType, TypeSymbol requiredType, TextSpan offendingText) {
-			return new Diagnostic(location.Line, location.Column, $"Parameter type {valueType} is not {requiredType}", null, offendingText, null);
-		}
-
 		internal static Diagnostic ReportInvalidFunctionDef(int line, int column, TextSpan? previousText, TextSpan offendingText, TextSpan? nextText) {
 			return new Diagnostic(line, column, "Syntax error: Invalid function definition", previousText, offendingText, nextText);
 		}
 
 		internal static Diagnostic ReportInvalidFunctionDef(int line, int column, TextSpan offendingText) {
 			return ReportInvalidFunctionDef(line, column, null, offendingText, null);
+		}
+
+		internal static Diagnostic ReportInvalidTypeDescription(int line, int column, TextSpan offendingText) {
+			return new Diagnostic(line, column, "Syntax error: Invalid type description", null, offendingText, null);
+		}
+
+		internal static Diagnostic ReportInvalidReturnStatement(int line, int column, TextSpan offendingText) {
+			return new Diagnostic(line, column, "Syntax error: Invalid return statement", null, offendingText, null);
+		}
+
+		internal static Diagnostic ReportInvalidExpression(int line, int column, TextSpan offendingText) {
+			return new Diagnostic(line, column, "Syntax error: Invalid expression", null, offendingText, null);
+		}
+
+		internal static Diagnostic ReportInvalidTuple(int line, int column, TextSpan offendingText) {
+			return new Diagnostic(line, column, "Syntax error: Invalid tuple", null, offendingText, null);
+		}
+
+		internal static Diagnostic ReportCannotRedefineFunction(TextLocation location, TextSpan offendingText) {
+			return new Diagnostic(location.Line, location.Column, $"Cannot redefine function", null, offendingText, null);
+		}
+
+		internal static Diagnostic ReportInvalidParameterType(TextLocation location, TypeSymbol valueType, TypeSymbol requiredType, TextSpan offendingText) {
+			return new Diagnostic(location.Line, location.Column, $"Parameter type {valueType} is not {requiredType}", null, offendingText, null);
 		}
 
 		internal static Diagnostic ReportInvalidType(TextLocation location, TextSpan previousText, TextSpan offendingText, TextSpan nextText, TypeSymbol requiredType) {
@@ -209,10 +230,6 @@ namespace InterpreterLib {
 			return ReportVoidType(location, null, offendingText);
 		}
 
-		internal static Diagnostic ReportInvalidTypeDescription(int line, int column, TextSpan span) {
-			throw new NotImplementedException();
-		}
-
 		internal static Diagnostic ReportCannotRedefine(TextLocation location, TextSpan offendingText) {
 			return new Diagnostic(location.Line, location.Column, "Cannot redefine vadriable", null, offendingText, null);
 		}
@@ -229,12 +246,8 @@ namespace InterpreterLib {
 			return new Diagnostic(location.Line, location.Column, $"Invalid return type", null, offendingText, null);
 		}
 
-		internal static Diagnostic ReportCannotRedefineFunction(int line, int column, TextSpan offendingText) {
-			return new Diagnostic(line, column, $"Cannot redefine function", null, offendingText, null);
-		}
-
-		internal static Diagnostic ReportInvalidReturnStatement(int line, int column, TextSpan span) {
-			throw new NotImplementedException();
+		internal static Diagnostic ReportReadOnlyVariable(TextLocation location, TextSpan offendingText, VariableSymbol readonlyVar) {
+			return new Diagnostic(location.Line, location.Column, $"Cannot reassign to readonly variable {readonlyVar}", null, offendingText, null);
 		}
 
 		internal static Diagnostic ReportInvalidBreakOrContinueStatement(TextLocation location, TextSpan offendingText, string keyword) {
@@ -253,16 +266,8 @@ namespace InterpreterLib {
 			return new Diagnostic(location.Line, location.Column, $"Function returns {returnType}, but {valueType} was returned instead", null, offendingText, null);
 		}
 
-		internal static Diagnostic ReportInvalidExpression(int line, int column, TextSpan textSpan) {
-			throw new NotImplementedException();
-		}
-
 		internal static Diagnostic ReportNoReturn(TextLocation location, TextSpan offendingText) {
 			return new Diagnostic(location.Line, location.Column, $"Non void functions must return a value", null, offendingText, null);
-		}
-
-		internal static Diagnostic ReportInvalidTuple(int line, int column, TextSpan span) {
-			throw new NotImplementedException();
 		}
 	}
 }
