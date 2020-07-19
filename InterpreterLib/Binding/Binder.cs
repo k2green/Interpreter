@@ -204,12 +204,12 @@ namespace InterpreterLib.Binding {
 		}
 
 		private BoundExpression BindVariableExpression(VariableSyntax syntax) {
-			string varaibleName = syntax.IdentifierToken.Token.Text;
+			string indentifierText = syntax.IdentifierToken.Token.Text;
 
-			if (!scope.TryLookupVariable(varaibleName, out var variable))
-				return ErrorExpression(Diagnostic.ReportUndefinedVariable(syntax.IdentifierToken.Location, syntax.IdentifierToken.Span));
+			if (scope.TryLookupVariable(indentifierText, out var variable))
+				return new BoundVariableExpression(variable);
 
-			return new BoundVariableExpression(variable);
+			return ErrorExpression(Diagnostic.ReportUndefinedVariable(syntax.IdentifierToken.Location, syntax.IdentifierToken.Span));
 		}
 
 		private BoundExpression BindAccessor(AccessorSyntax expression, bool isReadOnly = false, VariableSymbol readonlyVariable = null) {
@@ -231,7 +231,7 @@ namespace InterpreterLib.Binding {
 				return boundItem;
 
 			if (expression.IsLast) {
-				if(boundItem.Type == NodeType.AssignmentExpression && isReadOnly) {
+				if (boundItem.Type == NodeType.AssignmentExpression && isReadOnly) {
 					var variable = readonlyVariable ?? ((BoundAssignmentExpression)boundItem).Identifier;
 					return ErrorExpression(Diagnostic.ReportReadOnlyVariable(expression.Item.Location, expression.Item.Span, variable));
 				}
@@ -357,7 +357,6 @@ namespace InterpreterLib.Binding {
 					expressions.Add(parameter);
 				}
 			}
-
 			return new BoundFunctionCall(symbol, expressions.ToImmutable());
 		}
 

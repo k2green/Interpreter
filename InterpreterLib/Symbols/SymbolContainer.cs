@@ -16,6 +16,16 @@ namespace InterpreterLib.Symbols {
 
 		internal virtual bool TryLookupVariable(string name, out VariableSymbol variable) => TryLookupSymbol(name, out variable);
 
+		internal virtual bool TryLookupVariable<T>(string name, out VariableSymbol<T> variable) where T : TypeSymbol {
+			if (TryLookupVariable(name, out var lookup) && lookup.ValueType is T castedType) {
+				variable = new VariableSymbol<T>(name, lookup.IsReadOnly, castedType);
+				return true;
+			}
+
+			variable = null;
+			return false;
+		}
+
 		internal virtual bool TryDefineFunction(FunctionSymbol function) => TryDefineSymbol(function);
 
 		internal virtual bool TryLookupFunction(string name, out FunctionSymbol function) => TryLookupSymbol(name, out function);

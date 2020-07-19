@@ -28,6 +28,6 @@
 		InternalTypeConversion,
 		FunctionDefinition,
 		Tuple,
-		Return
+		Return,
 	}
 }

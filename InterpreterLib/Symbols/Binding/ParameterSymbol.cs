@@ -24,7 +24,7 @@ namespace InterpreterLib.Symbols.Binding {
 		}
 
 		public override int GetHashCode() {
-			return HashCode.Combine(Name, ValueType);
+			return ValueType.GetHashCode();
 		}
 	}
 }

@@ -10,6 +10,7 @@ namespace InterpreterLib.Symbols {
 		Label,
 		TypeConversion,
 		Tuple,
-		Array
+		Array,
+		FunctionPointer
 	}
 }
