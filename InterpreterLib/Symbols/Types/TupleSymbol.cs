@@ -1,6 +1,7 @@
 ﻿using InterpreterLib.Binding;
 using InterpreterLib.Symbols.Binding;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Text;
@@ -37,7 +38,7 @@ namespace InterpreterLib.Symbols.Types {
 		}
 
 		public override int GetHashCode() {
-			return Types.GetHashCode();
+			return ((IStructuralEquatable)Types).GetHashCode(EqualityComparer<TypeSymbol>.Default);
 		}
 
 		public override string ToString() {
