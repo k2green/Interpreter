@@ -35,8 +35,14 @@ namespace InterpreterLib.Binding.Tree {
 					return RewriteAccessor((BoundAccessor)expression);
 				case NodeType.Tuple:
 					return RewriteTuple((BoundTuple)expression);
+				case NodeType.FunctionPointer:
+					return RewriteFunctionPointer((BoundFunctionPointer)expression);
 				default: throw new Exception($"Unexpected expression {expression.Type}");
 			}
+		}
+
+		private BoundExpression RewriteFunctionPointer(BoundFunctionPointer expression) {
+			return expression;
 		}
 
 		private BoundExpression RewriteTuple(BoundTuple expression) {
@@ -118,7 +124,7 @@ namespace InterpreterLib.Binding.Tree {
 			if (isSame)
 				return expression;
 
-			return new BoundFunctionCall(expression.Function, newExpressions.ToImmutable());
+			return new BoundFunctionCall(expression.Function, expression.PointerSymbol, newExpressions.ToImmutable());
 		}
 
 		protected virtual BoundStatement RewriteStatement(BoundStatement statement) {

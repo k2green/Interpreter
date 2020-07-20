@@ -9,9 +9,14 @@ compilationUnit : globalStatement+;
 declerationOrAssign: variableDeclarationStatement | assignmentExpression;
 typeDefinition: TYPE_DELIMETER typeDescription;
 
-tupleDescription : L_PARENTHESIS seperatedTypeDescription R_PARENTHESIS;
+functionDescription : tupleDescription FUNCTION_TYPE_DELIMETER typeDescription;
+
+tupleDescription : L_PARENTHESIS seperatedTypeDescription R_PARENTHESIS
+				 | L_PARENTHESIS R_PARENTHESIS;
+
 seperatedTypeDescription : typeDescription COMMA seperatedTypeDescription | typeDescription;
-typeDescription	: tupleDescription
+typeDescription	: functionDescription
+				| tupleDescription
 				| TYPE_NAME;
 
 	/*
@@ -131,6 +136,8 @@ WHITESPACE : [ \t\r\n]+ -> channel(HIDDEN);
 
 COMMA : ',';
 WILDCARD : '_';
+
+FUNCTION_TYPE_DELIMETER : '=>';
 
 TYPE_DELIMETER : ':';
 BREAK: 'b' 'r' 'e' 'a' 'k';

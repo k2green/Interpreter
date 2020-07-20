@@ -201,8 +201,8 @@ namespace InterpreterLib.Binding.Lowering {
 				var parameter = expression.Parameters[index];
 				var newParameter = RewriteExpression(parameter);
 
-				if (newParameter.ValueType != expression.Function.Parameters[index].ValueType
-					&& TypeConversionSymbol.TryFind(newParameter.ValueType, expression.Function.Parameters[index].ValueType, out var symbol)) {
+				if (!newParameter.ValueType.Equals(expression.ParameterTypes[index])
+					&& TypeConversionSymbol.TryFind(newParameter.ValueType, expression.ParameterTypes[index], out var symbol)) {
 
 					newParameter = new BoundInternalTypeConversion(symbol, parameter);
 				}
@@ -216,7 +216,7 @@ namespace InterpreterLib.Binding.Lowering {
 			if (isSame)
 				return expression;
 
-			return new BoundFunctionCall(expression.Function, newExpressions.ToImmutable());
+			return new BoundFunctionCall(expression.Function, expression.PointerSymbol, newExpressions.ToImmutable());
 		}
 	}
 }

@@ -120,8 +120,14 @@ namespace InterpreterLib.Diagnostics {
 					return EvaluateTuple((BoundTuple)expression);
 				case NodeType.Accessor:
 					return EvaluateAccessor((BoundAccessor)expression);
+				case NodeType.FunctionPointer:
+					return EvaluateFunctionPointer((BoundFunctionPointer)expression);
 				default: throw new NotImplementedException();
 			}
+		}
+
+		private object EvaluateFunctionPointer(BoundFunctionPointer expression) {
+			return new FunctionPointerObject(expression.Function);
 		}
 
 		private object EvaluateTuple(BoundTuple expression) {
@@ -165,13 +171,29 @@ namespace InterpreterLib.Diagnostics {
 		}
 
 		private object EvaluateFunctionCall(BoundFunctionCall statement) {
-			if (statement.Function == BuiltInFunctions.Print) {
+			FunctionSymbol function = null;
+
+			if (statement.Function != null) {
+				function = statement.Function;
+			} else if (statement.PointerSymbol != null) {
+				object varEval = EvaluateVariable(statement.PointerSymbol.GetBaseSymbol());
+
+				if (!(varEval is FunctionPointerObject pointer))
+					return null;
+
+				function = pointer.Function;
+			}
+
+			if (function == null)
+				return null;
+
+			if (function == BuiltInFunctions.Print) {
 				string text = (string)EvaluateExpression(statement.Parameters[0]);
 				Console.WriteLine(text);
-			} else if (statement.Function == BuiltInFunctions.Input) {
+			} else if (function == BuiltInFunctions.Input) {
 				string input = Console.ReadLine();
 				return input;
-			} else if (Program.FunctionBodies.TryGetValue(statement.Function, out var boundBlock)) {
+			} else if (Program.FunctionBodies.TryGetValue(function, out var boundBlock)) {
 				var newScope = new Dictionary<VariableSymbol, object>();
 				var parameters = new VariableSymbol[statement.Parameters.Length];
 				int index = 0;
@@ -230,12 +252,16 @@ namespace InterpreterLib.Diagnostics {
 		}
 
 		private object EvaluateVariable(BoundVariableExpression expression) {
+			return EvaluateVariable(expression.Variable);
+		}
+
+		private object EvaluateVariable(VariableSymbol variableSymbol) {
 			if (locals.Count > 0) {
-				if (locals.Peek().TryGetValue(expression.Variable, out var value))
+				if (locals.Peek().TryGetValue(variableSymbol, out var value))
 					return value;
 			}
 
-			return globals[expression.Variable];
+			return globals[variableSymbol];
 		}
 
 		private void Assign(VariableSymbol symbol, object value) {

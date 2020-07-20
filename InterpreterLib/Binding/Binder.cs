@@ -223,6 +223,8 @@ namespace InterpreterLib.Binding {
 
 			if (scope.TryLookupVariable(indentifierText, out var variable))
 				return new BoundVariableExpression(variable);
+			else if (scope.TryLookupFunction(indentifierText, out var function))
+				return new BoundFunctionPointer(function);
 
 			return ErrorExpression(Diagnostic.ReportUndefinedVariable(syntax.IdentifierToken.Location, syntax.IdentifierToken.Span));
 		}
@@ -343,14 +345,22 @@ namespace InterpreterLib.Binding {
 		private BoundExpression BindFunctionCall(FunctionCallSyntax syntax) {
 			string callName = syntax.Identifier.Token.Text;
 
-			if (!scope.TryLookupFunction(callName, out var symbol)) {
+			ImmutableArray<TypeSymbol> parameters;
+			FunctionSymbol functionSymbol = null;
+			VariableSymbol<FunctionTypeSymbol> pointerSymbol = null;
+
+			if (scope.TryLookupFunction(callName, out functionSymbol)) {
+				parameters = functionSymbol.Parameters.Select(param => param.ValueType).ToImmutableArray();
+			} else if (scope.TryLookupVariable(callName, out pointerSymbol)) {
+				parameters = pointerSymbol.ValueType.ParamTypes;
+			} else {
 				var diagnostic = Diagnostic.ReportUndefinedFunction(syntax.Identifier.Location, syntax.Identifier.Span);
 				return ErrorExpression(diagnostic);
 			}
 
-			if (syntax.Parameters.Count != symbol.Parameters.Length) {
+			if (syntax.Parameters.Count != parameters.Length) {
 				int syntaxCount = syntax.Parameters.Count;
-				int requiredCount = symbol.Parameters.Length;
+				int requiredCount = parameters.Length;
 
 				var diagnostic = Diagnostic.ReportFunctionCountMismatch(syntax.Identifier.Location, syntaxCount, requiredCount, syntax.Parameters.Span);
 				return ErrorExpression(diagnostic);
@@ -361,7 +371,7 @@ namespace InterpreterLib.Binding {
 			if (syntax.Parameters.Count > 0) {
 				for (int index = 0; index < syntax.Parameters.Count; index++) {
 					var paramSyntax = syntax.Parameters[index];
-					var requiredType = symbol.Parameters[index].ValueType;
+					var requiredType = parameters[index];
 					var parameter = BindExpression(paramSyntax);
 
 					if (!parameter.ValueType.Equals(requiredType) && !TypeConversionSymbol.TryFind(parameter.ValueType, requiredType, out _)) {
@@ -372,7 +382,8 @@ namespace InterpreterLib.Binding {
 					expressions.Add(parameter);
 				}
 			}
-			return new BoundFunctionCall(symbol, expressions.ToImmutable());
+
+			return new BoundFunctionCall(functionSymbol, pointerSymbol, expressions.ToImmutable());
 		}
 
 		private BoundExpression BindTuple(TupleSyntax expression) {

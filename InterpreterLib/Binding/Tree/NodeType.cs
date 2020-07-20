@@ -29,5 +29,6 @@
 		FunctionDefinition,
 		Tuple,
 		Return,
+		FunctionPointer,
 	}
 }

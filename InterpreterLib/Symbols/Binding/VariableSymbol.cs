@@ -24,6 +24,8 @@ namespace InterpreterLib.Symbols.Binding {
 			ValueType = valueType;
 		}
 
+		public VariableSymbol GetBaseSymbol() => new VariableSymbol(Name, IsReadOnly, ValueType);
+
 		public override string ToString() => $"{Name} : {ValueType}";
 
 		public override bool Equals(object obj) {

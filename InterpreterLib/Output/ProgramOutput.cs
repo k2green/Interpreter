@@ -261,7 +261,7 @@ namespace InterpreterLib.Output {
 
 		private void OutputFunctionCall(BoundFunctionCall node, string prefix) {
 			builder.AddFragment(new OutputFragment(prefix, DefaultColour));
-			builder.AddFragment(new OutputFragment(node.Function.Name, FunctionNameColour));
+			builder.AddFragment(new OutputFragment(node.Name, FunctionNameColour));
 			builder.AddFragment(new OutputFragment("(", DefaultColour));
 
 			var paramCount = node.Parameters.Length;
