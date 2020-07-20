@@ -21,7 +21,6 @@ namespace InterpreterLib.Binding {
 
 		private BoundScope scope;
 		private FunctionSymbol Function;
-		private Dictionary<FunctionSymbol, FunctionDeclarationSyntax> functionBodies;
 
 		private Stack<(LabelSymbol, LabelSymbol)> breakContinueLabels;
 
@@ -30,7 +29,6 @@ namespace InterpreterLib.Binding {
 		private Binder(BoundScope parent, FunctionSymbol function = null) {
 			scope = new BoundScope(parent);
 			Diagnostics = new DiagnosticContainer();
-			functionBodies = new Dictionary<FunctionSymbol, FunctionDeclarationSyntax>();
 			Function = function;
 			breakContinueLabels = new Stack<(LabelSymbol, LabelSymbol)>();
 			currentBreakContinueNo = 0;
@@ -48,16 +46,21 @@ namespace InterpreterLib.Binding {
 			BoundGlobalScope globScope;
 
 			if (res.Diagnostics.Any()) {
-				globScope = new BoundGlobalScope(prev, binder.scope.GetVariables(), binder.scope.GetFunctions(), null, binder.functionBodies);
+				globScope = new BoundGlobalScope(prev, binder.scope.GetVariables(), binder.scope.GetFunctions(), null);
 				return new DiagnosticResult<BoundGlobalScope>(binder.Diagnostics, globScope);
 			}
 
 			var lowered = Lowerer.Lower(res.Value);
-			globScope = new BoundGlobalScope(prev, binder.scope.GetVariables(), binder.scope.GetFunctions(), lowered, binder.functionBodies);
+			globScope = new BoundGlobalScope(prev, binder.scope.GetVariables(), binder.scope.GetFunctions(), lowered);
 			return new DiagnosticResult<BoundGlobalScope>(binder.Diagnostics, globScope);
 		}
 
 		public static BoundScope CreateParentScopes(BoundGlobalScope previous) {
+			var list = new List<FunctionSymbol>();
+			return CreateParentScopes(previous, ref list);
+		}
+
+		public static BoundScope CreateParentScopes(BoundGlobalScope previous, ref List<FunctionSymbol> parentFunctions) {
 			if (previous == null)
 				return CreateBaseScope();
 
@@ -76,6 +79,10 @@ namespace InterpreterLib.Binding {
 				foreach (var variable in previous.Variables)
 					current.TryDefineVariable(variable);
 
+				foreach (var function in previous.Functions) {
+					current.TryDefineFunction(function);
+					parentFunctions.Add(function);
+				}
 			}
 			return current;
 		}
@@ -93,28 +100,36 @@ namespace InterpreterLib.Binding {
 		public static DiagnosticResult<BoundProgram> BindProgram(BoundGlobalScope globalScope) {
 			var functionBodies = new Dictionary<FunctionSymbol, BoundBlock>();
 			var diagnostics = new DiagnosticContainer();
-			var parentScope = CreateParentScopes(globalScope);
 
-			foreach (var function in globalScope.Functions) {
-				if (globalScope.FunctionBodies.TryGetValue(function, out var functionDeclaration)) {
-					var functionBinder = new Binder(parentScope, function);
-					var body = functionBinder.BindStatement(functionDeclaration.Body, true);
+			var allFunctions = new List<FunctionSymbol>();
+			var parentScope = CreateParentScopes(globalScope, ref allFunctions);
 
-					var builder = ImmutableArray.CreateBuilder<BoundStatement>();
-					builder.Add(body);
-					builder.Add(new BoundLabel(function.EndLabel));
+			foreach (var function in allFunctions) {
+				if (function.FuncSyntax != null && !functionBodies.ContainsKey(function)) {
+					var subDiagnostic = BindFunction(function, new BoundScope(parentScope), ref functionBodies);
 
-					if (functionBinder.Diagnostics.Any()) {
-						diagnostics.AddDiagnostics(functionBinder.Diagnostics);
-						continue;
-					}
-
-					functionBodies.Add(function, Lowerer.Lower(new BoundBlock(builder.ToImmutable())));
+					if (subDiagnostic != null)
+						diagnostics.AddDiagnostics(subDiagnostic);
 				}
 			}
 
 			var program = new BoundProgram(functionBodies, globalScope.Root);
 			return new DiagnosticResult<BoundProgram>(diagnostics, program);
+		}
+
+		private static DiagnosticContainer BindFunction(FunctionSymbol function, BoundScope scope, ref Dictionary<FunctionSymbol, BoundBlock> bodies) {
+			var functionBinder = new Binder(scope, function);
+			var body = functionBinder.BindStatement(function.FuncSyntax.Body, true);
+
+			var builder = ImmutableArray.CreateBuilder<BoundStatement>();
+			builder.Add(body);
+			builder.Add(new BoundLabel(function.EndLabel));
+
+			if (functionBinder.Diagnostics.Any())
+				return functionBinder.Diagnostics;
+
+			bodies.Add(function, Lowerer.Lower(new BoundBlock(builder.ToImmutable())));
+			return null;
 		}
 
 		private BoundStatement ErrorStatement(Diagnostic diagnostic) {
@@ -722,15 +737,11 @@ namespace InterpreterLib.Binding {
 			if (returnType == null)
 				return ErrorStatement(Diagnostic.ReportInvalidReturnType(syntax.ReturnType.Location, syntax.ReturnType.Span));
 
-			var functionSymbol = new FunctionSymbol(funcName, parameters.ToImmutable(), returnType);
+			var functionSymbol = new FunctionSymbol(funcName, parameters.ToImmutable(), returnType, syntax);
 
 			if (!scope.TryDefineFunction(functionSymbol))
 				return ErrorStatement(Diagnostic.ReportCannotRedefineFunction(syntax.Identifier.Location, syntax.Identifier.Span));
 
-			if (functionBodies.ContainsKey(functionSymbol))
-				functionBodies.Remove(functionSymbol);
-
-			functionBodies.Add(functionSymbol, syntax);
 			return null;
 		}
 	}

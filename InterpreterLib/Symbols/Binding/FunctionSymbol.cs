@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Text;
 using System.Linq;
+using InterpreterLib.Syntax.Tree.Global;
 
 namespace InterpreterLib.Symbols.Binding {
 	public sealed class FunctionSymbol : Symbol {
@@ -13,12 +14,16 @@ namespace InterpreterLib.Symbols.Binding {
 		public override string Name { get; }
 		public ImmutableArray<ParameterSymbol> Parameters { get; }
 		public TypeSymbol ReturnType { get; }
+
+		internal FunctionDeclarationSyntax FuncSyntax { get; }
+
 		public LabelSymbol EndLabel => new LabelSymbol("FunctionEnd");
 
-		public FunctionSymbol(string name, ImmutableArray<ParameterSymbol> parameters, TypeSymbol returnType) {
+		internal FunctionSymbol(string name, ImmutableArray<ParameterSymbol> parameters, TypeSymbol returnType, FunctionDeclarationSyntax funcSyntax) {
 			Name = name;
 			Parameters = parameters;
 			ReturnType = returnType;
+			FuncSyntax = funcSyntax;
 		}
 
 		public override bool Equals(object obj) {

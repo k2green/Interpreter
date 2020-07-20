@@ -30,11 +30,11 @@ namespace InterpreterLib.Binding {
 		}
 
 		public IEnumerable<VariableSymbol> GetVariables() {
-			return GetSymbols().Where(symbol => symbol.Type == SymbolType.Variable).Select(symbol => (VariableSymbol)symbol);
+			return GetSymbols().OfType<VariableSymbol>();
 		}
 
 		public IEnumerable<FunctionSymbol> GetFunctions() {
-			return symbols.Values.OfType<FunctionSymbol>();
+			return GetSymbols().OfType<FunctionSymbol>();
 		}
 	}
 }

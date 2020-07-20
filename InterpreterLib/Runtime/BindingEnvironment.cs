@@ -98,6 +98,10 @@ namespace InterpreterLib.Runtime {
 			if (BoundProgram == null)
 				return new DiagnosticResult<object>(diagnostics, null);
 
+			foreach(var function in GlobalScope.Functions) {
+				Console.WriteLine($"{function.Name} => {function.ReturnType}");
+			}
+
 			OutputGraphs();
 
 			Evaluator evaluator = new Evaluator(boundProgram, variables);

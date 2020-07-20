@@ -2,7 +2,7 @@
 using InterpreterLib.Symbols.Types;
 using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Linq;
 
 namespace InterpreterLib.Symbols {
 	internal class SymbolContainer {

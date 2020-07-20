@@ -11,6 +11,7 @@ namespace InterpreterLib.Symbols {
 		TypeConversion,
 		Tuple,
 		Array,
-		FunctionPointer
+		FunctionPointer,
+		FunctionType
 	}
 }
