@@ -119,7 +119,12 @@ namespace InterpreterLib.Binding {
 
 		private static DiagnosticContainer BindFunction(FunctionSymbol function, BoundScope scope, ref Dictionary<FunctionSymbol, BoundBlock> bodies) {
 			var functionBinder = new Binder(scope, function);
-			var body = functionBinder.BindStatement(function.FuncSyntax.Body, true);
+			var body = functionBinder.BindStatement(function.FuncSyntax.Body);
+
+			if (!function.ReturnType.Equals(ValueTypeSymbol.Void) && !StatementHasReturn(body, function)) {
+				functionBinder.Diagnostics.AddDiagnostic(Diagnostic.ReportNoReturn(function.FuncSyntax.Body.Location, function.FuncSyntax.Body.Span));
+				return functionBinder.Diagnostics;
+			}
 
 			var builder = ImmutableArray.CreateBuilder<BoundStatement>();
 			builder.Add(body);
@@ -128,8 +133,44 @@ namespace InterpreterLib.Binding {
 			if (functionBinder.Diagnostics.Any())
 				return functionBinder.Diagnostics;
 
-			bodies.Add(function, Lowerer.Lower(new BoundBlock(builder.ToImmutable())));
+			bodies.Add(function, Lowerer.Lower(new BoundBlock(builder.ToImmutable()), function.EndLabel));
 			return null;
+		}
+
+		private static bool StatementHasReturn(BoundStatement statement, FunctionSymbol function) {
+			switch (statement.Type) {
+				case NodeType.Return:
+					return true;
+				case NodeType.If:
+					return HasReturn((BoundIfStatement)statement, function);
+				case NodeType.Block:
+					return HasReturn((BoundBlock)statement, function);
+				case NodeType.Expression:
+					return HasReturn((BoundExpressionStatement)statement, function);
+				default:
+					return false;
+			}
+		}
+
+		private static bool HasReturn(BoundIfStatement statement, FunctionSymbol function) {
+			if (statement.FalseBranch == null) return false;
+
+			return StatementHasReturn(statement.TrueBranch, function) && StatementHasReturn(statement.FalseBranch, function);
+		}
+
+		private static bool HasReturn(BoundBlock statement, FunctionSymbol function) {
+			if (statement.Statements.Length <= 0) return false;
+
+			return StatementHasReturn(statement.Statements.Last(), function);
+		}
+
+		private static bool HasReturn(BoundExpressionStatement statement, FunctionSymbol function) {
+			if (statement.Expression.ValueType.Equals(function.ReturnType)) {
+				statement.MarkForRewrite();
+				return true;
+			}
+
+			return false;
 		}
 
 		private BoundStatement ErrorStatement(Diagnostic diagnostic) {
@@ -413,20 +454,20 @@ namespace InterpreterLib.Binding {
 			return BindStatement(syntax.Statement);
 		}
 
-		private BoundStatement BindStatement(StatementSyntax syntax, bool isFunctionBody = false, bool isLast = false) {
+		private BoundStatement BindStatement(StatementSyntax syntax) {
 			switch (syntax.Type) {
 				case SyntaxType.VariableDeclaration:
 					return BindDeclarationStatement((VariableDeclarationSyntax)syntax);
 				case SyntaxType.Expression:
 					return BindExpressionStatement((ExpressionStatementSyntax)syntax);
 				case SyntaxType.IfStatement:
-					return BindIfStatement((IfStatementSyntax)syntax, isLast);
+					return BindIfStatement((IfStatementSyntax)syntax);
 				case SyntaxType.WhileLoop:
 					return BindWhileLoop((WhileLoopSyntax)syntax);
 				case SyntaxType.ForLoop:
 					return BindForLoop((ForLoopSyntax)syntax);
 				case SyntaxType.Block:
-					return BindBlock((BlockSyntax)syntax, isFunctionBody);
+					return BindBlock((BlockSyntax)syntax);
 				case SyntaxType.Break:
 					return BindBreakStatement((BreakSyntax)syntax);
 				case SyntaxType.Continue:
@@ -553,15 +594,15 @@ namespace InterpreterLib.Binding {
 			return new BoundExpressionStatement(expression);
 		}
 
-		private BoundStatement BindIfStatement(IfStatementSyntax syntax, bool isLastFunctionStatement = false) {
+		private BoundStatement BindIfStatement(IfStatementSyntax syntax) {
 			var boundCondition = BindExpression(syntax.Condition);
 
 			scope = new BoundScope(scope);
-			var boundTrueBr = BindStatement(syntax.TrueBranch, isLastFunctionStatement, isLastFunctionStatement);
+			var boundTrueBr = BindStatement(syntax.TrueBranch);
 			scope = scope.Parent;
 
 			scope = new BoundScope(scope);
-			var boundFalseBr = syntax.FalseBranch == null ? null : BindStatement(syntax.FalseBranch, isLastFunctionStatement, isLastFunctionStatement);
+			var boundFalseBr = syntax.FalseBranch == null ? null : BindStatement(syntax.FalseBranch);
 			scope = scope.Parent;
 
 			if (boundCondition.Type == NodeType.Error)
@@ -573,21 +614,7 @@ namespace InterpreterLib.Binding {
 			if (boundFalseBr != null && boundFalseBr.Type == NodeType.Error)
 				return boundFalseBr;
 
-			if (Function != null && isLastFunctionStatement) {
-				if (boundFalseBr == null) {
-					return ErrorStatement(Diagnostic.ReportNoReturn(syntax.Location, syntax.Span));
-				} else {
-					if (!(syntax.TrueBranch is ReturnSyntax) && (boundTrueBr is BoundExpressionStatement trueExpression && trueExpression.Expression.ValueType != Function.ReturnType)) {
-						return ErrorStatement(Diagnostic.ReportNoReturn(syntax.Location, syntax.TrueBranch.Span));
-					}
-
-					if (!(syntax.FalseBranch is ReturnSyntax) && boundFalseBr is BoundExpressionStatement falseExpression && falseExpression.Expression.ValueType != Function.ReturnType) {
-						return ErrorStatement(Diagnostic.ReportNoReturn(syntax.Location, syntax.FalseBranch.Span));
-					}
-				}
-			}
-
-			if (boundCondition.ValueType != ValueTypeSymbol.Boolean) {
+			if (!boundCondition.ValueType.Equals(ValueTypeSymbol.Boolean)) {
 				var prev = new TextSpan(syntax.IfToken.Span.Start, syntax.LeftParenToken.Span.End);
 				var next = new TextSpan(syntax.RightParenToken.Span.Start, syntax.RightParenToken.Span.End);
 
@@ -666,22 +693,13 @@ namespace InterpreterLib.Binding {
 			return bindRes;
 		}
 
-		private BoundStatement BindBlock(BlockSyntax syntax, bool isFunctionBody = false) {
+		private BoundStatement BindBlock(BlockSyntax syntax) {
 			var statements = ImmutableArray.CreateBuilder<BoundStatement>();
-			bool hasReturn = false;
 
 			var paramCount = syntax.Statements.Length;
 			for (var index = 0; index < paramCount; index++) {
 				var statSyntax = syntax.Statements[index];
-				BoundStatement statement;
-
-				if (isFunctionBody && Function.ReturnType != ValueTypeSymbol.Void && index == paramCount - 1 && statSyntax is IfStatementSyntax ifSyntax) {
-					statement = BindIfStatement(ifSyntax, true);
-
-					hasReturn = statement.Type != NodeType.Error;
-				} else {
-					statement = BindStatement(statSyntax);
-				}
+				var statement = BindStatement(statSyntax);
 
 				if (statement.Type == NodeType.Error)
 					return statement;
@@ -689,24 +707,11 @@ namespace InterpreterLib.Binding {
 				statements.Add(statement);
 
 				if (statement.Type == NodeType.Return) {
-					hasReturn = true;
 					break;
 				}
 			}
 
-			var immutable = statements.ToImmutable();
-
-			if (isFunctionBody && Function.ReturnType != ValueTypeSymbol.Void) {
-				if (immutable.Length > 0 && immutable.Last() is BoundExpressionStatement lastStatement && lastStatement.Expression.ValueType.Equals(Function.ReturnType))
-					hasReturn = true;
-
-				if (!hasReturn) {
-					var diagnostic = Diagnostic.ReportNoReturn(syntax.Location, syntax.Span);
-					return ErrorStatement(diagnostic);
-				}
-			}
-
-			return new BoundBlock(immutable);
+			return new BoundBlock(statements.ToImmutable());
 		}
 
 		private BoundStatement BindBreakStatement(BreakSyntax syntax) {

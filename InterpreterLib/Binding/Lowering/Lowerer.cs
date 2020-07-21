@@ -12,16 +12,19 @@ namespace InterpreterLib.Binding.Lowering {
 
 		private int counter;
 
-		public Lowerer() {
+		public LabelSymbol EndLabel { get; }
+
+		public Lowerer(LabelSymbol endLabel = null) {
 			counter = 0;
+			EndLabel = endLabel;
 		}
 
 		private LabelSymbol CreateNextLabel() {
 			return new LabelSymbol($"Label {counter++}");
 		}
 
-		public static BoundBlock Lower(BoundStatement statement) {
-			Lowerer lowerer = new Lowerer();
+		public static BoundBlock Lower(BoundStatement statement, LabelSymbol endLabel = null) {
+			Lowerer lowerer = new Lowerer(endLabel);
 
 			var lowered = lowerer.RewriteStatement(statement);
 			return Flatten(lowered);
@@ -217,6 +220,15 @@ namespace InterpreterLib.Binding.Lowering {
 				return expression;
 
 			return new BoundFunctionCall(expression.Function, expression.PointerSymbol, newExpressions.ToImmutable());
+		}
+
+		protected override BoundStatement RewriteExpressionStatement(BoundExpressionStatement statement) {
+			if (!statement.IsMarkedForRewrite || EndLabel == null)
+				return base.RewriteExpressionStatement(statement);
+
+			var newExpression = RewriteExpression(statement.Expression);
+
+			return new BoundReturnStatement(newExpression, EndLabel);
 		}
 	}
 }
