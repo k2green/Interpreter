@@ -51,9 +51,9 @@ namespace InterpreterLib.Binding.ControlFlow {
 		public List<BasicBlock> Blocks { get; }
 		public List<BasicBlockEdge> Edges { get; }
 
-		public static ControlFlowGraph CreateGraph(BoundBlock block) {
+		public static ControlFlowGraph CreateGraph(BoundBlock block, FunctionSymbol function = null) {
 			var blockBuilder = new BasicBlockBuilder();
-			var edgeBuilder = new GraphBuilder();
+			var edgeBuilder = new GraphBuilder(function);
 			var blocks = blockBuilder.Build(block);
 
 			return edgeBuilder.Build(blocks);
@@ -67,13 +67,13 @@ namespace InterpreterLib.Binding.ControlFlow {
 			private BasicBlock start;
 			private BasicBlock end;
 
-			public GraphBuilder() {
+			public GraphBuilder(FunctionSymbol function) {
 				blockFromStatement = new Dictionary<BoundStatement, BasicBlock>();
 				blockFromLabel = new Dictionary<LabelSymbol, BasicBlock>();
 				edges = new List<BasicBlockEdge>();
 
-				start = new BasicBlock(true);
-				end = new BasicBlock(false);
+				start = new BasicBlock(true, function);
+				end = new BasicBlock(false, function);
 			}
 
 			public ControlFlowGraph Build(List<BasicBlock> blocks) {
@@ -218,20 +218,37 @@ namespace InterpreterLib.Binding.ControlFlow {
 
 			public BasicBlock() { }
 
-			public BasicBlock(bool isStart) {
+			public BasicBlock(bool isStart, FunctionSymbol function) {
 				IsStart = isStart;
+				Function = function;
 				IsEnd = !isStart;
 			}
 
 			public bool IsStart { get; }
+			public FunctionSymbol Function { get; }
 			public bool IsEnd { get; }
 			public List<BoundStatement> Statements { get; } = new List<BoundStatement>();
 			public List<BasicBlockEdge> IncomingEdges { get; } = new List<BasicBlockEdge>();
 			public List<BasicBlockEdge> OutgoinfEdges { get; } = new List<BasicBlockEdge>();
 
 			public override string ToString() {
-				if (IsStart) return "<start>";
-				if (IsEnd) return "<end>";
+				if (IsStart) {
+					var startStr = "<start>";
+
+					if (Function != null)
+						startStr = startStr + "\\l" + Function.GetParameterString();
+
+					return startStr;
+				}
+
+				if (IsEnd) {
+					var endStr = "<end>";
+
+					if (Function != null)
+						endStr = endStr + "\\l" + Function.ReturnType.ToString();
+
+					return endStr;
+				}
 
 				var builder = new StringBuilder();
 				var statCount = Statements.Count;

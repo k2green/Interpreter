@@ -26,5 +26,9 @@ namespace InterpreterLib.Symbols.Binding {
 		public override int GetHashCode() {
 			return ValueType.GetHashCode();
 		}
+
+		public override string ToString() {
+			return $"{Name}: {ValueType}";
+		}
 	}
 }

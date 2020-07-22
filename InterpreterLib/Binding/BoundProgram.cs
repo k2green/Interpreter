@@ -24,7 +24,7 @@ namespace InterpreterLib.Binding {
 			var outputDictionary = new Dictionary<FunctionSymbol, ControlFlowGraph>();
 
 			foreach(var funcSymbol in FunctionBodies.Keys) {
-				outputDictionary.Add(funcSymbol, ControlFlowGraph.CreateGraph(FunctionBodies[funcSymbol]));
+				outputDictionary.Add(funcSymbol, ControlFlowGraph.CreateGraph(FunctionBodies[funcSymbol], funcSymbol));
 			}
 
 			return outputDictionary;

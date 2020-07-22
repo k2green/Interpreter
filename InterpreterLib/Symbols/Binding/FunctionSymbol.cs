@@ -49,6 +49,19 @@ namespace InterpreterLib.Symbols.Binding {
 			return HashCode.Combine(Name, ParametersHashCode, ReturnType);
 		}
 
+		public string GetParameterString() {
+			var builder = new StringBuilder();
+
+			for(int index = 0; index < Parameters.Length; index++ ) {
+				builder.Append(Parameters[index]);
+
+				if (index < Parameters.Length - 1)
+					builder.Append(", ");
+			}
+
+			return builder.ToString();
+		}
+
 		public string GetGraphFileName() {
 			var builder = new StringBuilder();
 			var paramTypes = Parameters.Select(symbol => symbol.ValueType).ToImmutableArray();
