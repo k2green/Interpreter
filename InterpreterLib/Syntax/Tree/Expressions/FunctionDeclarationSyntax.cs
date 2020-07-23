@@ -2,8 +2,8 @@
 using InterpreterLib.Syntax.Tree.Statements;
 using System.Collections.Generic;
 
-namespace InterpreterLib.Syntax.Tree.Global {
-	internal sealed class FunctionDeclarationSyntax : GlobalSyntax {
+namespace InterpreterLib.Syntax.Tree.Expressions {
+	internal sealed class FunctionDeclarationSyntax : ExpressionSyntax {
 		public override SyntaxType Type => SyntaxType.FunctionDeclaration;
 
 		public override IEnumerable<SyntaxNode> Children {
@@ -30,14 +30,17 @@ namespace InterpreterLib.Syntax.Tree.Global {
 		public TypeDefinitionSyntax ReturnType { get; }
 		public StatementSyntax Body { get; }
 
+		public string ImplicitLabel { get; }
+
 		public FunctionDeclarationSyntax(
-			TokenSyntax keywToken, 
+			TokenSyntax keywToken,
 			TokenSyntax identifier,
 			TokenSyntax leftParenthesis,
 			SeperatedSyntaxList<TypedIdentifierSyntax> parameters,
 			TokenSyntax rightParenthesis,
-			TypeDefinitionSyntax returnType, 
-			StatementSyntax body
+			TypeDefinitionSyntax returnType,
+			StatementSyntax body,
+			string implicitLabel
 			) {
 			KeywToken = keywToken;
 			Identifier = identifier;
@@ -46,6 +49,7 @@ namespace InterpreterLib.Syntax.Tree.Global {
 			RightParenthesis = rightParenthesis;
 			ReturnType = returnType;
 			Body = body;
+			ImplicitLabel = implicitLabel;
 		}
 	}
 }

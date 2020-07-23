@@ -25,7 +25,6 @@ namespace InterpreterLib.Binding.Tree.Expressions {
 		}
 
 		public string Name => Function != null ? Function.Name : PointerSymbol.Name;
-		public TypeSymbol ReturnType => Function != null ? Function.ReturnType : PointerSymbol.ValueType.ReturnType;
 		public ImmutableArray<TypeSymbol> ParameterTypes =>
 			PointerSymbol != null ? PointerSymbol.ValueType.ParamTypes : Function.Parameters.Select(param => param.ValueType).ToImmutableArray();
 
@@ -34,15 +33,15 @@ namespace InterpreterLib.Binding.Tree.Expressions {
 			var builder = new StringBuilder();
 			builder.Append(Name).Append("(");
 
-			var paramCount = ParameterTypes.Length;
+			var paramCount = Parameters.Length;
 			for (int index = 0; index < paramCount; index++) {
-				builder.Append(ParameterTypes[index].ToString());
+				builder.Append(Parameters[index].ToString());
 
 				if (index < paramCount - 1)
 					builder.Append(", ");
 			}
 
-			return builder.Append(") => ").Append(ReturnType).ToString();
+			return builder.Append(")").ToString();
 		}
 	}
 }

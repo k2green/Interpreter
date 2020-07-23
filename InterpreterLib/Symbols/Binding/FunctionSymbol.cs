@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Text;
 using System.Linq;
-using InterpreterLib.Syntax.Tree.Global;
+using InterpreterLib.Syntax.Tree.Expressions;
 
 namespace InterpreterLib.Symbols.Binding {
 	public sealed class FunctionSymbol : Symbol {

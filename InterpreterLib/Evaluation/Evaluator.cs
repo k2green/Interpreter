@@ -126,8 +126,11 @@ namespace InterpreterLib.Diagnostics {
 			}
 		}
 
-		private object EvaluateFunctionPointer(BoundFunctionPointer expression) {
-			return new FunctionPointerObject(expression.Function);
+		private object EvaluateFunctionPointer(BoundFunctionPointer expression, string name = null) {
+			if (name == null)
+				name = expression.Function.Name;
+
+			return new FunctionPointerObject(expression.Function, name);
 		}
 
 		private object EvaluateTuple(BoundTuple expression) {
@@ -176,7 +179,7 @@ namespace InterpreterLib.Diagnostics {
 			if (statement.Function != null) {
 				function = statement.Function;
 			} else if (statement.PointerSymbol != null) {
-				object varEval = EvaluateVariable(statement.PointerSymbol.GetBaseSymbol());
+				object varEval = EvaluateVariable(statement.PointerSymbol.BaseSymbol);
 
 				if (!(varEval is FunctionPointerObject pointer))
 					return null;
@@ -234,15 +237,29 @@ namespace InterpreterLib.Diagnostics {
 			throw new Exception($"Unhandled type conversion {expression.ConversionSymbol}");
 		}
 
-		private object EvaluateVariableDeclaration(BoundVariableDeclarationStatement expression) {
-			var exprVal = expression.Initialiser == null ? null : EvaluateExpression(expression.Initialiser);
+		private object EvaluateVariableDeclaration(BoundVariableDeclarationStatement statement) {
+			object exprVal = null;
 
-			Assign(expression.Variable, exprVal);
+			if (statement.Initialiser != null) {
+				if (statement.Initialiser.Type == NodeType.FunctionPointer) {
+					exprVal = EvaluateFunctionPointer((BoundFunctionPointer)statement.Initialiser, statement.Variable.Name);
+				} else {
+					exprVal = EvaluateExpression(statement.Initialiser);
+				}
+			}
+
+			Assign(statement.Variable, exprVal);
 			return exprVal;
 		}
 
 		private object EvaluateAssignmentExpression(BoundAssignmentExpression assignment) {
-			object expression = EvaluateExpression(assignment.Expression);
+			object expression;
+
+			if (assignment.Expression.Type == NodeType.FunctionPointer) {
+				expression = EvaluateFunctionPointer((BoundFunctionPointer)assignment.Expression, assignment.Identifier.Name);
+			} else {
+				expression = EvaluateExpression(assignment.Expression);
+			}
 
 			if (expression == null)
 				return null;

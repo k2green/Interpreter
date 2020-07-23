@@ -6,8 +6,8 @@ namespace InterpreterLib.Syntax.Tree {
 	internal abstract class SyntaxNode {
 		public abstract SyntaxType Type { get; }
 		public abstract IEnumerable<SyntaxNode> Children { get; }
-		public abstract TextLocation Location { get; }
-		public abstract TextSpan Span { get; }
+		public virtual TextLocation Location => Children.First().Location;
+		public virtual TextSpan Span => new TextSpan(Children.First().Span.Start, Children.Last().Span.End);
 
 		public override string ToString() {
 			var enumerable = from child in Children

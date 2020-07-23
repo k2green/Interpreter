@@ -230,5 +230,30 @@ namespace InterpreterLib.Binding.Lowering {
 
 			return new BoundReturnStatement(newExpression, EndLabel);
 		}
+
+		protected override BoundExpression RewriteUnaryExpression(BoundUnaryExpression expression) {
+			if (expression.Operand.Type != NodeType.UnaryExpression) {
+				return base.RewriteUnaryExpression(expression);
+			}
+
+			var subUnary = (BoundUnaryExpression)expression.Operand;
+
+			bool isIdentity =
+				(expression.Op.OperatorType == UnaryOperatorType.Identity && subUnary.Op.OperatorType == UnaryOperatorType.Identity) ||
+				(expression.Op.OperatorType == UnaryOperatorType.Negation && subUnary.Op.OperatorType == UnaryOperatorType.Negation) ||
+				(expression.Op.OperatorType == UnaryOperatorType.LogicalNot && subUnary.Op.OperatorType == UnaryOperatorType.LogicalNot);
+
+			bool isNegation =
+				(expression.Op.OperatorType == UnaryOperatorType.Identity && subUnary.Op.OperatorType == UnaryOperatorType.Negation) ||
+				(expression.Op.OperatorType == UnaryOperatorType.Negation && subUnary.Op.OperatorType == UnaryOperatorType.Identity);
+
+			if (isIdentity)
+				return RewriteExpression(subUnary.Operand);
+
+			if (isNegation)
+				return RewriteExpression(new BoundUnaryExpression(UnaryOperator.Bind("-", subUnary.Op.OperandType), subUnary.Operand));
+
+			return base.RewriteUnaryExpression(expression);
+		}
 	}
 }

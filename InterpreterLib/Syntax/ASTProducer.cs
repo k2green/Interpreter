@@ -4,6 +4,7 @@ using Antlr4.Runtime.Tree;
 using InterpreterLib.Syntax.Tree;
 using InterpreterLib.Syntax.Tree.Expressions;
 using InterpreterLib.Syntax.Tree.Global;
+using InterpreterLib.Syntax.Tree.Patterns;
 using InterpreterLib.Syntax.Tree.Statements;
 using InterpreterLib.Syntax.Tree.TypeDescriptions;
 using System;
@@ -17,6 +18,10 @@ namespace InterpreterLib.Syntax {
 
 		private DiagnosticContainer diagnostics;
 		private ExpressionSyntax returnExpression = null;
+
+		private int functionCount = 0;
+
+		private string CreateImplicitLabel() => $"implicit{functionCount++}";
 
 		public ASTProducer() {
 			diagnostics = new DiagnosticContainer();
@@ -50,9 +55,10 @@ namespace InterpreterLib.Syntax {
 			bool hasChar = context.CHAR_LITERAL() != null;
 			bool hasByte = context.BYTE() != null;
 			bool hasAccessor = context.accessorExpression() != null;
+			bool hasFuncDef = context.functionDefinition() != null;
 
 			// Returns an error if there isn'n exactly one token
-			if (!(OnlyOne(hasInt, hasBool, hasString, hasDouble, hasChar, hasByte, hasAccessor))) {
+			if (!(OnlyOne(hasInt, hasBool, hasString, hasDouble, hasChar, hasByte, hasAccessor, hasFuncDef))) {
 				var span = new TextSpan(context.Start.StartIndex, context.Stop.StopIndex);
 				diagnostics.AddDiagnostic(Diagnostic.ReportInvalidLiteral(context.Start.Line, context.Start.Column, span));
 
@@ -96,6 +102,9 @@ namespace InterpreterLib.Syntax {
 			if (hasAccessor) {
 				return Visit(context.accessorExpression());
 			}
+
+			if (hasFuncDef)
+				return Visit(context.functionDefinition());
 
 			// As a last resort, returns an error.
 			return null;
@@ -290,15 +299,40 @@ namespace InterpreterLib.Syntax {
 		}
 
 		public override SyntaxNode VisitTypeDescription([NotNull] GLangParser.TypeDescriptionContext context) {
-			if (context.TYPE_NAME() != null)
-				return new ValueTypeSyntax(Token(context.TYPE_NAME().Symbol));
+			if (context.functionDescription() != null)
+				return Visit(context.functionDescription());
 
 			if (context.tupleDescription() != null)
 				return Visit(context.tupleDescription());
 
+			if (context.TYPE_NAME() != null)
+				return new ValueTypeSyntax(Token(context.TYPE_NAME().Symbol));
+
 			var span = new TextSpan(context.Start.StartIndex, context.Stop.StopIndex);
 			diagnostics.AddDiagnostic(Diagnostic.ReportInvalidTypeDescription(context.Start.Line, context.Start.Column, span));
 			return null;
+		}
+
+		public override SyntaxNode VisitFunctionDescription([NotNull] GLangParser.FunctionDescriptionContext context) {
+			var tupleCtx = context.tupleDescription();
+			var delimCtx = context.FUNCTION_DELIMETER();
+			var returnCtx = context.typeDescription();
+
+			bool hasDelim = delimCtx != null && delimCtx.Symbol.Text.Equals("=>");
+
+			if (tupleCtx == null || !hasDelim || returnCtx == null) {
+				var span = new TextSpan(context.Start.StartIndex, context.Stop.StopIndex);
+				diagnostics.AddDiagnostic(Diagnostic.ReportInvalidTypeDescription(context.Start.Line, context.Start.Column, span));
+				return null;
+			}
+
+			var tupleVisit = Visit(tupleCtx);
+			var returnVisit = Visit(returnCtx);
+
+			if (tupleVisit == null || returnVisit == null || !(tupleVisit is TupleTypeSyntax tupleType) || !(returnVisit is TypeDescriptionSyntax returnType))
+				return null;
+
+			return new FunctionTypeSyntax(tupleType, Token(delimCtx.Symbol), returnType);
 		}
 
 		public override SyntaxNode VisitTupleDescription([NotNull] GLangParser.TupleDescriptionContext context) {
@@ -386,14 +420,71 @@ namespace InterpreterLib.Syntax {
 		}
 
 		public override SyntaxNode VisitAssignmentExpression([NotNull] GLangParser.AssignmentExpressionContext context) {
-			var identifierCtx = context.IDENTIFIER();
+			var identifierCtx = context.assignmentPattern();
 			var operatorCtx = context.ASSIGNMENT_OPERATOR();
-			var operandCtx = context.assignmentOperand();
+			var operandCtx = context.expression();
 
 			var location = new TextLocation(context.Start.Line, context.Start.Column);
 			var span = new TextSpan(context.Start.StartIndex, context.Stop.StopIndex);
 
 			return VisitAssignmentExpression(identifierCtx, operatorCtx, operandCtx, location, span);
+		}
+
+		public override SyntaxNode VisitAssignmentPattern([NotNull] GLangParser.AssignmentPatternContext context) {
+			if (context.IDENTIFIER() != null)
+				return new VariablePatternSyntax(Token(context.IDENTIFIER().Symbol));
+
+			var lParenCtx = context.L_PARENTHESIS();
+			var patternsCtx = context.seperatedPattern();
+			var rParenCtx = context.R_PARENTHESIS();
+
+			bool hasLParen = lParenCtx != null && lParenCtx.Symbol.Text.Equals("(");
+			bool hasRParen = rParenCtx != null && rParenCtx.Symbol.Text.Equals(")");
+
+			if (!hasLParen || patternsCtx == null || !hasRParen) {
+				var span = new TextSpan(context.Start.StartIndex, context.Stop.StopIndex);
+				diagnostics.AddDiagnostic(Diagnostic.ReportInvalidPattern(context.Start.Line, context.Start.Column, span));
+				return null;
+			}
+
+			var builder = ImmutableArray.CreateBuilder<SyntaxNode>();
+
+			if (!VisitSeperatedPattern(patternsCtx, ref builder)) {
+				var span = new TextSpan(context.Start.StartIndex, context.Stop.StopIndex);
+				diagnostics.AddDiagnostic(Diagnostic.ReportInvalidPattern(context.Start.Line, context.Start.Column, span));
+				return null;
+			}
+
+			return new TupleSyntax(Token(lParenCtx.Symbol), new SeperatedSyntaxList<ExpressionSyntax>(builder.ToImmutable()), Token(rParenCtx.Symbol));
+		}
+
+		private bool VisitSeperatedPattern([NotNull] GLangParser.SeperatedPatternContext context, ref ImmutableArray<SyntaxNode>.Builder builder) {
+			var itemCtx = context.assignmentPattern();
+			var commaCtx = context.COMMA();
+			var restCtx = context.seperatedPattern();
+
+			bool hasComma = commaCtx != null && commaCtx.Symbol.Text.Equals(",");
+
+			if (itemCtx == null || (hasComma ^ restCtx != null)) {
+				var span = new TextSpan(context.Start.StartIndex, context.Stop.StopIndex);
+				diagnostics.AddDiagnostic(Diagnostic.ReportInvalidPattern(context.Start.Line, context.Start.Column, span));
+				return false;
+			}
+
+			var itemVisit = Visit(itemCtx);
+
+			if (itemVisit == null)
+				return false;
+
+			builder.Add(itemVisit);
+
+			if (hasComma && restCtx != null) {
+				builder.Add(Token(commaCtx.Symbol));
+
+				return VisitSeperatedPattern(restCtx, ref builder);
+			}
+
+			return true;
 		}
 
 		public override SyntaxNode VisitVariableDeclarationStatement([NotNull] GLangParser.VariableDeclarationStatementContext context) {
@@ -971,9 +1062,6 @@ namespace InterpreterLib.Syntax {
 		}
 
 		public override SyntaxNode VisitGlobalStatement([NotNull] GLangParser.GlobalStatementContext context) {
-			if (context.functionDefinition() != null)
-				return Visit(context.functionDefinition());
-
 			if (context.baseStatement() != null) {
 				var statementVisit = Visit(context.baseStatement());
 
@@ -1060,7 +1148,7 @@ namespace InterpreterLib.Syntax {
 			var typeDefCtx = context.typeDefinition();
 			var bodyCtx = context.block();
 
-			if (keywCtx == null || identCtx == null || lParenCtx == null || rParenCtx == null || typeDefCtx == null || bodyCtx == null
+			if (keywCtx == null || lParenCtx == null || rParenCtx == null || typeDefCtx == null || bodyCtx == null
 				|| !lParenCtx.GetText().Equals("(") || !rParenCtx.GetText().Equals(")") || !keywCtx.GetText().Equals("function")) {
 				var span = new TextSpan(context.Start.StartIndex, context.Stop.StopIndex);
 				diagnostics.AddDiagnostic(Diagnostic.ReportInvalidFunctionDef(context.Start.Line, context.Start.Column, span));
@@ -1094,11 +1182,15 @@ namespace InterpreterLib.Syntax {
 			}
 
 			var keywToken = Token(keywCtx.Symbol);
-			var identToken = Token(identCtx.Symbol);
+			var identToken = identCtx == null ? null : Token(identCtx.Symbol);
 			var lParenToken = Token(lParenCtx.Symbol);
 			var rParenToken = Token(rParenCtx.Symbol);
+			string labelString = null;
 
-			var declSyntax = new FunctionDeclarationSyntax(keywToken, identToken, lParenToken, paramVisit, rParenToken, typeDef, body);
+			if (identCtx == null)
+				labelString = CreateImplicitLabel();
+
+			var declSyntax = new FunctionDeclarationSyntax(keywToken, identToken, lParenToken, paramVisit, rParenToken, typeDef, body, labelString);
 
 			return declSyntax;
 		}

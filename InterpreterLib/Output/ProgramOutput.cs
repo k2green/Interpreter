@@ -75,7 +75,15 @@ namespace InterpreterLib.Output {
 				case NodeType.Return:
 					OutputReturn((BoundReturnStatement)node, prefix);
 					break;
+				case NodeType.FunctionPointer:
+					OutputFunctionPointer((BoundFunctionPointer)node, prefix);
+					break;
 			}
+		}
+
+		private void OutputFunctionPointer(BoundFunctionPointer node, string prefix) {
+			builder.AddFragment(new OutputFragment(prefix, DefaultColour));
+			builder.AddFragment(new OutputFragment(node.Function.Name, FunctionNameColour));
 		}
 
 		private void OutputReturn(BoundReturnStatement node, string prefix) {
@@ -178,11 +186,9 @@ namespace InterpreterLib.Output {
 
 		private void OutputVariableDeclaration(BoundVariableDeclarationStatement node, string prefix) {
 			builder.AddFragment(new OutputFragment(prefix, DefaultColour));
-			builder.AddFragment(new OutputFragment("declare (", StatementColour));
 			builder.AddFragment(new OutputFragment(node.Variable.Name, VariableColour));
 			builder.AddFragment(new OutputFragment(DelimeterString, DefaultColour));
 			builder.AddFragment(new OutputFragment(node.Variable.ValueType.ToString(), TypeColour));
-			builder.AddFragment(new OutputFragment(")", StatementColour));
 
 			if (node.Initialiser != null) {
 				builder.AddFragment(new OutputFragment(" = ", StatementColour));
@@ -207,11 +213,10 @@ namespace InterpreterLib.Output {
 
 		private void OutputAssignmentExpression(BoundAssignmentExpression node, string prefix) {
 			builder.AddFragment(new OutputFragment(prefix, DefaultColour));
-			builder.AddFragment(new OutputFragment("assign (", StatementColour));
 			builder.AddFragment(new OutputFragment(node.Identifier.Name, VariableColour));
 			builder.AddFragment(new OutputFragment(DelimeterString, DefaultColour));
 			builder.AddFragment(new OutputFragment(node.Identifier.ValueType.Name, TypeColour));
-			builder.AddFragment(new OutputFragment(") = ", StatementColour));
+			builder.AddFragment(new OutputFragment(" = ", StatementColour));
 
 			Output(node.Expression, string.Empty);
 		}

@@ -9,7 +9,7 @@ compilationUnit : globalStatement+;
 declerationOrAssign: variableDeclarationStatement | assignmentExpression;
 typeDefinition: TYPE_DELIMETER typeDescription;
 
-functionDescription : tupleDescription FUNCTION_TYPE_DELIMETER typeDescription;
+functionDescription : tupleDescription FUNCTION_DELIMETER typeDescription;
 
 tupleDescription : L_PARENTHESIS seperatedTypeDescription R_PARENTHESIS
 				 | L_PARENTHESIS R_PARENTHESIS;
@@ -24,7 +24,7 @@ typeDescription	: functionDescription
 	 */
 
 	
-globalStatement: functionDefinition | baseStatement;
+globalStatement: baseStatement;
 baseStatement : forStatement | whileStatement | ifStatement | block | variableDeclarationStatement | expressionStatement;
 statement : returnStatement | baseStatement | BREAK | CONTINUE;
 
@@ -33,12 +33,6 @@ seperatedDefinedIdentifier: definedIdentifier COMMA;
 
 returnStatement : RETURN expression
 				| RETURN;
-
-parameterDefinition	: definedIdentifier COMMA parameterDefinition
-					| definedIdentifier;
-
-functionDefinition: FUNCTION IDENTIFIER L_PARENTHESIS parameterDefinition R_PARENTHESIS typeDefinition block
-				  | FUNCTION IDENTIFIER L_PARENTHESIS R_PARENTHESIS typeDefinition block;
 
 block : L_BRACE statement* R_BRACE;
 
@@ -55,22 +49,26 @@ whileStatement: WHILE L_PARENTHESIS binaryExpression R_PARENTHESIS body=statemen
 variableDeclarationStatement: DECL_VARIABLE definedIdentifier
 							| DECL_VARIABLE assignmentExpression;
 
-assignmentOperand : expression;
-assignmentExpression : baseAssignmentExpression;
-
-baseAssignmentExpression : IDENTIFIER ASSIGNMENT_OPERATOR assignmentOperand;
-tupleAssignmentExpression : L_PARENTHESIS seperatedIdentifier
-
-seperatedIdentifier : seperatedIdentifierAtom COMMA seperatedIdentifier | seperatedIdentifierAtom;
-seperatedIdentifierAtom : IDENTIFIER | WILDCARD;
 
 	/*
 	 * Expressions
 	 */
 	 
 
-literal : DOUBLE | INTEGER | BOOLEAN | accessorExpression | STRING | CHAR_LITERAL | BYTE;
+literal : functionDefinition | DOUBLE | INTEGER | BOOLEAN | accessorExpression | STRING | CHAR_LITERAL | BYTE;
 expression: tuple | binaryExpression;
+
+parameterDefinition	: definedIdentifier COMMA parameterDefinition
+					| definedIdentifier;
+
+seperatedPattern: assignmentPattern COMMA seperatedPattern;
+assignmentPattern : L_PARENTHESIS seperatedPattern R_PARENTHESIS
+				  | IDENTIFIER;
+				  
+assignmentExpression : assignmentPattern ASSIGNMENT_OPERATOR expression;
+
+functionDefinition: FUNCTION IDENTIFIER? L_PARENTHESIS parameterDefinition R_PARENTHESIS typeDefinition block
+				  | FUNCTION IDENTIFIER? L_PARENTHESIS R_PARENTHESIS typeDefinition block;
 
 indexedIdentifier: IDENTIFIER L_BRACKET binaryExpression R_BRACKET;
 
@@ -82,7 +80,8 @@ accessorAtom: assignmentExpression
 			| functionCall
 			| IDENTIFIER;
 
-tuple : L_PARENTHESIS seperatedExpression R_PARENTHESIS;
+tuple : L_PARENTHESIS seperatedExpression R_PARENTHESIS
+	  | L_PARENTHESIS R_PARENTHESIS;
 
 unaryExpression : L_PARENTHESIS binaryExpression R_PARENTHESIS
 				| op=(ADDITIVE_OP | BANG) unaryExpression
@@ -95,7 +94,6 @@ binaryExpression: left=binaryExpression op=CARAT right=binaryExpression
 				| left=binaryExpression op=COMPARE_OP right=binaryExpression
 				| left=binaryExpression op=LOGICAL_OP right=binaryExpression
 				| atom=unaryExpression;
-				
 
 seperatedExpression	: expression COMMA seperatedExpression
 					| expression;
@@ -137,7 +135,7 @@ WHITESPACE : [ \t\r\n]+ -> channel(HIDDEN);
 COMMA : ',';
 WILDCARD : '_';
 
-FUNCTION_TYPE_DELIMETER : '=>';
+FUNCTION_DELIMETER : '=>';
 
 TYPE_DELIMETER : ':';
 BREAK: 'b' 'r' 'e' 'a' 'k';

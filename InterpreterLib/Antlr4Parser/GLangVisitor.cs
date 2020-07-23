@@ -51,6 +51,12 @@ public interface IGLangVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitTypeDefinition([NotNull] GLangParser.TypeDefinitionContext context);
 	/// <summary>
+	/// Visit a parse tree produced by <see cref="GLangParser.functionDescription"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitFunctionDescription([NotNull] GLangParser.FunctionDescriptionContext context);
+	/// <summary>
 	/// Visit a parse tree produced by <see cref="GLangParser.tupleDescription"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
@@ -105,18 +111,6 @@ public interface IGLangVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitReturnStatement([NotNull] GLangParser.ReturnStatementContext context);
 	/// <summary>
-	/// Visit a parse tree produced by <see cref="GLangParser.parameterDefinition"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	/// <return>The visitor result.</return>
-	Result VisitParameterDefinition([NotNull] GLangParser.ParameterDefinitionContext context);
-	/// <summary>
-	/// Visit a parse tree produced by <see cref="GLangParser.functionDefinition"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	/// <return>The visitor result.</return>
-	Result VisitFunctionDefinition([NotNull] GLangParser.FunctionDefinitionContext context);
-	/// <summary>
 	/// Visit a parse tree produced by <see cref="GLangParser.block"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
@@ -165,18 +159,6 @@ public interface IGLangVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitVariableDeclarationStatement([NotNull] GLangParser.VariableDeclarationStatementContext context);
 	/// <summary>
-	/// Visit a parse tree produced by <see cref="GLangParser.assignmentOperand"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	/// <return>The visitor result.</return>
-	Result VisitAssignmentOperand([NotNull] GLangParser.AssignmentOperandContext context);
-	/// <summary>
-	/// Visit a parse tree produced by <see cref="GLangParser.assignmentExpression"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	/// <return>The visitor result.</return>
-	Result VisitAssignmentExpression([NotNull] GLangParser.AssignmentExpressionContext context);
-	/// <summary>
 	/// Visit a parse tree produced by <see cref="GLangParser.literal"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
@@ -188,6 +170,36 @@ public interface IGLangVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
 	Result VisitExpression([NotNull] GLangParser.ExpressionContext context);
+	/// <summary>
+	/// Visit a parse tree produced by <see cref="GLangParser.parameterDefinition"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitParameterDefinition([NotNull] GLangParser.ParameterDefinitionContext context);
+	/// <summary>
+	/// Visit a parse tree produced by <see cref="GLangParser.seperatedPattern"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitSeperatedPattern([NotNull] GLangParser.SeperatedPatternContext context);
+	/// <summary>
+	/// Visit a parse tree produced by <see cref="GLangParser.assignmentPattern"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitAssignmentPattern([NotNull] GLangParser.AssignmentPatternContext context);
+	/// <summary>
+	/// Visit a parse tree produced by <see cref="GLangParser.assignmentExpression"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitAssignmentExpression([NotNull] GLangParser.AssignmentExpressionContext context);
+	/// <summary>
+	/// Visit a parse tree produced by <see cref="GLangParser.functionDefinition"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitFunctionDefinition([NotNull] GLangParser.FunctionDefinitionContext context);
 	/// <summary>
 	/// Visit a parse tree produced by <see cref="GLangParser.indexedIdentifier"/>.
 	/// </summary>

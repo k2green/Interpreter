@@ -6,8 +6,6 @@ using System.Text;
 namespace InterpreterLib.Syntax.Tree.TypeDescriptions {
 	internal sealed class TupleTypeSyntax : TypeDescriptionSyntax {
 		public override SyntaxType Type => SyntaxType.TupleType;
-		public override TextLocation Location => LeftParen.Location;
-		public override TextSpan Span => new TextSpan(LeftParen.Span.Start, RightParen.Span.End);
 
 		public override IEnumerable<SyntaxNode> Children {
 			get {

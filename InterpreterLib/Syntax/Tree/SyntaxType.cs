@@ -30,6 +30,9 @@ namespace InterpreterLib.Syntax.Tree {
 		VariableIndexer,
 		Accessor,
 		ValueType,
-		TupleType
+		TupleType,
+		FunctionType,
+		VariablePattern,
+		TuplePattern
 	}
 }

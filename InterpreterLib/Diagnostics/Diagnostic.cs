@@ -269,5 +269,9 @@ namespace InterpreterLib {
 		internal static Diagnostic ReportNoReturn(TextLocation location, TextSpan offendingText) {
 			return new Diagnostic(location.Line, location.Column, $"Non void functions must return a value", null, offendingText, null);
 		}
+
+		internal static Diagnostic ReportInvalidFunctionDeclaration(TextLocation location, TextSpan span) {
+			throw new NotImplementedException();
+		}
 	}
 }
