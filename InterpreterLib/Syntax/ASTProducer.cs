@@ -388,9 +388,9 @@ namespace InterpreterLib.Syntax {
 			return true;
 		}
 
-		private AssignmentExpressionSyntax VisitAssignmentExpression(ITerminalNode identifierCtx, ITerminalNode operatorCtx, GLangParser.AssignmentOperandContext operandCtx, TextLocation location, TextSpan span) {
-			if (identifierCtx == null) {
-				diagnostics.AddDiagnostic(Diagnostic.ReportMissingToken(location.Line, location.Column, span, "identifier"));
+		private AssignmentExpressionSyntax VisitAssignmentExpression(GLangParser.AssignmentPatternContext pattern, ITerminalNode operatorCtx, GLangParser.ExpressionContext operandCtx, TextLocation location, TextSpan span) {
+			if (pattern == null) {
+				diagnostics.AddDiagnostic(Diagnostic.ReportMissingToken(location.Line, location.Column, span, "pattern"));
 				return null;
 			}
 
@@ -404,10 +404,19 @@ namespace InterpreterLib.Syntax {
 				return null;
 			}
 
+			var visitPattern = Visit(pattern);
 			var visitOperand = Visit(operandCtx);
 
 			if (visitOperand == null)
 				return null;
+
+			if (!(visitPattern is VariablePatternSyntax patternSyntax)) {
+				var prev = new TextSpan(operatorCtx.Symbol.StartIndex, operatorCtx.Symbol.StopIndex);
+
+				diagnostics.AddDiagnostic(Diagnostic.ReportInvalidPattern(operandCtx.Start.Line, operandCtx.Start.Column, prev, visitOperand.Span));
+				return null;
+
+			}
 
 			if (!(visitOperand is ExpressionSyntax exprSyntax)) {
 				var prev = new TextSpan(operatorCtx.Symbol.StartIndex, operatorCtx.Symbol.StopIndex);
@@ -416,7 +425,7 @@ namespace InterpreterLib.Syntax {
 				return null;
 			}
 
-			return new AssignmentExpressionSyntax(Token(identifierCtx.Symbol), null, Token(operatorCtx.Symbol), exprSyntax);
+			return new AssignmentExpressionSyntax(patternSyntax, null, Token(operatorCtx.Symbol), exprSyntax);
 		}
 
 		public override SyntaxNode VisitAssignmentExpression([NotNull] GLangParser.AssignmentExpressionContext context) {
@@ -426,7 +435,6 @@ namespace InterpreterLib.Syntax {
 
 			var location = new TextLocation(context.Start.Line, context.Start.Column);
 			var span = new TextSpan(context.Start.StartIndex, context.Stop.StopIndex);
-
 			return VisitAssignmentExpression(identifierCtx, operatorCtx, operandCtx, location, span);
 		}
 
