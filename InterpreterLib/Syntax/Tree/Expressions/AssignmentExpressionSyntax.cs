@@ -1,4 +1,5 @@
-﻿using InterpreterLib.Syntax.Tree.Statements;
+﻿using InterpreterLib.Syntax.Tree.Patterns;
+using InterpreterLib.Syntax.Tree.Statements;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -16,14 +17,14 @@ namespace InterpreterLib.Syntax.Tree.Expressions {
 			}
 		}
 
-		public TokenSyntax IdentifierToken { get; }
+		public PatternSyntax IdentifierToken { get; }
 		public TypeDefinitionSyntax Definition { get; }
 		public TokenSyntax OperatorToken { get; }
 		public ExpressionSyntax Expression { get; }
 		public override TextLocation Location => IdentifierToken.Location;
 		public override TextSpan Span => new TextSpan(IdentifierToken.Span.Start, Expression.Span.End);
 
-		public AssignmentExpressionSyntax(TokenSyntax identifierToken, TypeDefinitionSyntax definition, TokenSyntax operatorToken, ExpressionSyntax expression) {
+		public AssignmentExpressionSyntax(PatternSyntax identifierToken, TypeDefinitionSyntax definition, TokenSyntax operatorToken, ExpressionSyntax expression) {
 			IdentifierToken = identifierToken;
 			Definition = definition;
 			OperatorToken = operatorToken;
