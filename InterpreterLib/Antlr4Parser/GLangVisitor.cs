@@ -177,18 +177,6 @@ public interface IGLangVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitParameterDefinition([NotNull] GLangParser.ParameterDefinitionContext context);
 	/// <summary>
-	/// Visit a parse tree produced by <see cref="GLangParser.seperatedPattern"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	/// <return>The visitor result.</return>
-	Result VisitSeperatedPattern([NotNull] GLangParser.SeperatedPatternContext context);
-	/// <summary>
-	/// Visit a parse tree produced by <see cref="GLangParser.assignmentPattern"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	/// <return>The visitor result.</return>
-	Result VisitAssignmentPattern([NotNull] GLangParser.AssignmentPatternContext context);
-	/// <summary>
 	/// Visit a parse tree produced by <see cref="GLangParser.assignmentExpression"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>

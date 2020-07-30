@@ -17,8 +17,8 @@ namespace InterpreterLib.Runtime {
 	public sealed class BindingEnvironment {
 		private DiagnosticContainer diagnostics;
 		private readonly bool chainDiagnostics;
-		private BindingEnvironment previous;
-		private CompilationUnitSyntax SyntaxRoot;
+
+		public IEnumerable<Diagnostic> Diagnostics => diagnostics;
 
 		public static string GraphDir {
 			get {
@@ -34,93 +34,47 @@ namespace InterpreterLib.Runtime {
 		public static string FunctionGraphDir => Path.Combine(GraphDir, "Functions");
 		public static string FunctionGraphPath(FunctionSymbol function) => Path.Combine(FunctionGraphDir, $"{function.GetGraphFileName()}.gv");
 
-		private BoundProgram boundProgram;
-		internal BoundProgram BoundProgram {
+		private List<Interperatation> interperatations;
+		public Interperatation CurrentInterpretation {
 			get {
-				if (boundProgram == null) {
-					if (GlobalScope == null || GlobalScope.Root == null || diagnostics.Any())
-						return null;
+				if (interperatations.Count == 0 || interperatations.Count - 1 < 0)
+					return null;
 
-					var program = Binder.BindProgram(GlobalScope);
-					diagnostics.AddDiagnostics(program.Diagnostics);
-
-					if (program.Value == null)
-						return null;
-
-					Interlocked.CompareExchange<BoundProgram>(ref boundProgram, program.Value, null);
-					diagnostics.AddDiagnostics(program.Diagnostics);
-				}
-
-				return boundProgram;
+				return interperatations[interperatations.Count - 1];
 			}
 		}
 
-		public IEnumerable<Diagnostic> Diagnostics => diagnostics;
+		public bool ContinueWith(SyntaxTree input) {
+			if (input == null || input.Diagnostics.Any()) {
+				if (chainDiagnostics)
+					diagnostics.AddDiagnostics(input.Diagnostics);
 
-		public static BindingEnvironment CreateEnvironment(SyntaxTree input, bool chainDiagnostics) {
-			if (input.Diagnostics.Any())
-				return null;
+				return false;
+			}
 
-			return new BindingEnvironment(input.Root, chainDiagnostics, null);
-		}
+			if (interperatations == null)
+				interperatations = new List<Interperatation>();
 
-		public BindingEnvironment ContinueWith(SyntaxTree input) {
-			return new BindingEnvironment(input.Root, chainDiagnostics, this);
-		}
+			var interperatation = new Interperatation(input, CurrentInterpretation);
 
-		private BoundGlobalScope globalScope;
-		internal BoundGlobalScope GlobalScope {
-			get {
-				if (globalScope == null) {
-					var prevScope = previous == null ? null : previous.GlobalScope;
-					var binderResult = Binder.BindGlobalScope(prevScope, SyntaxRoot);
-					Interlocked.CompareExchange<BoundGlobalScope>(ref globalScope, binderResult.Value, null);
-					diagnostics.AddDiagnostics(binderResult.Diagnostics);
-				}
+			if(interperatation.Diagnostics.Any()) {
+				if (chainDiagnostics)
+					diagnostics.AddDiagnostics(interperatation.Diagnostics);
 
-				return globalScope;
+				return false;
+			} else {
+				interperatations.Add(interperatation);
+				return true;
 			}
 		}
 
-		private BindingEnvironment(CompilationUnitSyntax input, bool chainDiagnostics, BindingEnvironment previous) {
+		public BindingEnvironment(bool chainDiagnostics) {
 			this.chainDiagnostics = chainDiagnostics;
-			this.previous = previous;
 			diagnostics = new DiagnosticContainer();
-
-			if (previous != null && chainDiagnostics) {
-				diagnostics.AddDiagnostics(previous.diagnostics);
-			}
-
-			SyntaxRoot = input;
-		}
-
-		public DiagnosticResult<object> Evaluate(Dictionary<VariableSymbol, object> variables) {
-			if (BoundProgram == null)
-				return new DiagnosticResult<object>(diagnostics, null);
-
-			foreach(var function in GlobalScope.Functions) {
-				Console.WriteLine($"{function.Name} => {function.ReturnType}");
-			}
-
-			OutputGraphs();
-
-			Evaluator evaluator = new Evaluator(boundProgram, variables);
-
-			var evalResult = evaluator.Evaluate();
-			diagnostics.AddDiagnostics(evalResult.Diagnostics);
-			return new DiagnosticResult<object>(diagnostics, evalResult.Value);
-		}
-
-		public void PrintProgram(Action<string, Color> printAction, Action newlineAction) {
-			if (BoundProgram == null)
-				return;
-
-			var output = new ProgramOutput(BoundProgram);
-			output.Document.Output((frag) => printAction(frag.Text, frag.TextColour), newlineAction);
 		}
 
 		private void OutputGraphs() {
-			if (BoundProgram == null)
+			if (CurrentInterpretation.BoundProgram == null)
 				return;
 
 			var mainDirInfo = new DirectoryInfo(GraphDir);
@@ -129,7 +83,7 @@ namespace InterpreterLib.Runtime {
 				mainDirInfo.Create();
 
 			using (var streamWriter = new StreamWriter(MainGraphPath))
-				BoundProgram.CreateMainGraph().WriteTo(streamWriter);
+				CurrentInterpretation.BoundProgram.CreateMainGraph().WriteTo(streamWriter);
 
 			var funcDirInfo = new DirectoryInfo(FunctionGraphDir);
 
@@ -139,7 +93,7 @@ namespace InterpreterLib.Runtime {
 			else
 				funcDirInfo.Create();
 
-			var functionGraphs = BoundProgram.CreateFunctionGraphs();
+			var functionGraphs = CurrentInterpretation.BoundProgram.CreateFunctionGraphs();
 
 			foreach (var funcSymbol in functionGraphs.Keys) {
 				using (var streamWriter = new StreamWriter(FunctionGraphPath(funcSymbol)))

@@ -30,7 +30,5 @@
 		Tuple,
 		Return,
 		FunctionPointer,
-		VariableIdentifier,
-		TupleIdentifier,
 	}
 }

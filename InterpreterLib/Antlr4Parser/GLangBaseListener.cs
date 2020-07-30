@@ -324,30 +324,6 @@ public partial class GLangBaseListener : IGLangListener {
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitParameterDefinition([NotNull] GLangParser.ParameterDefinitionContext context) { }
 	/// <summary>
-	/// Enter a parse tree produced by <see cref="GLangParser.seperatedPattern"/>.
-	/// <para>The default implementation does nothing.</para>
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	public virtual void EnterSeperatedPattern([NotNull] GLangParser.SeperatedPatternContext context) { }
-	/// <summary>
-	/// Exit a parse tree produced by <see cref="GLangParser.seperatedPattern"/>.
-	/// <para>The default implementation does nothing.</para>
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	public virtual void ExitSeperatedPattern([NotNull] GLangParser.SeperatedPatternContext context) { }
-	/// <summary>
-	/// Enter a parse tree produced by <see cref="GLangParser.assignmentPattern"/>.
-	/// <para>The default implementation does nothing.</para>
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	public virtual void EnterAssignmentPattern([NotNull] GLangParser.AssignmentPatternContext context) { }
-	/// <summary>
-	/// Exit a parse tree produced by <see cref="GLangParser.assignmentPattern"/>.
-	/// <para>The default implementation does nothing.</para>
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	public virtual void ExitAssignmentPattern([NotNull] GLangParser.AssignmentPatternContext context) { }
-	/// <summary>
 	/// Enter a parse tree produced by <see cref="GLangParser.assignmentExpression"/>.
 	/// <para>The default implementation does nothing.</para>
 	/// </summary>

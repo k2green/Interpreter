@@ -60,12 +60,8 @@ expression: tuple | binaryExpression;
 
 parameterDefinition	: definedIdentifier COMMA parameterDefinition
 					| definedIdentifier;
-
-seperatedPattern: assignmentPattern COMMA seperatedPattern;
-assignmentPattern : L_PARENTHESIS seperatedPattern R_PARENTHESIS
-				  | IDENTIFIER;
 				  
-assignmentExpression : assignmentPattern ASSIGNMENT_OPERATOR expression;
+assignmentExpression : IDENTIFIER ASSIGNMENT_OPERATOR expression;
 
 functionDefinition: FUNCTION IDENTIFIER? L_PARENTHESIS parameterDefinition R_PARENTHESIS typeDefinition block
 				  | FUNCTION IDENTIFIER? L_PARENTHESIS R_PARENTHESIS typeDefinition block;

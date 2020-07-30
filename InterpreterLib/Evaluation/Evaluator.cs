@@ -198,10 +198,10 @@ namespace InterpreterLib.Diagnostics {
 				return input;
 			} else if (Program.FunctionBodies.TryGetValue(function, out var boundBlock)) {
 				var newScope = new Dictionary<VariableSymbol, object>();
-				var parameters = new VariableSymbol[statement.Parameters.Length];
+				var parameters = new VariableSymbol[function.Parameters.Length];
 				int index = 0;
 
-				foreach (var param in statement.Function.Parameters) {
+				foreach (var param in function.Parameters) {
 					parameters[index] = new VariableSymbol(param.Name, false, param.ValueType);
 					newScope.Add(parameters[index], null);
 					index++;

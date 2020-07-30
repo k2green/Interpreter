@@ -273,13 +273,5 @@ namespace InterpreterLib {
 		internal static Diagnostic ReportInvalidFunctionDeclaration(TextLocation location, TextSpan span) {
 			throw new NotImplementedException();
 		}
-
-		internal static Diagnostic ReportInvalidPattern(int line, int column, TextSpan span) {
-			throw new NotImplementedException();
-		}
-
-		internal static Diagnostic ReportInvalidPattern(int line, int column, TextSpan prev, TextSpan span) {
-			throw new NotImplementedException();
-		}
 	}
 }
