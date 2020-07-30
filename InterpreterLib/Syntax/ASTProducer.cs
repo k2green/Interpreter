@@ -388,7 +388,7 @@ namespace InterpreterLib.Syntax {
 			return true;
 		}
 
-		private AssignmentExpressionSyntax VisitAssignmentExpression(ITerminalNode identifierCtx, ITerminalNode operatorCtx, GLangParser.AssignmentOperandContext operandCtx, TextLocation location, TextSpan span) {
+		private AssignmentExpressionSyntax VisitAssignmentExpression(ITerminalNode identifierCtx, ITerminalNode operatorCtx, GLangParser.ExpressionContext operandCtx, TextLocation location, TextSpan span) {
 			if (identifierCtx == null) {
 				diagnostics.AddDiagnostic(Diagnostic.ReportMissingToken(location.Line, location.Column, span, "identifier"));
 				return null;
@@ -420,7 +420,7 @@ namespace InterpreterLib.Syntax {
 		}
 
 		public override SyntaxNode VisitAssignmentExpression([NotNull] GLangParser.AssignmentExpressionContext context) {
-			var identifierCtx = context.assignmentPattern();
+			var identifierCtx = context.IDENTIFIER();
 			var operatorCtx = context.ASSIGNMENT_OPERATOR();
 			var operandCtx = context.expression();
 
@@ -428,63 +428,6 @@ namespace InterpreterLib.Syntax {
 			var span = new TextSpan(context.Start.StartIndex, context.Stop.StopIndex);
 
 			return VisitAssignmentExpression(identifierCtx, operatorCtx, operandCtx, location, span);
-		}
-
-		public override SyntaxNode VisitAssignmentPattern([NotNull] GLangParser.AssignmentPatternContext context) {
-			if (context.IDENTIFIER() != null)
-				return new VariablePatternSyntax(Token(context.IDENTIFIER().Symbol));
-
-			var lParenCtx = context.L_PARENTHESIS();
-			var patternsCtx = context.seperatedPattern();
-			var rParenCtx = context.R_PARENTHESIS();
-
-			bool hasLParen = lParenCtx != null && lParenCtx.Symbol.Text.Equals("(");
-			bool hasRParen = rParenCtx != null && rParenCtx.Symbol.Text.Equals(")");
-
-			if (!hasLParen || patternsCtx == null || !hasRParen) {
-				var span = new TextSpan(context.Start.StartIndex, context.Stop.StopIndex);
-				diagnostics.AddDiagnostic(Diagnostic.ReportInvalidPattern(context.Start.Line, context.Start.Column, span));
-				return null;
-			}
-
-			var builder = ImmutableArray.CreateBuilder<SyntaxNode>();
-
-			if (!VisitSeperatedPattern(patternsCtx, ref builder)) {
-				var span = new TextSpan(context.Start.StartIndex, context.Stop.StopIndex);
-				diagnostics.AddDiagnostic(Diagnostic.ReportInvalidPattern(context.Start.Line, context.Start.Column, span));
-				return null;
-			}
-
-			return new TupleSyntax(Token(lParenCtx.Symbol), new SeperatedSyntaxList<ExpressionSyntax>(builder.ToImmutable()), Token(rParenCtx.Symbol));
-		}
-
-		private bool VisitSeperatedPattern([NotNull] GLangParser.SeperatedPatternContext context, ref ImmutableArray<SyntaxNode>.Builder builder) {
-			var itemCtx = context.assignmentPattern();
-			var commaCtx = context.COMMA();
-			var restCtx = context.seperatedPattern();
-
-			bool hasComma = commaCtx != null && commaCtx.Symbol.Text.Equals(",");
-
-			if (itemCtx == null || (hasComma ^ restCtx != null)) {
-				var span = new TextSpan(context.Start.StartIndex, context.Stop.StopIndex);
-				diagnostics.AddDiagnostic(Diagnostic.ReportInvalidPattern(context.Start.Line, context.Start.Column, span));
-				return false;
-			}
-
-			var itemVisit = Visit(itemCtx);
-
-			if (itemVisit == null)
-				return false;
-
-			builder.Add(itemVisit);
-
-			if (hasComma && restCtx != null) {
-				builder.Add(Token(commaCtx.Symbol));
-
-				return VisitSeperatedPattern(restCtx, ref builder);
-			}
-
-			return true;
 		}
 
 		public override SyntaxNode VisitVariableDeclarationStatement([NotNull] GLangParser.VariableDeclarationStatementContext context) {
@@ -507,9 +450,9 @@ namespace InterpreterLib.Syntax {
 				return null;
 			}
 
-			if (keywordCtx == null || !(keywordCtx.Symbol.Text.Equals("var") || keywordCtx.Symbol.Text.Equals("var"))) {
-				var span = new TextSpan(context.Start.StartIndex, hasDirectDecl ? identifierCtx.Start.StartIndex : assignmentCtx.Start.StartIndex);
-				diagnostics.AddDiagnostic(Diagnostic.ReportInvalidDeclarationKeyword(context.Start.Line, context.Start.Column, span));
+			if (!keywordCtx.Symbol.Text.Equals("var") && !keywordCtx.Symbol.Text.Equals("val")) {
+				var span = new TextSpan(keywordCtx.Symbol.StartIndex, keywordCtx.Symbol.StopIndex);
+				diagnostics.AddDiagnostic(Diagnostic.ReportInvalidDeclarationKeyword(keywordCtx.Symbol.Line, keywordCtx.Symbol.Column, span));
 				return null;
 			}
 

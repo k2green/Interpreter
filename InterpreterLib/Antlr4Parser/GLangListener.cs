@@ -272,26 +272,6 @@ public interface IGLangListener : IParseTreeListener {
 	/// <param name="context">The parse tree.</param>
 	void ExitParameterDefinition([NotNull] GLangParser.ParameterDefinitionContext context);
 	/// <summary>
-	/// Enter a parse tree produced by <see cref="GLangParser.seperatedPattern"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	void EnterSeperatedPattern([NotNull] GLangParser.SeperatedPatternContext context);
-	/// <summary>
-	/// Exit a parse tree produced by <see cref="GLangParser.seperatedPattern"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	void ExitSeperatedPattern([NotNull] GLangParser.SeperatedPatternContext context);
-	/// <summary>
-	/// Enter a parse tree produced by <see cref="GLangParser.assignmentPattern"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	void EnterAssignmentPattern([NotNull] GLangParser.AssignmentPatternContext context);
-	/// <summary>
-	/// Exit a parse tree produced by <see cref="GLangParser.assignmentPattern"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	void ExitAssignmentPattern([NotNull] GLangParser.AssignmentPatternContext context);
-	/// <summary>
 	/// Enter a parse tree produced by <see cref="GLangParser.assignmentExpression"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>

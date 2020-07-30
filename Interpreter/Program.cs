@@ -17,7 +17,7 @@ namespace Interpreter {
 		}
 
 		public static void Evaluate(BindingEnvironment env, Dictionary<VariableSymbol, object> variables) {
-			var res = env.Evaluate(variables);
+			var res = env.CurrentInterpretation.Evaluate(variables);
 
 			if (res.Diagnostics.Any())
 				foreach (var diagnostic in res.Diagnostics)

@@ -28,6 +28,7 @@ namespace Interpreter {
 			showTree = shouldShowTree;
 			showProgram = shouldShowProgram;
 			evaluate = shouldEvaluate;
+			environment = new BindingEnvironment(false);
 		}
 
 		protected override void EvaluateInput(string input) {
@@ -41,15 +42,11 @@ namespace Interpreter {
 			}
 
 			if (evaluate) {
-				if (environment == null)
-					environment = BindingEnvironment.CreateEnvironment(tree, false);
-				else
-					environment = environment.ContinueWith(tree);
+				environment.ContinueWith(tree);
 
-
-				if (environment != null) {
-					if (environment != null && showProgram)
-						environment.PrintProgram(Console.Write, Console.WriteLine);
+				if (environment.CurrentInterpretation != null) {
+					if (showProgram)
+						environment.CurrentInterpretation.PrintProgram(Console.Write, Console.WriteLine);
 
 					Console.ForegroundColor = DEFAULT_COLOR;
 					Evaluate(environment, variables);
@@ -74,7 +71,7 @@ namespace Interpreter {
 		}
 
 		public void Evaluate(BindingEnvironment env, Dictionary<VariableSymbol, object> variables) {
-			var res = env.Evaluate(variables);
+			var res = env.CurrentInterpretation.Evaluate(variables);
 
 			if (res.Diagnostics.Any()) {
 				PrintDiagnostic(res.Diagnostics);
