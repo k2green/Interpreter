@@ -43,8 +43,9 @@ namespace InterpreterLib.Binding {
 
 		public static DiagnosticResult<BoundGlobalScope> BindGlobalScope(BoundGlobalScope prev, CompilationUnitSyntax tree) {
 			var scope = new BoundScope(CreateParentScopes(prev));
+			var funcBinder = new FunctionBinder(scope);
 
-			var functionBindRes = FunctionBinder.BindFunctions(tree, scope);
+			var functionBindRes = funcBinder.BindFunctions(tree);
 			if (functionBindRes.Diagnostics.Any()) {
 				return new DiagnosticResult<BoundGlobalScope>(functionBindRes.Diagnostics, null);
 			}
@@ -55,12 +56,12 @@ namespace InterpreterLib.Binding {
 			BoundGlobalScope globScope;
 
 			if (res.Diagnostics.Any()) {
-				globScope = new BoundGlobalScope(prev, binder.scope.GetVariables(), binder.scope.GetFunctions(), null);
+				globScope = new BoundGlobalScope(prev, binder.scope.GetVariables(), funcBinder.Functions, null);
 				return new DiagnosticResult<BoundGlobalScope>(binder.Diagnostics, globScope);
 			}
 
 			var lowered = Lowerer.Lower(res.Value);
-			globScope = new BoundGlobalScope(prev, binder.scope.GetVariables(), binder.scope.GetFunctions(), lowered);
+			globScope = new BoundGlobalScope(prev, binder.scope.GetVariables(), funcBinder.Functions, lowered);
 			return new DiagnosticResult<BoundGlobalScope>(binder.Diagnostics, globScope);
 		}
 

@@ -7,28 +7,31 @@ using InterpreterLib.Syntax.Tree;
 using InterpreterLib.Syntax.Tree.Expressions;
 using InterpreterLib.Syntax.Tree.Global;
 using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Text;
 
 namespace InterpreterLib.Binding {
 	internal sealed class FunctionBinder {
 
+		public IEnumerable<FunctionSymbol> Functions => functions;
+
 		private DiagnosticContainer diagnostics;
+		private List<FunctionSymbol> functions;
 
 		private BoundScope scope;
 
-		public static DiagnosticResult<BoundScope> BindFunctions(CompilationUnitSyntax syntax, BoundScope scope) {
-			var functionBinder = new FunctionBinder(scope);
-
+		public DiagnosticResult<BoundScope> BindFunctions(CompilationUnitSyntax syntax) {
 			foreach (var statement in syntax.Statements) {
-				functionBinder.Bind(statement);
+				Bind(statement);
 			}
 
-			return new DiagnosticResult<BoundScope>(functionBinder.diagnostics, functionBinder.scope);
+			return new DiagnosticResult<BoundScope>(diagnostics, scope);
 		}
 
-		private FunctionBinder(BoundScope programScope) {
+		public FunctionBinder(BoundScope programScope) {
 			diagnostics = new DiagnosticContainer();
+			functions = new List<FunctionSymbol>();
 			scope = programScope;
 		}
 
@@ -87,6 +90,8 @@ namespace InterpreterLib.Binding {
 
 			if (!scope.TryDefineFunction(functionSymbol)) {
 				diagnostics.AddDiagnostic(Diagnostic.ReportCannotRedefineFunction(syntax.Identifier.Location, syntax.Identifier.Span));
+			} else {
+				functions.Add(functionSymbol);
 			}
 		}
 	}
