@@ -63,6 +63,12 @@ public interface IGLangVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitTupleDescription([NotNull] GLangParser.TupleDescriptionContext context);
 	/// <summary>
+	/// Visit a parse tree produced by <see cref="GLangParser.arrayDescription"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitArrayDescription([NotNull] GLangParser.ArrayDescriptionContext context);
+	/// <summary>
 	/// Visit a parse tree produced by <see cref="GLangParser.seperatedTypeDescription"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
@@ -176,6 +182,12 @@ public interface IGLangVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
 	Result VisitParameterDefinition([NotNull] GLangParser.ParameterDefinitionContext context);
+	/// <summary>
+	/// Visit a parse tree produced by <see cref="GLangParser.array"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitArray([NotNull] GLangParser.ArrayContext context);
 	/// <summary>
 	/// Visit a parse tree produced by <see cref="GLangParser.assignmentExpression"/>.
 	/// </summary>

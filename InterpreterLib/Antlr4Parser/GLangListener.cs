@@ -82,6 +82,16 @@ public interface IGLangListener : IParseTreeListener {
 	/// <param name="context">The parse tree.</param>
 	void ExitTupleDescription([NotNull] GLangParser.TupleDescriptionContext context);
 	/// <summary>
+	/// Enter a parse tree produced by <see cref="GLangParser.arrayDescription"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterArrayDescription([NotNull] GLangParser.ArrayDescriptionContext context);
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="GLangParser.arrayDescription"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitArrayDescription([NotNull] GLangParser.ArrayDescriptionContext context);
+	/// <summary>
 	/// Enter a parse tree produced by <see cref="GLangParser.seperatedTypeDescription"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
@@ -271,6 +281,16 @@ public interface IGLangListener : IParseTreeListener {
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	void ExitParameterDefinition([NotNull] GLangParser.ParameterDefinitionContext context);
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="GLangParser.array"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterArray([NotNull] GLangParser.ArrayContext context);
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="GLangParser.array"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitArray([NotNull] GLangParser.ArrayContext context);
 	/// <summary>
 	/// Enter a parse tree produced by <see cref="GLangParser.assignmentExpression"/>.
 	/// </summary>

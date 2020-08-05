@@ -86,8 +86,26 @@ namespace InterpreterLib.Output {
 				case SyntaxType.Accessor:
 					OutputAccessor((AccessorSyntax)node, prefix);
 					break;
+				case SyntaxType.Array:
+					OutputArray((ArraySyntax)node, prefix);
+					break;
 				default: throw new NotImplementedException();
 			}
+		}
+
+		private void OutputArray(ArraySyntax node, string prefix) {
+			builder.AddFragment(new OutputFragment(prefix, DefaultColour));
+			builder.AddFragment(new OutputFragment("Array ", StatementColour));
+			builder.AddFragment(new OutputFragment("(", DefaultColour));
+
+			for (int index = 0; index < node.Values.Count; index++) {
+				Output(node.Values[index], string.Empty);
+
+				if(index < node.Values.Count - 1)
+					builder.AddFragment(new OutputFragment(",", DefaultColour));
+			}
+
+			builder.AddFragment(new OutputFragment(")", DefaultColour));
 		}
 
 		private void OutputAccessor(AccessorSyntax node, string prefix) {

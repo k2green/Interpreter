@@ -96,6 +96,18 @@ public partial class GLangBaseListener : IGLangListener {
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitTupleDescription([NotNull] GLangParser.TupleDescriptionContext context) { }
 	/// <summary>
+	/// Enter a parse tree produced by <see cref="GLangParser.arrayDescription"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterArrayDescription([NotNull] GLangParser.ArrayDescriptionContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="GLangParser.arrayDescription"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitArrayDescription([NotNull] GLangParser.ArrayDescriptionContext context) { }
+	/// <summary>
 	/// Enter a parse tree produced by <see cref="GLangParser.seperatedTypeDescription"/>.
 	/// <para>The default implementation does nothing.</para>
 	/// </summary>
@@ -323,6 +335,18 @@ public partial class GLangBaseListener : IGLangListener {
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitParameterDefinition([NotNull] GLangParser.ParameterDefinitionContext context) { }
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="GLangParser.array"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterArray([NotNull] GLangParser.ArrayContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="GLangParser.array"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitArray([NotNull] GLangParser.ArrayContext context) { }
 	/// <summary>
 	/// Enter a parse tree produced by <see cref="GLangParser.assignmentExpression"/>.
 	/// <para>The default implementation does nothing.</para>

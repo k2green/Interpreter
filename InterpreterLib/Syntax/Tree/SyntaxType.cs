@@ -33,6 +33,8 @@ namespace InterpreterLib.Syntax.Tree {
 		TupleType,
 		FunctionType,
 		VariablePattern,
-		TuplePattern
+		TuplePattern,
+		Array,
+		ArrayType
 	}
 }

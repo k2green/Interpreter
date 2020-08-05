@@ -14,8 +14,11 @@ functionDescription : tupleDescription FUNCTION_DELIMETER typeDescription;
 tupleDescription : L_PARENTHESIS seperatedTypeDescription R_PARENTHESIS
 				 | L_PARENTHESIS R_PARENTHESIS;
 
+arrayDescription : ARRAY L_BRACKET typeDescription R_BRACKET;
+
 seperatedTypeDescription : typeDescription COMMA seperatedTypeDescription | typeDescription;
 typeDescription	: functionDescription
+				| arrayDescription
 				| tupleDescription
 				| TYPE_NAME;
 
@@ -55,11 +58,13 @@ variableDeclarationStatement: DECL_VARIABLE definedIdentifier
 	 */
 	 
 
-literal : functionDefinition | DOUBLE | INTEGER | BOOLEAN | accessorExpression | STRING | CHAR_LITERAL | BYTE;
+literal : functionDefinition | array | DOUBLE | INTEGER | BOOLEAN | accessorExpression | STRING | CHAR_LITERAL | BYTE;
 expression: tuple | binaryExpression;
 
 parameterDefinition	: definedIdentifier COMMA parameterDefinition
 					| definedIdentifier;
+
+array: ARRAY L_PARENTHESIS seperatedExpression R_PARENTHESIS;
 				  
 assignmentExpression : IDENTIFIER ASSIGNMENT_OPERATOR expression;
 
@@ -137,6 +142,7 @@ TYPE_DELIMETER : ':';
 BREAK: 'b' 'r' 'e' 'a' 'k';
 CONTINUE : 'c' 'o' 'n' 't' 'i' 'n' 'u' 'e';
 RETURN : 'r' 'e' 't' 'u' 'r' 'n' ;
+ARRAY: 'a' 'r' 'r' 'a' 'y';
 TYPE_NAME : INTEGER_TYPE | DOUBLE_TYPE | BOOLEAN_TYPE | STRING_TYPE | VOID_TYPE | CHARACTER_TYPE | BYTE_TYPE;
 
 BOOLEAN: TRUE | FALSE;

@@ -222,6 +222,10 @@ namespace InterpreterLib {
 			return new Diagnostic(location.Line, location.Column, $"Cannot implicitly convert {fromType} to {toType}", prevText, offendingText, null);
 		}
 
+		internal static Diagnostic ReportInvalidArrayType(int line, int column, TextSpan span) {
+			throw new NotImplementedException();
+		}
+
 		internal static Diagnostic ReportVoidType(TextLocation location, TextSpan? prevText, TextSpan offendingText) {
 			return new Diagnostic(location.Line, location.Column, "Invalid use of void type", prevText, offendingText, null);
 		}
@@ -244,6 +248,10 @@ namespace InterpreterLib {
 
 		internal static Diagnostic ReportInvalidReturnType(TextLocation location, TextSpan offendingText) {
 			return new Diagnostic(location.Line, location.Column, $"Invalid return type", null, offendingText, null);
+		}
+
+		internal static Diagnostic ReportInvalidArray(int line, int column, TextSpan span) {
+			throw new NotImplementedException();
 		}
 
 		internal static Diagnostic ReportReadOnlyVariable(TextLocation location, TextSpan offendingText, VariableSymbol readonlyVar) {

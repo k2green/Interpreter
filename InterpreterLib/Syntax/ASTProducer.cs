@@ -4,7 +4,6 @@ using Antlr4.Runtime.Tree;
 using InterpreterLib.Syntax.Tree;
 using InterpreterLib.Syntax.Tree.Expressions;
 using InterpreterLib.Syntax.Tree.Global;
-using InterpreterLib.Syntax.Tree.Patterns;
 using InterpreterLib.Syntax.Tree.Statements;
 using InterpreterLib.Syntax.Tree.TypeDescriptions;
 using System;
@@ -47,64 +46,50 @@ namespace InterpreterLib.Syntax {
 		}
 
 		public override SyntaxNode VisitLiteral([NotNull] GLangParser.LiteralContext context) {
-			// Check for each token type in a literal
-			bool hasInt = context.INTEGER() != null;
-			bool hasDouble = context.DOUBLE() != null;
-			bool hasBool = context.BOOLEAN() != null;
-			bool hasString = context.STRING() != null;
-			bool hasChar = context.CHAR_LITERAL() != null;
-			bool hasByte = context.BYTE() != null;
-			bool hasAccessor = context.accessorExpression() != null;
-			bool hasFuncDef = context.functionDefinition() != null;
-
-			// Returns an error if there isn'n exactly one token
-			if (!(OnlyOne(hasInt, hasBool, hasString, hasDouble, hasChar, hasByte, hasAccessor, hasFuncDef))) {
-				var span = new TextSpan(context.Start.StartIndex, context.Stop.StopIndex);
-				diagnostics.AddDiagnostic(Diagnostic.ReportInvalidLiteral(context.Start.Line, context.Start.Column, span));
-
-				return null;
-			}
 
 			// Return a literal of variable Syntax depending on which token exists
-			if (hasDouble) {
+			if (context.DOUBLE() != null) {
 				var token = Token(context.DOUBLE().Symbol);
 				return new LiteralSyntax(token, double.Parse(token.ToString()));
 			}
 
-			if (hasInt) {
+			if (context.INTEGER() != null) {
 				var token = Token(context.INTEGER().Symbol);
 				return new LiteralSyntax(token, int.Parse(token.ToString()));
 			}
 
-			if (hasByte) {
+			if (context.BYTE() != null) {
 				var token = Token(context.BYTE().Symbol);
 				var tokenText = token.ToString();
 				return new LiteralSyntax(token, byte.Parse(tokenText.Substring(0, tokenText.Length - 1)));
 			}
 
-			if (hasBool) {
+			if (context.BOOLEAN() != null) {
 				var token = Token(context.BOOLEAN().Symbol);
 				return new LiteralSyntax(token, bool.Parse(token.ToString()));
 			}
 
-			if (hasString) {
+			if (context.STRING() != null) {
 				var token = Token(context.STRING().Symbol);
 				var tokenText = token.ToString();
 				return new LiteralSyntax(token, tokenText.Substring(1, tokenText.Length - 2));
 			}
 
-			if (hasChar) {
+			if (context.CHAR_LITERAL() != null) {
 				var token = Token(context.CHAR_LITERAL().Symbol);
 				var tokenText = token.ToString();
 				return new LiteralSyntax(token, tokenText[1]);
 			}
 
-			if (hasAccessor) {
+			if (context.accessorExpression() != null) {
 				return Visit(context.accessorExpression());
 			}
 
-			if (hasFuncDef)
+			if (context.functionDefinition() != null)
 				return Visit(context.functionDefinition());
+
+			if (context.array() != null)
+				return Visit(context.array());
 
 			// As a last resort, returns an error.
 			return null;
@@ -299,6 +284,9 @@ namespace InterpreterLib.Syntax {
 		}
 
 		public override SyntaxNode VisitTypeDescription([NotNull] GLangParser.TypeDescriptionContext context) {
+			if (context.arrayDescription() != null)
+				return Visit(context.arrayDescription());
+
 			if (context.functionDescription() != null)
 				return Visit(context.functionDescription());
 
@@ -311,6 +299,27 @@ namespace InterpreterLib.Syntax {
 			var span = new TextSpan(context.Start.StartIndex, context.Stop.StopIndex);
 			diagnostics.AddDiagnostic(Diagnostic.ReportInvalidTypeDescription(context.Start.Line, context.Start.Column, span));
 			return null;
+		}
+
+		public override SyntaxNode VisitArrayDescription([NotNull] GLangParser.ArrayDescriptionContext context) {
+			var keywCtx = context.ARRAY();
+			var lBracketCtx = context.L_BRACKET();
+			var descCtx = context.typeDescription();
+			var rBracketCtx = context.R_BRACKET();
+
+			var descVsit = Visit(descCtx);
+			bool hasKeyw = keywCtx != null && keywCtx.Symbol.Text.Equals("array");
+			bool hasLBracket = lBracketCtx != null && lBracketCtx.Symbol.Text.Equals("[");
+			bool hasRBracket = rBracketCtx != null && rBracketCtx.Symbol.Text.Equals("]");
+
+
+			if(!hasKeyw || !hasLBracket || !hasRBracket || !(descVsit is TypeDescriptionSyntax definitionSyntax)) {
+				var span = new TextSpan(context.Start.StartIndex, context.Stop.StopIndex);
+				diagnostics.AddDiagnostic(Diagnostic.ReportInvalidArrayType(context.Start.Line, context.Start.Column, span));
+				return null;
+			}
+
+			return new ArrayTypeSyntax(Token(keywCtx.Symbol), Token(lBracketCtx.Symbol), definitionSyntax, Token(rBracketCtx.Symbol));
 		}
 
 		public override SyntaxNode VisitFunctionDescription([NotNull] GLangParser.FunctionDescriptionContext context) {
@@ -333,6 +342,25 @@ namespace InterpreterLib.Syntax {
 				return null;
 
 			return new FunctionTypeSyntax(tupleType, Token(delimCtx.Symbol), returnType);
+		}
+
+		public override SyntaxNode VisitArray([NotNull] GLangParser.ArrayContext context) {
+			var keywCtx = context.ARRAY();
+			var lParenCtx = context.L_PARENTHESIS();
+			var expressionsCtx = context.seperatedExpression();
+			var rParenCtx = context.R_PARENTHESIS();
+
+			bool hasKeyw = keywCtx != null && keywCtx.Symbol.Text.Equals("array");
+			bool hasLParen = lParenCtx != null && lParenCtx.Symbol.Text.Equals("(");
+			bool hasRParen = rParenCtx != null && rParenCtx.Symbol.Text.Equals(")");
+
+			if (!hasKeyw || !hasLParen || expressionsCtx == null || !hasRParen) {
+				var span = new TextSpan(context.Start.StartIndex, context.Stop.StopIndex);
+				diagnostics.AddDiagnostic(Diagnostic.ReportInvalidArray(context.Start.Line, context.Start.Column, span));
+				return null;
+			}
+
+			return new ArraySyntax(Token(keywCtx.Symbol), Token(lParenCtx.Symbol), InternalVisitSeperatedExpressions(expressionsCtx), Token(rParenCtx.Symbol));
 		}
 
 		public override SyntaxNode VisitTupleDescription([NotNull] GLangParser.TupleDescriptionContext context) {
